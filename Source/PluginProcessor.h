@@ -1,5 +1,6 @@
 #pragma once
 #include <juce_audio_utils/juce_audio_utils.h>
+#include "dsp_waveshaper/Waveshaper.h"
 
 class MushinAudioProcessor : public juce::AudioProcessor {
 public:
@@ -38,5 +39,8 @@ public:
 
 private:
   juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+
+  mushin::Waveshaper waveshaper;
+
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };

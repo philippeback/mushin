@@ -31,6 +31,7 @@ target_sources(Mushin
     PRIVATE
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp
+        Source/dsp_waveshaper/Waveshaper.h
 )
 
 target_compile_definitions(Mushin

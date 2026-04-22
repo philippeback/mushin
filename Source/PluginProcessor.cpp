@@ -22,9 +22,16 @@ void MushinAudioProcessor::setCurrentProgram (int) {}
 const juce::String MushinAudioProcessor::getProgramName (int) { return {}; }
 void MushinAudioProcessor::changeProgramName (int, const juce::String&) {}
 
-void MushinAudioProcessor::prepareToPlay (double, int)
+void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     abstractFifo.reset();
+
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = (juce::uint32) samplesPerBlock;
+    spec.numChannels = (juce::uint32) getTotalNumOutputChannels();
+
+    waveshaper.prepare(spec);
 }
 
 void MushinAudioProcessor::releaseResources() {}
@@ -49,6 +56,16 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+
+    // Update parameters
+    waveshaper.setDrive(treeState.getRawParameterValue("drive")->load());
+    waveshaper.setExhaustion(treeState.getRawParameterValue("exhaustion")->load() > 0.5f);
+    waveshaper.setThreshold(treeState.getRawParameterValue("threshold")->load());
+
+    // Process through waveshaper
+    juce::dsp::AudioBlock<float> block(buffer);
+    juce::dsp::ProcessContextReplacing<float> context(block);
+    waveshaper.process(context);
 
     // Apply gain
     float gain = treeState.getRawParameterValue("gain")->load();
@@ -110,6 +127,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "gain", 1 }, "Gain", 0.0f, 2.0f, 1.0f));
+
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "drive", 1 }, "Drive", 1.0f, 10.0f, 1.0f));
+
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "exhaustion", 1 }, "Exhaustion", false));
+
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "threshold", 1 }, "Threshold", 0.0f, 1.0f, 1.0f));
         
     return { params.begin(), params.end() };
 }
