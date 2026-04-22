@@ -54,13 +54,16 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
     // Make the UI resizable
     setResizable(true, true);
     setResizeLimits(400, 300, 2000, 1500);
-    getConstrainer()->setFixedAspectRatio(1.5); // Optional: keep a nice ratio
+    getConstrainer()->setFixedAspectRatio(1.5);
 
     setSize (800, 600);
+
+    startTimerHz(30);
 }
 
 MushinAudioProcessorEditor::~MushinAudioProcessorEditor()
 {
+    stopTimer();
     audioProcessor.treeState.removeParameterListener ("gain", this);
     audioProcessor.treeState.removeParameterListener ("drive", this);
     audioProcessor.treeState.removeParameterListener ("exhaustion", this);
@@ -84,4 +87,35 @@ void MushinAudioProcessorEditor::parameterChanged (const juce::String& parameter
     juce::MessageManager::callAsync([this, js] {
         webComponent.evaluateJavascript(js);
     });
+}
+
+void MushinAudioProcessorEditor::timerCallback()
+{
+    int numReady = audioProcessor.abstractFifo.getNumReady();
+    if (numReady > 0)
+    {
+        // For visualization, we'll just take the last 256 samples or so
+        constexpr int numSamplesToVisualise = 256;
+        juce::Array<juce::var> waveformData;
+        
+        int samplesToRead = std::min(numReady, numSamplesToVisualise);
+        int start1, block1, start2, block2;
+        
+        // We want the LATEST samples, so skip some if there are many
+        if (numReady > numSamplesToVisualise)
+            audioProcessor.abstractFifo.finishedRead(numReady - numSamplesToVisualise);
+            
+        audioProcessor.abstractFifo.prepareToRead (samplesToRead, start1, block1, start2, block2);
+        
+        for (int i = 0; i < block1; ++i)
+            waveformData.add(audioProcessor.audioFifo[(size_t)(start1 + i)]);
+            
+        for (int i = 0; i < block2; ++i)
+            waveformData.add(audioProcessor.audioFifo[(size_t)(start2 + i)]);
+            
+        audioProcessor.abstractFifo.finishedRead (block1 + block2);
+        
+        if (waveformData.size() > 0)
+            webComponent.emitEventIfBrowserIsVisible("waveform", waveformData);
+    }
 }

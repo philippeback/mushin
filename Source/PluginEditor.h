@@ -4,7 +4,8 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 
 class MushinAudioProcessorEditor : public juce::AudioProcessorEditor,
-                                   private juce::AudioProcessorValueTreeState::Listener
+                                   private juce::AudioProcessorValueTreeState::Listener,
+                                   private juce::Timer
 {
 public:
     explicit MushinAudioProcessorEditor (MushinAudioProcessor&);
@@ -15,6 +16,7 @@ public:
 
 private:
     void parameterChanged (const juce::String& parameterID, float newValue) override;
+    void timerCallback() override;
 
     MushinAudioProcessor& audioProcessor;
     
