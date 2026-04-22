@@ -1,43 +1,42 @@
 #pragma once
-#include <JuceHeader.h>
+#include <juce_audio_utils/juce_audio_utils.h>
 
-class MushinAudioProcessor : public juce::AudioProcessor
-{
+class MushinAudioProcessor : public juce::AudioProcessor {
 public:
-    MushinAudioProcessor();
-    ~MushinAudioProcessor() override;
+  MushinAudioProcessor();
+  ~MushinAudioProcessor() override;
 
-    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
-    void releaseResources() override;
-    bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+  void prepareToPlay(double sampleRate, int samplesPerBlock) override;
+  void releaseResources() override;
+  bool isBusesLayoutSupported(const BusesLayout &layouts) const override;
+  void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override;
 
-    juce::AudioProcessorEditor* createEditor() override;
-    bool hasEditor() const override;
+  juce::AudioProcessorEditor *createEditor() override;
+  bool hasEditor() const override;
 
-    const juce::String getName() const override;
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    bool isMidiEffect() const override;
-    double getTailLengthSeconds() const override;
-    int getNumPrograms() override;
-    int getCurrentProgram() override;
-    void setCurrentProgram (int index) override;
-    const juce::String getProgramName (int index) override;
-    void changeProgramName (int index, const juce::String& newName) override;
-    void getStateInformation (juce::MemoryBlock& destData) override;
-    void setStateInformation (const void* data, int sizeInBytes) override;
+  const juce::String getName() const override;
+  bool acceptsMidi() const override;
+  bool producesMidi() const override;
+  bool isMidiEffect() const override;
+  double getTailLengthSeconds() const override;
+  int getNumPrograms() override;
+  int getCurrentProgram() override;
+  void setCurrentProgram(int index) override;
+  const juce::String getProgramName(int index) override;
+  void changeProgramName(int index, const juce::String &newName) override;
+  void getStateInformation(juce::MemoryBlock &destData) override;
+  void setStateInformation(const void *data, int sizeInBytes) override;
 
-    juce::AudioProcessorValueTreeState treeState;
+  juce::AudioProcessorValueTreeState treeState;
 
-    // FIFO for the UI to read
-    static constexpr int fifoSize = 8192;
-    juce::AbstractFifo abstractFifo { fifoSize };
-    std::array<float, fifoSize> audioFifo;
+  // FIFO for the UI to read
+  static constexpr int fifoSize = 8192;
+  juce::AbstractFifo abstractFifo{fifoSize};
+  std::array<float, fifoSize> audioFifo;
 
-    void pushNextSampleIntoFifo (float sample) noexcept;
+  void pushNextSampleIntoFifo(float sample) noexcept;
 
 private:
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MushinAudioProcessor)
+  juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };

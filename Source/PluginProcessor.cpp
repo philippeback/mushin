@@ -11,18 +11,18 @@ MushinAudioProcessor::MushinAudioProcessor()
 
 MushinAudioProcessor::~MushinAudioProcessor() {}
 
-const juce::String MushinAudioProcessor::getName() const { return JucePlugin_Name; }
+const juce::String MushinAudioProcessor::getName() const { return "Mushin"; }
 bool MushinAudioProcessor::acceptsMidi() const { return false; }
 bool MushinAudioProcessor::producesMidi() const { return false; }
 bool MushinAudioProcessor::isMidiEffect() const { return false; }
 double MushinAudioProcessor::getTailLengthSeconds() const { return 0.0; }
 int MushinAudioProcessor::getNumPrograms() { return 1; }
 int MushinAudioProcessor::getCurrentProgram() { return 0; }
-void MushinAudioProcessor::setCurrentProgram (int index) {}
-const juce::String MushinAudioProcessor::getProgramName (int index) { return {}; }
-void MushinAudioProcessor::changeProgramName (int index, const juce::String& newName) {}
+void MushinAudioProcessor::setCurrentProgram (int) {}
+const juce::String MushinAudioProcessor::getProgramName (int) { return {}; }
+void MushinAudioProcessor::changeProgramName (int, const juce::String&) {}
 
-void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void MushinAudioProcessor::prepareToPlay (double, int)
 {
     abstractFifo.reset();
 }
@@ -41,7 +41,7 @@ bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) c
     return true;
 }
 
-void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
