@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mushin UI</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            color: #fff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 40px;
+            letter-spacing: 0.5em;
+            font-weight: 200;
+            font-size: 2.5rem;
+            opacity: 0.9;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 60px;
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .control-group {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .knob-label {
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            color: #00d2ff;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            max-width: 250px;
+            background: transparent;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -11px;
+            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        input[type=range]:active::-webkit-slider-thumb {
+            transform: scale(1.2);
+            background: #00d2ff;
+        }
+
+        .value-display {
+            margin-top: 15px;
+            font-size: 1.5rem;
+            font-weight: 300;
+            font-variant-numeric: tabular-nums;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .visualiser-placeholder {
+            grid-column: span 2;
+            margin-top: 30px;
+            width: 100%;
+            height: 100px;
+            background: rgba(0, 210, 255, 0.05);
+            border-bottom: 1px solid rgba(0, 210, 255, 0.2);
+            position: relative;
+        }
+
+        /* Toggle switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-round {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider-round:before {
+            position: absolute;
+            content: "";
+            height: 22px; width: 22px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-round {
+            background-color: #00d2ff;
+        }
+
+        input:checked + .slider-round:before {
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">MUSHIN</div>
+    
+    <div class="container">
+        <!-- GAIN -->
+        <div class="control-group">
+            <div class="knob-label">Output</div>
+            <input type="range" id="gain" min="0" max="1" step="0.001" value="0.5">
+            <div class="value-display" id="gain-val">1.00</div>
+        </div>
+
+        <!-- DRIVE -->
+        <div class="control-group">
+            <div class="knob-label">Drive</div>
+            <input type="range" id="drive" min="0" max="1" step="0.001" value="0">
+            <div class="value-display" id="drive-val">1.0</div>
+        </div>
+
+        <!-- THRESHOLD -->
+        <div class="control-group">
+            <div class="knob-label">Threshold</div>
+            <input type="range" id="threshold" min="0" max="1" step="0.001" value="1">
+            <div class="value-display" id="threshold-val">1.00</div>
+        </div>
+
+        <!-- EXHAUSTION -->
+        <div class="control-group">
+            <div class="knob-label">Exhaustion</div>
+            <label class="switch">
+                <input type="checkbox" id="exhaustion">
+                <span class="slider-round"></span>
+            </label>
+            <div class="value-display" id="exhaustion-val">OFF</div>
+        </div>
+        
+        <div class="visualiser-placeholder" id="visualiser"></div>
+    </div>
+
+    <script>
+        const params = {
+            gain: { min: 0, max: 2, display: v => v.toFixed(2) },
+            drive: { min: 1, max: 10, display: v => v.toFixed(1) },
+            threshold: { min: 0, max: 1, display: v => v.toFixed(2) },
+            exhaustion: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' }
+        };
+
+        function updateParam(id, normalizedValue) {
+            const config = params[id];
+            let displayValue = "";
+            
+            if (config.type === 'bool') {
+                displayValue = config.display(normalizedValue);
+                document.getElementById(id).checked = normalizedValue > 0.5;
+            } else {
+                const realValue = config.min + (config.max - config.min) * normalizedValue;
+                displayValue = config.display(realValue);
+                document.getElementById(id).value = normalizedValue;
+            }
+            
+            document.getElementById(id + '-val').textContent = displayValue;
+
+            if (window.__JUCE__ && window.__JUCE__.backend) {
+                window.__JUCE__.backend.callNativeFunction('setParameterValue', [id, normalizedValue]);
+            }
+        }
+
+        ['gain', 'drive', 'threshold'].forEach(id => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                updateParam(id, parseFloat(e.target.value));
+            });
+        });
+
+        document.getElementById('exhaustion').addEventListener('change', (e) => {
+            updateParam('exhaustion', e.target.checked ? 1.0 : 0.0);
+        });
+
+        window.setParameterValue = (id, val) => {
+            const config = params[id];
+            if (!config) return;
+
+            if (config.type === 'bool') {
+                document.getElementById(id).checked = val > 0.5;
+            } else {
+                document.getElementById(id).value = val;
+            }
+            document.getElementById(id + '-val').textContent = config.display(
+                config.type === 'bool' ? val : (config.min + (config.max - config.min) * val)
+            );
+        };
+    </script>
+</body>
+</html>

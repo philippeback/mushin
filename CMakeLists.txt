@@ -23,6 +23,12 @@ juce_add_plugin(Mushin
     PLUGIN_CODE Mush
     FORMATS VST3 Standalone
     PRODUCT_NAME "Mushin"
+    NEEDS_WEBVIEW2 TRUE
+)
+
+juce_add_binary_data(MushinWebData
+    SOURCES
+        Source/Web/index.html
 )
 
 juce_generate_juce_header(Mushin)
@@ -36,15 +42,18 @@ target_sources(Mushin
 
 target_compile_definitions(Mushin
     PUBLIC
-        JUCE_WEB_BROWSER=0
+        JUCE_WEB_BROWSER=1
+        JUCE_USE_WIN_WEBVIEW2=1
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
 target_link_libraries(Mushin
     PRIVATE
+        MushinWebData
         juce::juce_audio_utils
         juce::juce_dsp
+        juce::juce_gui_extra
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags

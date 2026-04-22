@@ -8,7 +8,8 @@ Here is how the trading logic maps directly to DSP concepts for your code:
 
 **1. The S-Curve Waveshaper (Saturation & Hard Clipping)**
 The S-Curve at 50 is the mathematical decay from Alpha to Beta. In DSP, an S-Curve is literally a waveshaping transfer function.
-* **The Math:** Implement a soft-clipping waveshaper using a hyperbolic tangent function: $y = \tanh(x \cdot \text{drive})$. 
+* **The Math:** Implement a soft-clipping waveshaper using a hyperbolic tangent function: $y
+ = \tanh(x \cdot \text{drive})$. 
 * **The Logic:** Tie the `drive` variable to the length/strength of the trend. As price extends, `drive` increases, rounding off the peaks of the waveform (Information Saturation).
 * **The Exhaustion Event:** When the Leledc exhaustion triggers, bypass the $\tanh$ function and switch the algorithm to a hard-clip threshold: if $x > \text{threshold}$, $x = \text{threshold}$. This physically squares off the audio waveform, creating harsh, odd-order harmonics. It is the mathematical absolute of "zero dynamic range left."
 

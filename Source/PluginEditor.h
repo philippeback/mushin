@@ -1,25 +1,24 @@
 #pragma once
-#include <juce_audio_utils/juce_audio_utils.h>
-#include "PluginProcessor.h"
 
-class MushinAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer
+#include "PluginProcessor.h"
+#include <juce_gui_extra/juce_gui_extra.h>
+
+class MushinAudioProcessorEditor : public juce::AudioProcessorEditor,
+                                   private juce::AudioProcessorValueTreeState::Listener
 {
 public:
-    MushinAudioProcessorEditor (MushinAudioProcessor&);
+    explicit MushinAudioProcessorEditor (MushinAudioProcessor&);
     ~MushinAudioProcessorEditor() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
-    void timerCallback() override;
 
 private:
+    void parameterChanged (const juce::String& parameterID, float newValue) override;
+
     MushinAudioProcessor& audioProcessor;
-
-    juce::Slider gainSlider;
-    juce::Label gainLabel;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gainAttachment;
-
-    juce::AudioVisualiserComponent visualiser;
+    
+    juce::WebBrowserComponent webComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MushinAudioProcessorEditor)
 };

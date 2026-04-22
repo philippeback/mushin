@@ -1,78 +1,87 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
+#include <JuceHeader.h>
 
-MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
-    : AudioProcessorEditor(&p), audioProcessor(p), visualiser(1) // 1 channel
+MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
+    : AudioProcessorEditor (&p), audioProcessor (p),
+      webComponent (juce::WebBrowserComponent::Options{}
+                    .withBackend (juce::WebBrowserComponent::Options::Backend::webview2)
+                    .withWinWebView2Options (juce::WebBrowserComponent::Options::WinWebView2{}
+                                             .withUserDataFolder (juce::File::getSpecialLocation (juce::File::tempDirectory)
+                                                                  .getChildFile ("Mushin_WebView2_Cache")))
+                    .withNativeIntegrationEnabled (true)
+                    .withResourceProvider ([] (const juce::String& url) -> std::optional<juce::WebBrowserComponent::Resource>
+                    {
+                        auto path = (url == "/" || url.isEmpty()) ? "index_html" : url.substring(1).replace(".", "_").replace("-", "_");
+
+                        int size = 0;
+                        if (auto data = BinaryData::getNamedResource (path.toRawUTF8(), size))
+                        {
+                            return juce::WebBrowserComponent::Resource {
+                                std::vector<std::byte> (reinterpret_cast<const std::byte*> (data), 
+                                                       reinterpret_cast<const std::byte*> (data) + size),
+                                url.endsWith(".js") ? "application/javascript" : 
+                                (url.endsWith(".css") ? "text/css" : "text/html")
+                            };
+                        }
+                        
+                        return std::nullopt;
+                    })
+                    .withNativeFunction ("setParameterValue", [this] (const juce::Array<juce::var>& args, juce::WebBrowserComponent::NativeFunctionCompletion completion)
+                    {
+                        if (args.size() >= 2)
+                        {
+                            auto paramID = args[0].toString();
+                            auto value = (float) args[1];
+
+                            if (auto* param = audioProcessor.treeState.getParameter(paramID))
+                            {
+                                param->setValueNotifyingHost(value);
+                            }
+                        }
+                        completion (juce::var (true));
+                    }))
 {
-  setSize(600, 400);
+    addAndMakeVisible (webComponent);
+    webComponent.goToURL (juce::WebBrowserComponent::getResourceProviderRoot());
 
-  // Gain Slider setup
-  gainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-  gainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
-  addAndMakeVisible(gainSlider);
+    // Listen for parameter changes to update the UI
+    audioProcessor.treeState.addParameterListener ("gain", this);
+    audioProcessor.treeState.addParameterListener ("drive", this);
+    audioProcessor.treeState.addParameterListener ("exhaustion", this);
+    audioProcessor.treeState.addParameterListener ("threshold", this);
 
-  gainAttachment =
-      std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-          audioProcessor.treeState, "gain", gainSlider);
+    // Make the UI resizable
+    setResizable(true, true);
+    setResizeLimits(400, 300, 2000, 1500);
+    getConstrainer()->setFixedAspectRatio(1.5); // Optional: keep a nice ratio
 
-  gainLabel.setText("Le Gros Gain", juce::dontSendNotification);
-  gainLabel.setJustificationType(juce::Justification::centred);
-  gainLabel.attachToComponent(&gainSlider, false);
-  addAndMakeVisible(gainLabel);
-
-  // Visualiser setup
-  visualiser.setRepaintRate(30);
-  visualiser.setBufferSize(256);
-  visualiser.setColours(juce::Colours::black, juce::Colours::cyan);
-  addAndMakeVisible(visualiser);
-
-  startTimerHz(30);
+    setSize (800, 600);
 }
 
-MushinAudioProcessorEditor::~MushinAudioProcessorEditor() { stopTimer(); }
-
-void MushinAudioProcessorEditor::paint(juce::Graphics &g) {
-  g.fillAll(juce::Colours::darkgrey);
-
-  g.setColour(juce::Colours::white);
-  g.setFont(24.0f);
-  g.drawFittedText("MUSHIN", getLocalBounds().removeFromTop(40),
-                   juce::Justification::centred, 1);
+MushinAudioProcessorEditor::~MushinAudioProcessorEditor()
+{
+    audioProcessor.treeState.removeParameterListener ("gain", this);
+    audioProcessor.treeState.removeParameterListener ("drive", this);
+    audioProcessor.treeState.removeParameterListener ("exhaustion", this);
+    audioProcessor.treeState.removeParameterListener ("threshold", this);
 }
 
-void MushinAudioProcessorEditor::resized() {
-  auto area = getLocalBounds();
-  area.removeFromTop(40); // For title
-
-  auto topArea = area.removeFromTop(100);
-  gainSlider.setBounds(topArea.withSizeKeepingCentre(80, 80));
-
-  // The rest is for the visualiser
-  visualiser.setBounds(area.reduced(10));
+void MushinAudioProcessorEditor::paint (juce::Graphics& g)
+{
+    g.fillAll (juce::Colours::black);
 }
 
-void MushinAudioProcessorEditor::timerCallback() {
-  // Read from FIFO and push to visualiser
-  int numReady = audioProcessor.abstractFifo.getNumReady();
-  if (numReady > 0) {
-    std::vector<float> buffer(numReady);
-    int start1, block1, start2, block2;
-    audioProcessor.abstractFifo.prepareToRead(numReady, start1, block1, start2,
-                                              block2);
+void MushinAudioProcessorEditor::resized()
+{
+    webComponent.setBounds (getLocalBounds());
+}
 
-    if (block1 > 0) {
-      for (int i = 0; i < block1; ++i)
-        buffer[i] = audioProcessor.audioFifo[(size_t)(start1 + i)];
-    }
-    if (block2 > 0) {
-      for (int i = 0; i < block2; ++i)
-        buffer[block1 + i] = audioProcessor.audioFifo[(size_t)(start2 + i)];
-    }
-
-    audioProcessor.abstractFifo.finishedRead(block1 + block2);
-
-    juce::AudioBuffer<float> pushBuffer(1, numReady);
-    pushBuffer.copyFrom(0, 0, buffer.data(), numReady);
-    visualiser.pushBuffer(pushBuffer);
-  }
+void MushinAudioProcessorEditor::parameterChanged (const juce::String& parameterID, float newValue)
+{
+    juce::String js = "if (window.setParameterValue) window.setParameterValue('" + parameterID + "', " + juce::String(newValue) + ");";
+    
+    juce::MessageManager::callAsync([this, js] {
+        webComponent.evaluateJavascript(js);
+    });
 }
