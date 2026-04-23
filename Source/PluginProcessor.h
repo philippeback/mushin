@@ -37,6 +37,10 @@ public:
 
   void pushNextSampleIntoFifo(float sample) noexcept;
 
+  std::atomic<bool> bridgeWorked { false };
+  std::atomic<float> lastUiValue { -1.0f };
+  juce::String lastParamId { "none" };
+
 private:
   juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 

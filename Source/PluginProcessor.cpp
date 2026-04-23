@@ -55,13 +55,20 @@ bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) c
 void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
+
+    // --- THE ABSOLUTE BRIDGE TEST ---
+    if (bridgeWorked.load()) {
+        buffer.clear();
+        return;
+    }
+
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // Update parameters from cached pointers
+    // Update parameters
     if (driveParam != nullptr)      waveshaper.setDrive (driveParam->load());
     if (exhaustionParam != nullptr) waveshaper.setExhaustion (exhaustionParam->load() > 0.5f);
     if (thresholdParam != nullptr)  waveshaper.setThreshold (thresholdParam->load());
@@ -71,27 +78,35 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     juce::dsp::ProcessContextReplacing<float> context (block);
     waveshaper.process (context);
 
-    // Apply gain and update visualization FIFO
+    // Apply gain
     float gain = (gainParam != nullptr) ? gainParam->load() : 1.0f;
-    int numSamples = buffer.getNumSamples();
+    
+    // --- THE BRIDGE TESTS ---
+    bool muteTest = (exhaustionParam != nullptr && exhaustionParam->load() > 0.5f);
+    
+    // Use lastUiValue as a master multiplier if the last moved param was "drive"
+    float masterMultiplier = 1.0f;
+    if (lastParamId == "drive") {
+        masterMultiplier = lastUiValue.load() * 2.0f; // Scale to 0-2
+    }
 
-    // Optimize channel access
-    std::vector<float*> channelPointers;
-    for (int ch = 0; ch < totalNumInputChannels; ++ch)
-        channelPointers.push_back (buffer.getWritePointer (ch));
+    int numSamples = buffer.getNumSamples();
 
     if (totalNumInputChannels > 0)
     {
-        for (int sample = 0; sample < numSamples; ++sample)
+        for (int ch = 0; ch < totalNumInputChannels; ++ch)
         {
-            // Apply gain across all channels
-            for (int ch = 0; ch < totalNumInputChannels; ++ch)
+            auto* channelData = buffer.getWritePointer (ch);
+            for (int sample = 0; sample < numSamples; ++sample)
             {
-                channelPointers[ch][sample] *= gain;
+                if (muteTest) {
+                    channelData[sample] = 0.0f; // SILENCE IF EXHAUSTION ON
+                } else {
+                    channelData[sample] *= (gain * masterMultiplier);
+                }
+                
+                if (ch == 0) pushNextSampleIntoFifo (channelData[sample]);
             }
-
-            // Push to FIFO (left channel for visualization)
-            pushNextSampleIntoFifo (channelPointers[0][sample]);
         }
     }
 }

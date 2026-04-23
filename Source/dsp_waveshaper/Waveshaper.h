@@ -81,7 +81,15 @@ public:
             return std::clamp(x, -threshold, threshold);
         } else {
             // Soft-clipping: y = tanh(x * drive)
-            return std::tanh(x * drive);
+            // If drive is high, this should be very audible
+            float processed = std::tanh(x * drive);
+            
+            // Temporary extreme test: if drive > 5, add some extra grit
+            if (drive > 5.0f) {
+                processed = (processed > 0.0f ? 1.0f : -1.0f) * (1.0f - std::exp(-std::abs(processed * 2.0f)));
+            }
+            
+            return processed;
         }
     }
 
