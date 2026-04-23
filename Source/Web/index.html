@@ -7,221 +7,231 @@
     <style>
         :root {
             --primary: #00d2ff;
-            --bg-dark: #0d0d0d;
-            --bg-light: #1a1a1a;
-            --panel-bg: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.1);
+            --bg-hardware: #121212;
+            --text-main: #e0e0e0;
+            --panel-border: #2a2a2a;
+            --marking: rgba(255, 255, 255, 0.15);
+            --display-bg: #080808;
         }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 20% 20%, rgba(0, 210, 255, 0.07) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(0, 210, 255, 0.07) 0%, transparent 40%),
-                linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
-            color: #fff;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-hardware);
+            background-image: radial-gradient(circle at center, #1a1a1a 0%, #0d0d0d 100%);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', 'Segoe UI', monospace;
             height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             box-sizing: border-box;
-            padding: 20px;
         }
 
-        /* Subtle Grid Pattern Overlay */
-        body::before {
-            content: "";
+        .faceplate-bg {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: linear-gradient(var(--border) 1px, transparent 1px),
-                              linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 40px 40px;
-            mask-image: radial-gradient(ellipse at center, black, transparent 80%);
-            -webkit-mask-image: radial-gradient(ellipse at center, black, transparent 80%);
-            opacity: 0.2;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             z-index: 0;
+            opacity: 0.6;
         }
 
-        .header {
+        .main-panel {
             position: relative;
             z-index: 1;
+            width: 90%;
+            max-width: 950px;
+            height: 85%;
+            background: #111;
+            border: 2px solid var(--panel-border);
+            border-radius: 4px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9), inset 0 0 60px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .screw {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: radial-gradient(circle at 30% 30%, #444, #000);
+            border-radius: 50%;
+            border: 1px solid #222;
+        }
+        .tl { top: 12px; left: 12px; }
+        .tr { top: 12px; right: 12px; }
+        .bl { bottom: 12px; left: 12px; }
+        .br { bottom: 12px; right: 12px; }
+
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--marking);
             margin-bottom: 20px;
-            letter-spacing: 0.6em;
-            font-weight: 200;
-            font-size: 2.8rem;
-            opacity: 0.95;
-            color: #fff;
-            text-shadow: 0 0 30px rgba(0, 210, 255, 0.4);
+            padding-bottom: 10px;
         }
 
-        .container {
-            position: relative;
-            z-index: 1;
+        .title {
+            font-size: 2rem;
+            font-weight: 100;
+            letter-spacing: 0.5em;
+            color: #fff;
+        }
+
+        .model-no {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            letter-spacing: 0.1em;
+        }
+
+        .top-section {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
-            background: var(--panel-bg);
-            padding: 40px;
-            border-radius: 40px;
-            border: 1px solid var(--border);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8), 
-                        inset 0 0 20px rgba(255,255,255,0.02);
-            width: 95%;
-            max-width: 850px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            flex: 2; /* Occupies 2/3 roughly */
+            align-items: center;
         }
 
         .control-group {
-            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px;
+            text-align: center;
+            padding: 15px 5px;
+            border: 1px solid rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.01);
         }
 
-        .knob-label {
-            margin-bottom: 12px;
+        .label {
+            font-size: 0.65rem;
             text-transform: uppercase;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.25em;
+            letter-spacing: 0.15em;
             color: var(--primary);
-            opacity: 0.8;
+            margin-bottom: 15px;
+            font-weight: bold;
         }
 
         input[type=range] {
             -webkit-appearance: none;
-            width: 100%;
-            max-width: 220px;
+            width: 80%;
+            height: 200px;
             background: transparent;
+            writing-mode: bt-rl; /* Vertical slider support attempt */
+            appearance: slider-vertical;
         }
 
-        input[type=range]:focus {
-            outline: none;
+        /* Fallback Horizontal Sliders if vertical doesn't play nice */
+        .horizontal-slider {
+            width: 100% !important;
+            height: auto !important;
+            writing-mode: initial !important;
+            appearance: auto !important;
         }
 
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 2px;
+            width: 2px;
+            background: var(--marking);
         }
 
         input[type=range]::-webkit-slider-thumb {
-            height: 26px;
-            width: 26px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
             -webkit-appearance: none;
-            margin-top: -11px;
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
-            border: 2px solid var(--bg-dark);
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 14px;
+            width: 30px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 1px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            cursor: pointer;
         }
 
-        input[type=range]:active::-webkit-slider-thumb {
-            transform: scale(1.15);
-            background: var(--primary);
-        }
-
-        .value-display {
-            margin-top: 12px;
-            font-size: 1.4rem;
-            font-weight: 300;
+        .value {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #fff;
             font-variant-numeric: tabular-nums;
-            color: rgba(255, 255, 255, 0.9);
         }
 
-        .visualiser-container {
-            grid-column: span 2;
-            margin-top: 25px;
-            width: 100%;
-            height: 130px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 20px;
-            border: 1px solid rgba(0, 210, 255, 0.15);
+        .bottom-section {
+            flex: 1; /* Occupies 1/3 */
+            margin-top: 20px;
             position: relative;
+            background: var(--display-bg);
+            border: 1px solid #222;
+            box-shadow: inset 0 0 20px rgba(0,0,0,1);
             overflow: hidden;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .display-label {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.2);
+            z-index: 2;
         }
 
         canvas {
             width: 100%;
             height: 100%;
         }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 54px;
-            height: 28px;
-        }
-
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider-round {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255,255,255,0.08);
-            transition: .4s;
-            border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .slider-round:before {
-            position: absolute;
-            content: "";
-            height: 20px; width: 20px;
-            left: 3px; bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        input:checked + .slider-round { background-color: var(--primary); }
-        input:checked + .slider-round:before { transform: translateX(26px); }
     </style>
 </head>
 <body>
-    <div class="header">MUSHIN</div>
-    
-    <div class="container">
-        <div class="control-group">
-            <div class="knob-label">Output</div>
-            <input type="range" id="gain" min="0" max="1" step="0.001" value="0.5">
-            <div class="value-display" id="gain-val">1.00</div>
+    <svg class="faceplate-bg" viewBox="0 0 1000 666" preserveAspectRatio="none">
+        <defs>
+            <pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r="0.5" fill="rgba(255,255,255,0.05)" />
+            </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#dots)" />
+        <path d="M 0 33% L 1000 33% M 0 66% L 1000 66%" stroke="rgba(255,255,255,0.03)" stroke-width="1" />
+    </svg>
+
+    <div class="main-panel">
+        <div class="screw tl"></div><div class="screw tr"></div>
+        <div class="screw bl"></div><div class="screw br"></div>
+
+        <div class="header-area">
+            <div class="title">MUSHIN</div>
+            <div class="model-no">MOD-01 // SIGNAL CORRUPTOR</div>
         </div>
 
-        <div class="control-group">
-            <div class="knob-label">Drive</div>
-            <input type="range" id="drive" min="0" max="1" step="0.001" value="0">
-            <div class="value-display" id="drive-val">1.0</div>
+        <div class="top-section">
+            <div class="control-group">
+                <div class="label">Drive</div>
+                <input type="range" id="drive" class="horizontal-slider" min="0" max="1" step="0.001">
+                <div class="value" id="drive-val">1.0</div>
+            </div>
+
+            <div class="control-group">
+                <div class="label">Threshold</div>
+                <input type="range" id="threshold" class="horizontal-slider" min="0" max="1" step="0.001">
+                <div class="value" id="threshold-val">1.00</div>
+            </div>
+
+            <div class="control-group">
+                <div class="label">Output</div>
+                <input type="range" id="gain" class="horizontal-slider" min="0" max="1" step="0.001">
+                <div class="value" id="gain-val">1.00</div>
+            </div>
+
+            <div class="control-group">
+                <div class="label">Exhaustion</div>
+                <input type="checkbox" id="exhaustion" style="transform: scale(1.5);">
+                <div class="value" id="exhaustion-val">OFF</div>
+            </div>
         </div>
 
-        <div class="control-group">
-            <div class="knob-label">Threshold</div>
-            <input type="range" id="threshold" min="0" max="1" step="0.001" value="1">
-            <div class="value-display" id="threshold-val">1.00</div>
-        </div>
-
-        <div class="control-group">
-            <div class="knob-label">Exhaustion</div>
-            <label class="switch">
-                <input type="checkbox" id="exhaustion">
-                <span class="slider-round"></span>
-            </label>
-            <div class="value-display" id="exhaustion-val">OFF</div>
-        </div>
-        
-        <div class="visualiser-container">
+        <div class="bottom-section">
+            <div class="display-label">OSCILLOSCOPE // MONO_SUM</div>
             <canvas id="waveformCanvas"></canvas>
         </div>
     </div>
@@ -240,47 +250,35 @@
 
         function draw() {
             requestAnimationFrame(draw);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#080808';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Draw baseline
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgba(0, 210, 255, 0.1)';
-            ctx.lineWidth = 1;
-            ctx.moveTo(0, canvas.height / 2);
-            ctx.lineTo(canvas.width, canvas.height / 2);
-            ctx.stroke();
+            // Draw scanlines
+            ctx.fillStyle = 'rgba(255,255,255,0.02)';
+            for(let i=0; i<canvas.height; i+=4) ctx.fillRect(0, i, canvas.width, 1);
 
-            // Draw waveform with glow
             ctx.beginPath();
             ctx.strokeStyle = '#00d2ff';
-            ctx.lineWidth = 2.5 * window.devicePixelRatio;
-            ctx.lineJoin = 'round';
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = 'rgba(0, 210, 255, 0.5)';
-
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(0, 210, 255, 0.8)';
+            
             const sliceWidth = canvas.width / (audioData.length - 1);
             let x = 0;
-
             for (let i = 0; i < audioData.length; i++) {
-                const v = audioData[i];
-                const y = (v * 0.45 + 0.5) * canvas.height;
-
+                const y = (audioData[i] * 0.4 + 0.5) * canvas.height;
                 if (i === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
-
                 x += sliceWidth;
             }
-
             ctx.stroke();
-            ctx.shadowBlur = 0; // reset for next frame
+            ctx.shadowBlur = 0;
         }
-        requestAnimationFrame(draw);
+        draw();
 
         if (window.__JUCE__ && window.__JUCE__.backend) {
             window.__JUCE__.backend.addEventListener('waveform', (data) => {
-                if (Array.isArray(data)) {
-                    audioData = new Float32Array(data);
-                }
+                audioData = new Float32Array(data);
             });
         }
 
@@ -292,36 +290,22 @@
         };
 
         function updateParam(id, normalizedValue) {
-            const config = params[id];
-            if (config.type === 'bool') {
-                document.getElementById(id).checked = normalizedValue > 0.5;
-            } else {
-                document.getElementById(id).value = normalizedValue;
-            }
-            document.getElementById(id + '-val').textContent = config.display(
-                config.type === 'bool' ? normalizedValue : (config.min + (config.max - config.min) * normalizedValue)
-            );
-
             if (window.__JUCE__ && window.__JUCE__.backend) {
                 window.__JUCE__.backend.callNativeFunction('setParameterValue', [id, normalizedValue]);
             }
         }
 
         ['gain', 'drive', 'threshold'].forEach(id => {
-            document.getElementById(id).addEventListener('input', (e) => {
-                updateParam(id, parseFloat(e.target.value));
-            });
+            document.getElementById(id).addEventListener('input', (e) => updateParam(id, parseFloat(e.target.value)));
         });
-
-        document.getElementById('exhaustion').addEventListener('change', (e) => {
-            updateParam('exhaustion', e.target.checked ? 1.0 : 0.0);
-        });
+        document.getElementById('exhaustion').addEventListener('change', (e) => updateParam('exhaustion', e.target.checked ? 1.0 : 0.0));
 
         window.setParameterValue = (id, val) => {
             const config = params[id];
             if (!config) return;
-            if (config.type === 'bool') document.getElementById(id).checked = val > 0.5;
-            else document.getElementById(id).value = val;
+            const el = document.getElementById(id);
+            if (config.type === 'bool') el.checked = val > 0.5;
+            else el.value = val;
             document.getElementById(id + '-val').textContent = config.display(
                 config.type === 'bool' ? val : (config.min + (config.max - config.min) * val)
             );

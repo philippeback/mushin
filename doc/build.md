@@ -36,3 +36,10 @@ cmake --build build
 
 
     cmd /c 'call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && cmake --build build'
+
+
+# Skillz
+
+Ask the agent to create the skill for you.
+
+/skills_reload to get them available.
