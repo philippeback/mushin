@@ -7,6 +7,10 @@ MushinAudioProcessor::MushinAudioProcessor()
                      .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       treeState (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
+    gainParam       = treeState.getRawParameterValue ("gain");
+    driveParam      = treeState.getRawParameterValue ("drive");
+    exhaustionParam = treeState.getRawParameterValue ("exhaustion");
+    thresholdParam  = treeState.getRawParameterValue ("threshold");
 }
 
 MushinAudioProcessor::~MushinAudioProcessor() {}
@@ -57,31 +61,38 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // Update parameters
-    waveshaper.setDrive(treeState.getRawParameterValue("drive")->load());
-    waveshaper.setExhaustion(treeState.getRawParameterValue("exhaustion")->load() > 0.5f);
-    waveshaper.setThreshold(treeState.getRawParameterValue("threshold")->load());
+    // Update parameters from cached pointers
+    if (driveParam != nullptr)      waveshaper.setDrive (driveParam->load());
+    if (exhaustionParam != nullptr) waveshaper.setExhaustion (exhaustionParam->load() > 0.5f);
+    if (thresholdParam != nullptr)  waveshaper.setThreshold (thresholdParam->load());
 
     // Process through waveshaper
-    juce::dsp::AudioBlock<float> block(buffer);
-    juce::dsp::ProcessContextReplacing<float> context(block);
-    waveshaper.process(context);
+    juce::dsp::AudioBlock<float> block (buffer);
+    juce::dsp::ProcessContextReplacing<float> context (block);
+    waveshaper.process (context);
 
-    // Apply gain
-    float gain = treeState.getRawParameterValue("gain")->load();
+    // Apply gain and update visualization FIFO
+    float gain = (gainParam != nullptr) ? gainParam->load() : 1.0f;
+    int numSamples = buffer.getNumSamples();
 
-    auto* channelData = buffer.getWritePointer (0); // Using left channel for visualization
-    
-    for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+    // Optimize channel access
+    std::vector<float*> channelPointers;
+    for (int ch = 0; ch < totalNumInputChannels; ++ch)
+        channelPointers.push_back (buffer.getWritePointer (ch));
+
+    if (totalNumInputChannels > 0)
     {
-        // Apply gain across all channels
-        for (int channel = 0; channel < totalNumInputChannels; ++channel)
+        for (int sample = 0; sample < numSamples; ++sample)
         {
-            buffer.getWritePointer(channel)[sample] *= gain;
-        }
+            // Apply gain across all channels
+            for (int ch = 0; ch < totalNumInputChannels; ++ch)
+            {
+                channelPointers[ch][sample] *= gain;
+            }
 
-        // Push to FIFO (mono mix of first channel)
-        pushNextSampleIntoFifo (channelData[sample]);
+            // Push to FIFO (left channel for visualization)
+            pushNextSampleIntoFifo (channelPointers[0][sample]);
+        }
     }
 }
 

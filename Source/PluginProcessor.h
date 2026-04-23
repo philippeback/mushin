@@ -42,5 +42,11 @@ private:
 
   mushin::Waveshaper waveshaper;
 
+  // Cached parameter pointers
+  std::atomic<float>* gainParam = nullptr;
+  std::atomic<float>* driveParam = nullptr;
+  std::atomic<float>* exhaustionParam = nullptr;
+  std::atomic<float>* thresholdParam = nullptr;
+
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };

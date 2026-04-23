@@ -276,8 +276,16 @@
         }
         draw();
 
-        if (window.__JUCE__ && window.__JUCE__.backend) {
-            window.__JUCE__.backend.addEventListener('waveform', (data) => {
+        // JUCE 8 Integration
+        const getJuceBackend = () => {
+            if (window.juce && window.juce.backend) return window.juce.backend;
+            if (window.__JUCE__ && window.__JUCE__.backend) return window.__JUCE__.backend;
+            return null;
+        };
+
+        const backend = getJuceBackend();
+        if (backend) {
+            backend.addEventListener('waveform', (data) => {
                 audioData = new Float32Array(data);
             });
         }
@@ -290,8 +298,18 @@
         };
 
         function updateParam(id, normalizedValue) {
-            if (window.__JUCE__ && window.__JUCE__.backend) {
-                window.__JUCE__.backend.callNativeFunction('setParameterValue', [id, normalizedValue]);
+            // 1. Immediate local update for the label
+            const config = params[id];
+            if (config) {
+                const displayVal = config.type === 'bool' ? 
+                    normalizedValue : (config.min + (config.max - config.min) * normalizedValue);
+                document.getElementById(id + '-val').textContent = config.display(displayVal);
+            }
+
+            // 2. Notify Native
+            const backend = getJuceBackend();
+            if (backend) {
+                backend.callNativeFunction('setParameterValue', [id, normalizedValue]);
             }
         }
 
@@ -300,15 +318,20 @@
         });
         document.getElementById('exhaustion').addEventListener('change', (e) => updateParam('exhaustion', e.target.checked ? 1.0 : 0.0));
 
+        // Callback from Native
         window.setParameterValue = (id, val) => {
             const config = params[id];
             if (!config) return;
             const el = document.getElementById(id);
-            if (config.type === 'bool') el.checked = val > 0.5;
-            else el.value = val;
-            document.getElementById(id + '-val').textContent = config.display(
-                config.type === 'bool' ? val : (config.min + (config.max - config.min) * val)
-            );
+            if (config.type === 'bool') {
+                el.checked = val > 0.5;
+            } else {
+                el.value = val;
+            }
+            
+            // Sync the label (in case it came from automation or host)
+            const displayVal = config.type === 'bool' ? val : (config.min + (config.max - config.min) * val);
+            document.getElementById(id + '-val').textContent = config.display(displayVal);
         };
     </script>
 </body>

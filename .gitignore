@@ -43,3 +43,4 @@ _deps/
 Thumbs.db
 .aider*
 .env
+.cache

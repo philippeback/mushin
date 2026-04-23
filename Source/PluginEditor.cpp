@@ -82,11 +82,15 @@ void MushinAudioProcessorEditor::resized()
 
 void MushinAudioProcessorEditor::parameterChanged (const juce::String& parameterID, float newValue)
 {
-    juce::String js = "if (window.setParameterValue) window.setParameterValue('" + parameterID + "', " + juce::String(newValue) + ");";
-    
-    juce::MessageManager::callAsync([this, js] {
-        webComponent.evaluateJavascript(js);
-    });
+    if (auto* param = audioProcessor.treeState.getParameter (parameterID))
+    {
+        auto normalizedValue = param->convertTo0to1 (newValue);
+        juce::String js = "if (window.setParameterValue) window.setParameterValue('" + parameterID + "', " + juce::String (normalizedValue) + ");";
+        
+        juce::MessageManager::callAsync ([this, js] {
+            webComponent.evaluateJavascript (js);
+        });
+    }
 }
 
 void MushinAudioProcessorEditor::timerCallback()
