@@ -23,7 +23,7 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
                     .withBackend (juce::WebBrowserComponent::Options::Backend::webview2)
                     .withWinWebView2Options (juce::WebBrowserComponent::Options::WinWebView2{}
                         .withUserDataFolder (juce::File::getSpecialLocation (juce::File::userDocumentsDirectory)
-                                              .getChildFile ("Mushin_VST3_WebView")))
+                                              .getChildFile ("Mushin_VST3_Final")))
                     .withNativeIntegrationEnabled (true)
                     .withResourceProvider ([this] (const juce::String& url) -> std::optional<juce::WebBrowserComponent::Resource>
                     {
@@ -47,7 +47,7 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
                             auto val = (float) args[1];
                             audioProcessor.lastParamId = id;
                             audioProcessor.lastUiValue.store(val);
-                            if (auto* p = audioProcessor.treeState.getParameter(id)) p->setValueNotifyingHost(val);
+                            if (auto* pr = audioProcessor.treeState.getParameter(id)) pr->setValueNotifyingHost(val);
                         }
                         completion (juce::var (true));
                     }), 
@@ -60,6 +60,9 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
     audioProcessor.treeState.addParameterListener ("drive", this);
     audioProcessor.treeState.addParameterListener ("exhaustion", this);
     audioProcessor.treeState.addParameterListener ("threshold", this);
+    audioProcessor.treeState.addParameterListener ("cutoff", this);
+    audioProcessor.treeState.addParameterListener ("resonance", this);
+    audioProcessor.treeState.addParameterListener ("mix", this);
 
     setResizable(true, true);
     setSize (800, 600);
@@ -73,6 +76,9 @@ MushinAudioProcessorEditor::~MushinAudioProcessorEditor()
     audioProcessor.treeState.removeParameterListener ("drive", this);
     audioProcessor.treeState.removeParameterListener ("exhaustion", this);
     audioProcessor.treeState.removeParameterListener ("threshold", this);
+    audioProcessor.treeState.removeParameterListener ("cutoff", this);
+    audioProcessor.treeState.removeParameterListener ("resonance", this);
+    audioProcessor.treeState.removeParameterListener ("mix", this);
 }
 
 void MushinAudioProcessorEditor::paint (juce::Graphics& g) { g.fillAll (juce::Colours::black); }

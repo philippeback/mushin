@@ -26,56 +26,62 @@
 
         .main-panel {
             position: relative;
-            width: 90%; max-width: 950px; height: 85%;
+            width: 95%; max-width: 1000px; height: 90%;
             background: #111;
             border: 2px solid var(--panel-border);
             border-radius: 4px;
             box-shadow: 0 50px 100px rgba(0,0,0,0.9);
             display: flex; flex-direction: column;
-            padding: 30px; box-sizing: border-box;
+            padding: 20px; box-sizing: border-box;
         }
 
         .header-area {
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--marking);
-            margin-bottom: 20px; padding-bottom: 10px;
+            margin-bottom: 15px; padding-bottom: 5px;
         }
 
-        .title { font-size: 2rem; font-weight: 100; letter-spacing: 0.5em; color: #fff; }
+        .title { font-size: 1.5rem; font-weight: 100; letter-spacing: 0.5em; color: #fff; }
 
         .top-section {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 20px; flex: 2; align-items: center;
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 15px; flex: 2; align-items: start;
         }
 
         .control-group {
             display: flex; flex-direction: column; align-items: center;
-            padding: 15px 5px; border: 1px solid rgba(255,255,255,0.03);
+            padding: 10px; border: 1px solid rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.01);
         }
 
-        .label { font-size: 0.65rem; text-transform: uppercase; color: var(--primary); margin-bottom: 15px; }
+        .label { font-size: 0.6rem; text-transform: uppercase; color: var(--primary); margin-bottom: 10px; font-weight: bold; }
 
-        input[type=range] { width: 80%; cursor: pointer; }
+        input[type=range] { width: 90%; cursor: pointer; margin: 10px 0; }
 
-        .value { margin-top: 15px; font-size: 1.1rem; color: #fff; }
+        .value { font-size: 1rem; color: #fff; font-variant-numeric: tabular-nums; }
 
         .bottom-section {
-            flex: 1; margin-top: 20px; position: relative;
+            flex: 1; margin-top: 15px; position: relative;
             background: var(--display-bg); border: 1px solid #222;
             overflow: hidden;
         }
 
         canvas { width: 100%; height: 100%; }
+        
+        .bridge-status {
+            position: absolute; top: 2px; right: 5px; font-size: 0.5rem; color: #444; z-index: 5;
+        }
     </style>
 </head>
 <body>
     <div class="main-panel">
         <div class="header-area">
             <div class="title">MUSHIN</div>
-            <div style="font-size:0.7rem; opacity:0.5;">HYBRID_BRIDGE_V1</div>
+            <div style="font-size:0.6rem; opacity:0.5;">SIGNAL CORRUPTOR // MOD-01</div>
         </div>
 
         <div class="top-section">
+            <!-- ROW 1: CORE DSP -->
             <div class="control-group">
                 <div class="label">Drive</div>
                 <input type="range" id="drive" min="0" max="1" step="0.001">
@@ -87,18 +93,38 @@
                 <div class="value" id="threshold-val">1.00</div>
             </div>
             <div class="control-group">
-                <div class="label">Output</div>
-                <input type="range" id="gain" min="0" max="1" step="0.001">
-                <div class="value" id="gain-val">1.00</div>
+                <div class="label">Exhaustion</div>
+                <input type="checkbox" id="exhaustion" style="transform: scale(1.5); margin: 10px 0;">
+                <div class="value" id="exhaustion-val">OFF</div>
+            </div>
+
+            <!-- ROW 2: FILTER & MIX -->
+            <div class="control-group">
+                <div class="label">Filter Cutoff</div>
+                <input type="range" id="cutoff" min="0" max="1" step="0.001">
+                <div class="value" id="cutoff-val">20000 Hz</div>
             </div>
             <div class="control-group">
-                <div class="label">Exhaustion</div>
-                <input type="checkbox" id="exhaustion">
-                <div class="value" id="exhaustion-val">OFF</div>
+                <div class="label">Resonance</div>
+                <input type="range" id="resonance" min="0" max="1" step="0.001">
+                <div class="value" id="resonance-val">0.10</div>
+            </div>
+            <div class="control-group">
+                <div class="label">Dry/Wet Mix</div>
+                <input type="range" id="mix" min="0" max="1" step="0.001">
+                <div class="value" id="mix-val">100%</div>
+            </div>
+
+            <!-- ROW 3: OUTPUT -->
+            <div class="control-group" style="grid-column: span 3;">
+                <div class="label">Master Output</div>
+                <input type="range" id="gain" min="0" max="1" step="0.001">
+                <div class="value" id="gain-val">1.00</div>
             </div>
         </div>
 
         <div class="bottom-section">
+            <div class="bridge-status" id="bridge-status">BRIDGE: OFFLINE</div>
             <canvas id="waveformCanvas"></canvas>
         </div>
     </div>
@@ -106,12 +132,20 @@
     <script>
         const canvas = document.getElementById('waveformCanvas');
         const ctx = canvas.getContext('2d');
+        const statusEl = document.getElementById('bridge-status');
         let audioData = new Float32Array(256);
 
         function draw() {
             requestAnimationFrame(draw);
             ctx.fillStyle = '#080808';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid lines
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.height; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
+
             ctx.beginPath();
             ctx.strokeStyle = '#00d2ff';
             ctx.lineWidth = 2;
@@ -126,52 +160,73 @@
         }
         draw();
 
+        // --- HYBRID BRIDGE ---
         let backend = null;
-        async function init() {
+        async function initBridge() {
             const juceObj = window.juce || window.__JUCE__;
             if (juceObj) {
                 backend = juceObj.getBackend ? await juceObj.getBackend() : (juceObj.backend || juceObj);
-                if (backend && backend.addEventListener) {
-                    backend.addEventListener('waveform', data => audioData = new Float32Array(data));
+                if (backend) {
+                    statusEl.textContent = "BRIDGE: ONLINE";
+                    statusEl.style.color = "#0f0";
+                    if (backend.addEventListener) {
+                        backend.addEventListener('waveform', data => audioData = new Float32Array(data));
+                    }
                 }
             }
         }
 
         const params = {
             gain: { min: 0, max: 2, display: v => v.toFixed(2) },
-            drive: { min: 1, max: 10, display: v => v.toFixed(1) },
+            drive: { min: 1, max: 20, display: v => v.toFixed(1) },
             threshold: { min: 0, max: 1, display: v => v.toFixed(2) },
-            exhaustion: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' }
+            exhaustion: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            cutoff: { min: 20, max: 20000, skew: 0.3, display: v => Math.round(v) + " Hz" },
+            resonance: { min: 0.1, max: 1.0, display: v => v.toFixed(2) },
+            mix: { min: 0, max: 100, display: v => Math.round(v) + "%" }
         };
 
-        function updateParam(id, val) {
+        function updateParam(id, normVal) {
             const config = params[id];
-            const displayVal = config.type === 'bool' ? val : (config.min + (config.max - config.min) * val);
-            document.getElementById(id + '-val').textContent = config.display(displayVal);
-            
-            // HYBRID CALL
-            // 1. Official
-            if (backend && backend.setParameterValue) {
-                backend.setParameterValue(id, val);
+            let realVal;
+            if (config.type === 'bool') {
+                realVal = normVal;
+            } else if (config.skew) {
+                realVal = config.min + (config.max - config.min) * Math.pow(normVal, 1/config.skew);
+            } else {
+                realVal = config.min + (config.max - config.min) * normVal;
             }
-            // 2. URL Fallback (Garanteed)
-            window.location.href = "mushin://setParameterValue?id=" + id + "&val=" + val;
+            
+            document.getElementById(id + '-val').textContent = config.display(realVal);
+
+            // Call Native
+            if (backend && backend.setParameterValue) {
+                backend.setParameterValue(id, normVal);
+            }
+            // URL Fallback
+            window.location.href = "mushin://setParameterValue?id=" + id + "&val=" + normVal;
         }
 
-        ['gain', 'drive', 'threshold'].forEach(id => {
+        ['gain', 'drive', 'threshold', 'cutoff', 'resonance', 'mix'].forEach(id => {
             document.getElementById(id).addEventListener('input', e => updateParam(id, parseFloat(e.target.value)));
         });
         document.getElementById('exhaustion').addEventListener('change', e => updateParam('exhaustion', e.target.checked ? 1.0 : 0.0));
 
-        window.setParameterValue = (id, val) => {
+        // Sync from Host
+        window.setParameterValue = (id, normVal) => {
             const config = params[id]; if (!config) return;
             const el = document.getElementById(id);
-            if (config.type === 'bool') el.checked = val > 0.5; else el.value = val;
-            const displayVal = config.type === 'bool' ? val : (config.min + (config.max - config.min) * val);
-            document.getElementById(id + '-val').textContent = config.display(displayVal);
+            if (config.type === 'bool') el.checked = normVal > 0.5; else el.value = normVal;
+            
+            let realVal;
+            if (config.type === 'bool') realVal = normVal;
+            else if (config.skew) realVal = config.min + (config.max - config.min) * Math.pow(normVal, 1/config.skew);
+            else realVal = config.min + (config.max - config.min) * normVal;
+            
+            document.getElementById(id + '-val').textContent = config.display(realVal);
         };
 
-        setTimeout(init, 1000);
+        setTimeout(initBridge, 1000);
     </script>
 </body>
 </html>

@@ -8,59 +8,28 @@ namespace mushin {
 
 /**
  * S-Curve Waveshaper (Saturation & Hard Clipping)
- * 
- * Implement a soft-clipping waveshaper using a hyperbolic tangent function: y = tanh(x * drive).
- * When exhaustion triggers, it switches to a hard-clip threshold.
  */
 class Waveshaper {
 public:
     Waveshaper() = default;
 
-    /**
-     * Prepare the processor for playback.
-     */
     void prepare(const juce::dsp::ProcessSpec& spec) {
         juce::ignoreUnused(spec);
     }
 
-    /**
-     * Reset any internal state.
-     */
     void reset() {}
 
-    /**
-     * Set the drive amount for soft clipping.
-     * Higher drive increases saturation.
-     */
-    void setDrive(float newDrive) {
-        drive = newDrive;
-    }
+    void setDrive(float newDrive) { drive = newDrive; }
+    void setExhaustion(bool isExhausted) { exhausted = isExhausted; }
+    void setThreshold(float newThreshold) { threshold = std::abs(newThreshold); }
 
-    /**
-     * Set the exhaustion state.
-     * When true, switches from soft tanh clipping to hard clipping.
-     */
-    void setExhaustion(bool isExhausted) {
-        exhausted = isExhausted;
-    }
-
-    /**
-     * Set the hard clipping threshold.
-     */
-    void setThreshold(float newThreshold) {
-        threshold = std::abs(newThreshold);
-    }
-
-    /**
-     * Process a block of audio.
-     */
     template <typename ProcessContext>
     void process(const ProcessContext& context) noexcept {
         auto&& inputBlock  = context.getInputBlock();
         auto&& outputBlock = context.getOutputBlock();
 
         auto numSamples  = inputBlock.getNumSamples();
-        auto numChannels = inputBlock.getNumChannels();
+        auto numChannels = inputBlock.getChannelPointer(0) != nullptr ? inputBlock.getNumChannels() : 0;
 
         for (size_t channel = 0; channel < numChannels; ++channel) {
             auto* inputSamples  = inputBlock.getChannelPointer(channel);
@@ -72,24 +41,12 @@ public:
         }
     }
 
-    /**
-     * Process a single sample.
-     */
     float processSample(float x) noexcept {
         if (exhausted) {
-            // Hard-clip threshold: "physically squares off the audio waveform"
-            return std::clamp(x, -threshold, threshold);
+            return std::clamp(x * drive, -threshold, threshold);
         } else {
             // Soft-clipping: y = tanh(x * drive)
-            // If drive is high, this should be very audible
-            float processed = std::tanh(x * drive);
-            
-            // Temporary extreme test: if drive > 5, add some extra grit
-            if (drive > 5.0f) {
-                processed = (processed > 0.0f ? 1.0f : -1.0f) * (1.0f - std::exp(-std::abs(processed * 2.0f)));
-            }
-            
-            return processed;
+            return std::tanh(x * drive);
         }
     }
 

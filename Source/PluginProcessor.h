@@ -1,5 +1,6 @@
 #pragma once
 #include <juce_audio_utils/juce_audio_utils.h>
+#include <juce_dsp/juce_dsp.h>
 #include "dsp_waveshaper/Waveshaper.h"
 
 class MushinAudioProcessor : public juce::AudioProcessor {
@@ -37,6 +38,7 @@ public:
 
   void pushNextSampleIntoFifo(float sample) noexcept;
 
+  // Bridge Diagnostics
   std::atomic<bool> bridgeWorked { false };
   std::atomic<float> lastUiValue { -1.0f };
   juce::String lastParamId { "none" };
@@ -45,12 +47,18 @@ private:
   juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
   mushin::Waveshaper waveshaper;
+  
+  // Resonant Filter (using modern TPT implementation)
+  juce::dsp::StateVariableTPTFilter<float> filter;
 
   // Cached parameter pointers
   std::atomic<float>* gainParam = nullptr;
   std::atomic<float>* driveParam = nullptr;
   std::atomic<float>* exhaustionParam = nullptr;
   std::atomic<float>* thresholdParam = nullptr;
+  std::atomic<float>* cutoffParam = nullptr;
+  std::atomic<float>* resonanceParam = nullptr;
+  std::atomic<float>* mixParam = nullptr;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };

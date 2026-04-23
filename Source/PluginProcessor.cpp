@@ -11,6 +11,9 @@ MushinAudioProcessor::MushinAudioProcessor()
     driveParam      = treeState.getRawParameterValue ("drive");
     exhaustionParam = treeState.getRawParameterValue ("exhaustion");
     thresholdParam  = treeState.getRawParameterValue ("threshold");
+    cutoffParam     = treeState.getRawParameterValue ("cutoff");
+    resonanceParam  = treeState.getRawParameterValue ("resonance");
+    mixParam        = treeState.getRawParameterValue ("mix");
 }
 
 MushinAudioProcessor::~MushinAudioProcessor() {}
@@ -36,6 +39,9 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     spec.numChannels = (juce::uint32) getTotalNumOutputChannels();
 
     waveshaper.prepare(spec);
+    
+    filter.setType(juce::dsp::StateVariableTPTFilterType::lowpass);
+    filter.prepare(spec);
 }
 
 void MushinAudioProcessor::releaseResources() {}
@@ -56,7 +62,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
 {
     juce::ScopedNoDenormals noDenormals;
 
-    // --- THE ABSOLUTE BRIDGE TEST ---
+    // --- ABSOLUTE BRIDGE KILL FLAG ---
     if (bridgeWorked.load()) {
         buffer.clear();
         return;
@@ -68,45 +74,46 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // Update parameters
-    if (driveParam != nullptr)      waveshaper.setDrive (driveParam->load());
-    if (exhaustionParam != nullptr) waveshaper.setExhaustion (exhaustionParam->load() > 0.5f);
-    if (thresholdParam != nullptr)  waveshaper.setThreshold (thresholdParam->load());
+    // Update DSP parameters
+    waveshaper.setDrive (driveParam->load());
+    waveshaper.setExhaustion (exhaustionParam->load() > 0.5f);
+    waveshaper.setThreshold (thresholdParam->load());
+    
+    filter.setCutoffFrequency (cutoffParam->load());
+    filter.setResonance (resonanceParam->load());
 
-    // Process through waveshaper
+    // Copy input for Dry/Wet mix
+    juce::AudioBuffer<float> dryBuffer;
+    dryBuffer.makeCopyOf (buffer);
+
+    // 1. Process through waveshaper
     juce::dsp::AudioBlock<float> block (buffer);
     juce::dsp::ProcessContextReplacing<float> context (block);
     waveshaper.process (context);
 
-    // Apply gain
-    float gain = (gainParam != nullptr) ? gainParam->load() : 1.0f;
-    
-    // --- THE BRIDGE TESTS ---
-    bool muteTest = (exhaustionParam != nullptr && exhaustionParam->load() > 0.5f);
-    
-    // Use lastUiValue as a master multiplier if the last moved param was "drive"
-    float masterMultiplier = 1.0f;
-    if (lastParamId == "drive") {
-        masterMultiplier = lastUiValue.load() * 2.0f; // Scale to 0-2
-    }
+    // 2. Process through resonant filter
+    filter.process (context);
 
+    // 3. Apply Mix and Gain
+    float mix = mixParam->load();
+    float gain = gainParam->load();
     int numSamples = buffer.getNumSamples();
 
-    if (totalNumInputChannels > 0)
+    for (int ch = 0; ch < totalNumInputChannels; ++ch)
     {
-        for (int ch = 0; ch < totalNumInputChannels; ++ch)
+        auto* wetData = buffer.getWritePointer (ch);
+        auto* dryData = dryBuffer.getReadPointer (ch);
+        
+        for (int s = 0; s < numSamples; ++s)
         {
-            auto* channelData = buffer.getWritePointer (ch);
-            for (int sample = 0; sample < numSamples; ++sample)
-            {
-                if (muteTest) {
-                    channelData[sample] = 0.0f; // SILENCE IF EXHAUSTION ON
-                } else {
-                    channelData[sample] *= (gain * masterMultiplier);
-                }
-                
-                if (ch == 0) pushNextSampleIntoFifo (channelData[sample]);
-            }
+            // Linear mix
+            wetData[s] = (dryData[s] * (1.0f - mix)) + (wetData[s] * mix);
+            
+            // Output gain
+            wetData[s] *= gain;
+            
+            // Visualization
+            if (ch == 0) pushNextSampleIntoFifo (wetData[s]);
         }
     }
 }
@@ -117,20 +124,14 @@ void MushinAudioProcessor::pushNextSampleIntoFifo (float sample) noexcept
     {
         int start1, block1, start2, block2;
         abstractFifo.prepareToWrite (1, start1, block1, start2, block2);
-        
         if (block1 > 0) audioFifo[(size_t) start1] = sample;
         if (block2 > 0) audioFifo[(size_t) start2] = sample;
-        
         abstractFifo.finishedWrite (block1 + block2);
     }
 }
 
 bool MushinAudioProcessor::hasEditor() const { return true; }
-
-juce::AudioProcessorEditor* MushinAudioProcessor::createEditor()
-{
-    return new MushinAudioProcessorEditor (*this);
-}
+juce::AudioProcessorEditor* MushinAudioProcessor::createEditor() { return new MushinAudioProcessorEditor (*this); }
 
 void MushinAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
@@ -155,7 +156,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
         juce::ParameterID { "gain", 1 }, "Gain", 0.0f, 2.0f, 1.0f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "drive", 1 }, "Drive", 1.0f, 10.0f, 1.0f));
+        juce::ParameterID { "drive", 1 }, "Drive", 1.0f, 20.0f, 1.0f));
 
     params.push_back (std::make_unique<juce::AudioParameterBool> (
         juce::ParameterID { "exhaustion", 1 }, "Exhaustion", false));
@@ -163,10 +164,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "threshold", 1 }, "Threshold", 0.0f, 1.0f, 1.0f));
         
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "cutoff", 1 }, "Filter Cutoff", 
+        juce::NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 0.3f), 20000.0f));
+
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "resonance", 1 }, "Filter Resonance", 0.1f, 1.0f, 0.1f));
+
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "mix", 1 }, "Dry/Wet Mix", 0.0f, 1.0f, 1.0f));
+        
     return { params.begin(), params.end() };
 }
 
-juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
-{
-    return new MushinAudioProcessor();
-}
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new MushinAudioProcessor(); }
