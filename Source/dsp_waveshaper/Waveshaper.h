@@ -30,6 +30,20 @@ public:
     threshold.setTargetValue(std::abs(newThreshold));
   }
 
+  float processSample(int channel, float sample) noexcept {
+    juce::ignoreUnused(channel);
+    auto currentDrive = drive.getNextValue();
+    auto currentThreshold = threshold.getNextValue();
+
+    float x = sample * currentDrive;
+    if (exhausted) {
+      return std::clamp(x, -currentThreshold, currentThreshold);
+    } else {
+      return std::tanh(x / (currentThreshold + 1e-3f)) * (currentThreshold + 1e-3f);
+    }
+  }
+
+  // Keep block process for efficiency if needed elsewhere
   template <typename ProcessContext>
   void process(const ProcessContext &context) noexcept {
     auto &&inputBlock = context.getInputBlock();

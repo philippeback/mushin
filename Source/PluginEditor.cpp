@@ -20,6 +20,8 @@ void MushinAudioProcessorEditor::MushinWebComponent::handleCustomUrl(const juce:
 void MushinAudioProcessorEditor::MushinWebComponent::pageFinishedLoading(const juce::String& url) {
     juce::ignoreUnused(url);
     editor.syncAllParameters();
+    // Second sync after a small delay to ensure JS is ready
+    juce::Timer::callAfterDelay(500, [this] { editor.syncAllParameters(); });
 }
 
 MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
@@ -55,44 +57,48 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
                             if (auto* pr = audioProcessor.treeState.getParameter(id)) pr->setValueNotifyingHost(val);
                         }
                         completion (juce::var (true));
+                    })
+                    .withNativeFunction ("log", [] (const juce::Array<juce::var>& args, juce::WebBrowserComponent::NativeFunctionCompletion completion)
+                    {
+                        if (args.size() >= 1) juce::Logger::writeToLog ("JS Log: " + args[0].toString());
+                        completion (juce::var (true));
                     }), 
                     p, *this)
 {
     addAndMakeVisible (webComponent);
     webComponent.goToURL (juce::WebBrowserComponent::getResourceProviderRoot());
 
-    audioProcessor.treeState.addParameterListener ("gain", this);
-    audioProcessor.treeState.addParameterListener ("drive", this);
-    audioProcessor.treeState.addParameterListener ("exhaustion", this);
-    audioProcessor.treeState.addParameterListener ("threshold", this);
-    audioProcessor.treeState.addParameterListener ("cutoff", this);
-    audioProcessor.treeState.addParameterListener ("resonance", this);
-    audioProcessor.treeState.addParameterListener ("mix", this);
+    // Add listeners for all parameters
+    for (auto* param : audioProcessor.getParameters()) {
+        if (auto* pRanged = dynamic_cast<juce::AudioProcessorParameterWithID*>(param)) {
+            audioProcessor.treeState.addParameterListener (pRanged->paramID, this);
+        }
+    }
 
     setResizable(true, true);
-    setSize (800, 600);
+    setSize (1200, 800);
     startTimerHz(30);
 }
 
 MushinAudioProcessorEditor::~MushinAudioProcessorEditor()
 {
     stopTimer();
-    audioProcessor.treeState.removeParameterListener ("gain", this);
-    audioProcessor.treeState.removeParameterListener ("drive", this);
-    audioProcessor.treeState.removeParameterListener ("exhaustion", this);
-    audioProcessor.treeState.removeParameterListener ("threshold", this);
-    audioProcessor.treeState.removeParameterListener ("cutoff", this);
-    audioProcessor.treeState.removeParameterListener ("resonance", this);
-    audioProcessor.treeState.removeParameterListener ("mix", this);
+    for (auto* param : audioProcessor.getParameters()) {
+        if (auto* pRanged = dynamic_cast<juce::AudioProcessorParameterWithID*>(param)) {
+            audioProcessor.treeState.removeParameterListener (pRanged->paramID, this);
+        }
+    }
 }
 
 void MushinAudioProcessorEditor::syncAllParameters() {
-    auto ids = {"gain", "drive", "exhaustion", "threshold", "cutoff", "resonance", "mix"};
-    for (auto id : ids) {
-        if (auto* param = audioProcessor.treeState.getParameter(id)) {
-            // parameterChanged expects the PLAIN value, but param->getValue() is normalized.
-            // We use convertFrom0to1 to get the actual value (Hz, dB, etc.)
-            parameterChanged(id, param->convertFrom0to1(param->getValue()));
+    for (auto* param : audioProcessor.getParameters()) {
+        if (auto* pRanged = dynamic_cast<juce::AudioProcessorParameterWithID*>(param)) {
+            // parameterChanged expects the PLAIN/REAL value (e.g. Hz), but param->getValue() is normalized 0-1.
+            // We MUST convert it back to the real range before calling parameterChanged.
+            if (auto* apvtsParam = audioProcessor.treeState.getParameter(pRanged->paramID))
+                parameterChanged(pRanged->paramID, apvtsParam->convertFrom0to1(apvtsParam->getValue()));
+            else
+                parameterChanged(pRanged->paramID, pRanged->getValue());
         }
     }
 }

@@ -1,4 +1,8 @@
-# Strategy: Cross-Platform Build & Distribution
+(
+    
+    
+    
+    # Strategy: Cross-Platform Build & Distribution
 
 ## The Problem
 Native macOS binaries (VST3/AU/Standalone) require the Apple `ld` linker and `codesign` tools, which only run on macOS. Our local hardware (Windows PC + 2009 MBP) is insufficient for modern macOS builds.

@@ -7,11 +7,12 @@
     <style>
         :root {
             --primary: #00d2ff;
-            --bg-hardware: #121212;
+            --secondary: #ff0055;
+            --bg-hardware: #0a0a0a;
             --text-main: #e0e0e0;
             --panel-border: #2a2a2a;
-            --marking: rgba(255, 255, 255, 0.15);
-            --display-bg: #080808;
+            --marking: rgba(255, 255, 255, 0.1);
+            --display-bg: #050505;
         }
 
         body {
@@ -26,50 +27,78 @@
 
         .main-panel {
             position: relative;
-            width: 95%; max-width: 1000px; height: 90%;
+            width: 98%; max-width: 1200px; height: 98%;
             background: #111;
-            border: 2px solid var(--panel-border);
+            border: 1px solid var(--panel-border);
             border-radius: 4px;
             box-shadow: 0 50px 100px rgba(0,0,0,0.9);
             display: flex; flex-direction: column;
-            padding: 20px; box-sizing: border-box;
+            padding: 10px; box-sizing: border-box;
         }
 
         .header-area {
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--marking);
-            margin-bottom: 15px; padding-bottom: 5px;
+            margin-bottom: 8px; padding-bottom: 4px;
         }
 
-        .title { font-size: 1.5rem; font-weight: 100; letter-spacing: 0.5em; color: #fff; }
+        .title { font-size: 1.1rem; font-weight: 100; letter-spacing: 0.5em; color: #fff; }
 
         .top-section {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 15px; flex: 2; align-items: start;
+            display: grid; grid-template-columns: repeat(6, 1fr);
+            gap: 8px; margin-bottom: 8px;
+        }
+
+        .feature-band {
+            display: grid; grid-template-columns: 2fr 2fr 1.2fr 1.2fr 2.5fr;
+            gap: 8px; height: 180px; border-top: 1px solid var(--marking);
+            padding-top: 8px; margin-bottom: 8px;
         }
 
         .control-group {
             display: flex; flex-direction: column; align-items: center;
-            padding: 10px; border: 1px solid rgba(255,255,255,0.03);
+            padding: 5px; border: 1px solid rgba(255,255,255,0.03);
             background: rgba(255,255,255,0.01);
+            justify-content: center;
         }
 
-        .label { font-size: 0.6rem; text-transform: uppercase; color: var(--primary); margin-bottom: 10px; font-weight: bold; }
+        .sub-panel {
+            display: flex; flex-direction: column; gap: 4px;
+            padding: 6px; border: 1px solid var(--marking);
+            background: rgba(0,0,0,0.2);
+            font-size: 0.6rem;
+        }
 
-        input[type=range] { width: 90%; cursor: pointer; margin: 10px 0; }
+        .sub-panel-title {
+            font-size: 0.5rem; text-align: center; color: var(--primary);
+            border-bottom: 1px solid var(--marking); margin-bottom: 4px;
+            letter-spacing: 0.1em;
+        }
 
-        .value { font-size: 1rem; color: #fff; font-variant-numeric: tabular-nums; }
+        .label { font-size: 0.45rem; text-transform: uppercase; color: #888; }
+
+        input[type=range] { width: 100%; cursor: pointer; height: 12px; margin: 2px 0; }
+        select { background: #222; color: #fff; border: 1px solid #444; font-size: 0.55rem; width: 100%; padding: 1px; }
+
+        .value { font-size: 0.6rem; color: #fff; font-variant-numeric: tabular-nums; }
 
         .bottom-section {
-            flex: 1; margin-top: 15px; position: relative;
+            flex: 1; min-height: 80px; position: relative;
             background: var(--display-bg); border: 1px solid #222;
-            overflow: hidden;
         }
 
         canvas { width: 100%; height: 100%; }
         
         .bridge-status {
-            position: absolute; top: 2px; right: 5px; font-size: 0.5rem; color: #444; z-index: 5;
+            position: absolute; top: 2px; right: 5px; font-size: 0.4rem; color: #444; z-index: 5;
+        }
+
+        .matrix-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+        }
+        
+        .matrix-cell {
+            display: flex; flex-direction: column; gap: 1px;
         }
     </style>
 </head>
@@ -77,49 +106,154 @@
     <div class="main-panel">
         <div class="header-area">
             <div class="title">MUSHIN</div>
-            <div style="font-size:0.6rem; opacity:0.5;">SIGNAL CORRUPTOR // MOD-01</div>
+            <div style="font-size:0.5rem; opacity:0.5;">DUAL FILTER LFO MATRIX // MOD-02</div>
         </div>
 
+        <!-- CORE STRIP -->
         <div class="top-section">
-            <!-- ROW 1: CORE DSP -->
             <div class="control-group">
                 <div class="label">Drive</div>
                 <input type="range" id="drive" min="0" max="1" step="0.001">
                 <div class="value" id="drive-val">1.0</div>
             </div>
             <div class="control-group">
-                <div class="label">Threshold</div>
+                <div class="label">Thresh</div>
                 <input type="range" id="threshold" min="0" max="1" step="0.001">
                 <div class="value" id="threshold-val">1.00</div>
             </div>
             <div class="control-group">
-                <div class="label">Exhaustion</div>
-                <input type="checkbox" id="exhaustion" style="transform: scale(1.5); margin: 10px 0;">
+                <div class="label">Exhaust</div>
+                <input type="checkbox" id="exhaustion">
                 <div class="value" id="exhaustion-val">OFF</div>
             </div>
-
-            <!-- ROW 2: FILTER & MIX -->
             <div class="control-group">
-                <div class="label">Filter Cutoff</div>
-                <input type="range" id="cutoff" min="0" max="1" step="0.001">
-                <div class="value" id="cutoff-val">20000 Hz</div>
-            </div>
-            <div class="control-group">
-                <div class="label">Resonance</div>
-                <input type="range" id="resonance" min="0" max="1" step="0.001">
-                <div class="value" id="resonance-val">0.10</div>
-            </div>
-            <div class="control-group">
-                <div class="label">Dry/Wet Mix</div>
+                <div class="label">Mix</div>
                 <input type="range" id="mix" min="0" max="1" step="0.001">
                 <div class="value" id="mix-val">100%</div>
             </div>
-
-            <!-- ROW 3: OUTPUT -->
-            <div class="control-group" style="grid-column: span 3;">
-                <div class="label">Master Output</div>
+            <div class="control-group">
+                <div class="label">Gain</div>
                 <input type="range" id="gain" min="0" max="1" step="0.001">
                 <div class="value" id="gain-val">1.00</div>
+            </div>
+            <div class="control-group">
+                <div class="label">Routing</div>
+                <select id="routing">
+                    <option value="0">Serial</option>
+                    <option value="1">Parallel</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- FEATURE BAND -->
+        <div class="feature-band">
+            <!-- Filter A -->
+            <div class="sub-panel">
+                <div class="sub-panel-title">FILTER A</div>
+                <div class="label">Cutoff</div>
+                <input type="range" id="filter_a_cutoff" min="0" max="1" step="0.001">
+                <div class="value" id="filter_a_cutoff-val">20k</div>
+                <div class="label">Res</div>
+                <input type="range" id="filter_a_resonance" min="0" max="1" step="0.001">
+                <div class="value" id="filter_a_resonance-val">0.1</div>
+                <div class="matrix-grid">
+                    <div>
+                        <div class="label">Type</div>
+                        <select id="filter_a_type">
+                            <option value="0">Clean</option><option value="1">Vintage</option>
+                            <option value="2">Acid</option><option value="3">Digital</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="label">Mode</div>
+                        <select id="filter_a_mode">
+                            <option value="0">LP</option><option value="1">HP</option>
+                            <option value="2">BP</option><option value="3">Notch</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter B -->
+            <div class="sub-panel">
+                <div class="sub-panel-title">FILTER B</div>
+                <div class="label">Cutoff</div>
+                <input type="range" id="filter_b_cutoff" min="0" max="1" step="0.001">
+                <div class="value" id="filter_b_cutoff-val">20k</div>
+                <div class="label">Res</div>
+                <input type="range" id="filter_b_resonance" min="0" max="1" step="0.001">
+                <div class="value" id="filter_b_resonance-val">0.1</div>
+                <div class="matrix-grid">
+                    <div>
+                        <div class="label">Type</div>
+                        <select id="filter_b_type">
+                            <option value="0">Clean</option><option value="1">Vintage</option>
+                            <option value="2">Acid</option><option value="3">Digital</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="label">Mode</div>
+                        <select id="filter_b_mode">
+                            <option value="0">LP</option><option value="1">HP</option>
+                            <option value="2">BP</option><option value="3">Notch</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LFO 1 -->
+            <div class="sub-panel">
+                <div class="sub-panel-title">LFO 1</div>
+                <div class="label">Freq</div>
+                <input type="range" id="lfo1_freq" min="0" max="1" step="0.001">
+                <div class="value" id="lfo1_freq-val">1Hz</div>
+                <div class="label">Wave</div>
+                <select id="lfo1_wave">
+                    <option value="0">Sine</option><option value="1">Tri</option>
+                    <option value="2">Saw</option><option value="3">Sqr</option>
+                    <option value="4">Rnd</option>
+                </select>
+            </div>
+
+            <!-- LFO 2 -->
+            <div class="sub-panel">
+                <div class="sub-panel-title">LFO 2</div>
+                <div class="label">Freq</div>
+                <input type="range" id="lfo2_freq" min="0" max="1" step="0.001">
+                <div class="value" id="lfo2_freq-val">1Hz</div>
+                <div class="label">Wave</div>
+                <select id="lfo2_wave">
+                    <option value="0">Sine</option><option value="1">Tri</option>
+                    <option value="2">Saw</option><option value="3">Sqr</option>
+                    <option value="4">Rnd</option>
+                </select>
+            </div>
+
+            <!-- Matrix -->
+            <div class="sub-panel">
+                <div class="sub-panel-title">MOD MATRIX (L1 / L2)</div>
+                <div class="matrix-grid">
+                    <div class="matrix-cell">
+                        <div class="label">A-Cut</div>
+                        <input type="range" id="mod_lfo1_target1" min="0" max="1" step="0.001">
+                        <input type="range" id="mod_lfo2_target1" min="0" max="1" step="0.001">
+                    </div>
+                    <div class="matrix-cell">
+                        <div class="label">A-Res</div>
+                        <input type="range" id="mod_lfo1_target2" min="0" max="1" step="0.001">
+                        <input type="range" id="mod_lfo2_target2" min="0" max="1" step="0.001">
+                    </div>
+                    <div class="matrix-cell">
+                        <div class="label">B-Cut</div>
+                        <input type="range" id="mod_lfo1_target4" min="0" max="1" step="0.001">
+                        <input type="range" id="mod_lfo2_target4" min="0" max="1" step="0.001">
+                    </div>
+                    <div class="matrix-cell">
+                        <div class="label">B-Res</div>
+                        <input type="range" id="mod_lfo1_target5" min="0" max="1" step="0.001">
+                        <input type="range" id="mod_lfo2_target5" min="0" max="1" step="0.001">
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -137,18 +271,13 @@
 
         function draw() {
             requestAnimationFrame(draw);
-            ctx.fillStyle = '#080808';
+            ctx.fillStyle = '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Grid lines
-            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
             for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
-            for(let i=0; i<canvas.height; i+=40) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
-
             ctx.beginPath();
             ctx.strokeStyle = '#00d2ff';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 1.5;
             const sliceWidth = canvas.width / (audioData.length - 1);
             let x = 0;
             for (let i = 0; i < audioData.length; i++) {
@@ -160,7 +289,6 @@
         }
         draw();
 
-        // --- HYBRID BRIDGE ---
         let backend = null;
         async function initBridge() {
             const juceObj = window.juce || window.__JUCE__;
@@ -181,15 +309,33 @@
             drive: { min: 1, max: 20, display: v => v.toFixed(1) },
             threshold: { min: 0, max: 1, display: v => v.toFixed(2) },
             exhaustion: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
-            cutoff: { min: 20, max: 20000, skew: 0.3, display: v => Math.round(v) + " Hz" },
-            resonance: { min: 0.1, max: 1.0, display: v => v.toFixed(2) },
-            mix: { min: 0, max: 100, display: v => Math.round(v) + "%" }
+            mix: { min: 0, max: 100, display: v => Math.round(v) + "%" },
+            routing: { type: 'choice', display: v => v == 0 ? 'Serial' : 'Parallel' },
+            filter_a_cutoff: { min: 20, max: 20000, skew: 0.3, display: v => Math.round(v) + "Hz" },
+            filter_a_resonance: { min: 0, max: 1, display: v => v.toFixed(2) },
+            filter_a_type: { type: 'choice', display: v => ["Clean", "Vintage", "Acid", "Digital"][v] },
+            filter_a_mode: { type: 'choice', display: v => ["LP", "HP", "BP", "Notch"][v] },
+            filter_b_cutoff: { min: 20, max: 20000, skew: 0.3, display: v => Math.round(v) + "Hz" },
+            filter_b_resonance: { min: 0, max: 1, display: v => v.toFixed(2) },
+            filter_b_type: { type: 'choice', display: v => ["Clean", "Vintage", "Acid", "Digital"][v] },
+            filter_b_mode: { type: 'choice', display: v => ["LP", "HP", "BP", "Notch"][v] },
+            lfo1_freq: { min: 0.1, max: 50, display: v => v.toFixed(1) + "Hz" },
+            lfo1_wave: { type: 'choice', display: v => ["Sine", "Tri", "Saw", "Sqr", "Rnd"][v] },
+            lfo2_freq: { min: 0.1, max: 50, display: v => v.toFixed(1) + "Hz" },
+            lfo2_wave: { type: 'choice', display: v => ["Sine", "Tri", "Saw", "Sqr", "Rnd"][v] }
         };
 
-        function updateParam(id, normVal) {
+        for(let l=1; l<=2; l++) {
+            for(let t=1; t<=6; t++) {
+                params[`mod_lfo${l}_target${t}`] = { min: -1, max: 1, display: v => v.toFixed(2) };
+            }
+        }
+
+        function updateParam(id, normVal, skipNative = false) {
             const config = params[id];
+            if(!config) return;
             let realVal;
-            if (config.type === 'bool') {
+            if (config.type === 'bool' || config.type === 'choice') {
                 realVal = normVal;
             } else if (config.skew) {
                 realVal = config.min + (config.max - config.min) * Math.pow(normVal, 1/config.skew);
@@ -197,33 +343,29 @@
                 realVal = config.min + (config.max - config.min) * normVal;
             }
             
-            document.getElementById(id + '-val').textContent = config.display(realVal);
+            const valEl = document.getElementById(id + '-val');
+            if(valEl) valEl.textContent = config.display(realVal);
 
-            // Call Native
-            if (backend && backend.setParameterValue) {
-                backend.setParameterValue(id, normVal);
+            if (!skipNative) {
+                if (backend && backend.setParameterValue) backend.setParameterValue(id, normVal);
+                window.location.href = "mushin://setParameterValue?id=" + id + "&val=" + normVal;
             }
-            // URL Fallback
-            window.location.href = "mushin://setParameterValue?id=" + id + "&val=" + normVal;
         }
 
-        ['gain', 'drive', 'threshold', 'cutoff', 'resonance', 'mix'].forEach(id => {
-            document.getElementById(id).addEventListener('input', e => updateParam(id, parseFloat(e.target.value)));
+        document.querySelectorAll('input, select').forEach(el => {
+            const event = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
+            el.addEventListener(event, e => {
+                const val = el.type === 'checkbox' ? (el.checked ? 1.0 : 0.0) : parseFloat(el.value);
+                updateParam(el.id, val);
+            });
         });
-        document.getElementById('exhaustion').addEventListener('change', e => updateParam('exhaustion', e.target.checked ? 1.0 : 0.0));
 
-        // Sync from Host
         window.setParameterValue = (id, normVal) => {
+            console.log("Sync from C++:", id, normVal);
             const config = params[id]; if (!config) return;
-            const el = document.getElementById(id);
+            const el = document.getElementById(id); if(!el) return;
             if (config.type === 'bool') el.checked = normVal > 0.5; else el.value = normVal;
-            
-            let realVal;
-            if (config.type === 'bool') realVal = normVal;
-            else if (config.skew) realVal = config.min + (config.max - config.min) * Math.pow(normVal, 1/config.skew);
-            else realVal = config.min + (config.max - config.min) * normVal;
-            
-            document.getElementById(id + '-val').textContent = config.display(realVal);
+            updateParam(id, normVal, true);
         };
 
         setTimeout(initBridge, 1000);
