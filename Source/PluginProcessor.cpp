@@ -42,6 +42,13 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     
     filter.setType(juce::dsp::StateVariableTPTFilterType::lowpass);
     filter.prepare(spec);
+
+    dryBuffer.setSize(spec.numChannels, samplesPerBlock);
+
+    smoothedGain.reset(sampleRate, 0.05);
+    smoothedMix.reset(sampleRate, 0.05);
+    smoothedCutoff.reset(sampleRate, 0.05);
+    smoothedResonance.reset(sampleRate, 0.05);
 }
 
 void MushinAudioProcessor::releaseResources() {}
@@ -79,31 +86,41 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     waveshaper.setExhaustion (exhaustionParam->load() > 0.5f);
     waveshaper.setThreshold (thresholdParam->load());
     
-    filter.setCutoffFrequency (cutoffParam->load());
-    filter.setResonance (resonanceParam->load());
+    smoothedCutoff.setTargetValue (cutoffParam->load());
+    smoothedResonance.setTargetValue (resonanceParam->load());
+    smoothedGain.setTargetValue (gainParam->load());
+    smoothedMix.setTargetValue (mixParam->load());
 
-    // Store clean signal for mix
-    juce::AudioBuffer<float> dryBuffer;
-    dryBuffer.makeCopyOf (buffer);
+    int numSamples = buffer.getNumSamples();
+
+    // Store clean signal for mix - no allocation here as dryBuffer is pre-allocated
+    for (int ch = 0; ch < totalNumInputChannels; ++ch)
+        dryBuffer.copyFrom (ch, 0, buffer, ch, 0, numSamples);
 
     // 1. Distortion & Filter processing
     juce::dsp::AudioBlock<float> block (buffer);
     juce::dsp::ProcessContextReplacing<float> context (block);
+    
+    // Per-sample processing for filter to avoid steps if desired, 
+    // but TPT filter doesn't have a per-sample process that takes context.
+    // We update once per block for simplicity here, or we could loop.
+    filter.setCutoffFrequency (smoothedCutoff.getNextValue());
+    filter.setResonance (smoothedResonance.getNextValue());
+
     waveshaper.process (context);
     filter.process (context);
 
     // 2. Mix & Gain
-    float mixVal = mixParam->load();
-    float gainVal = gainParam->load();
-    int numSamples = buffer.getNumSamples();
-
-    for (int ch = 0; ch < totalNumInputChannels; ++ch)
+    for (int s = 0; s < numSamples; ++s)
     {
-        auto* wetData = buffer.getWritePointer (ch);
-        auto* dryData = dryBuffer.getReadPointer (ch);
-        
-        for (int s = 0; s < numSamples; ++s)
+        float mixVal = smoothedMix.getNextValue();
+        float gainVal = smoothedGain.getNextValue();
+
+        for (int ch = 0; ch < totalNumInputChannels; ++ch)
         {
+            auto* wetData = buffer.getWritePointer (ch);
+            auto* dryData = dryBuffer.getReadPointer (ch);
+            
             // Linear Dry/Wet interpolation
             float processed = (dryData[s] * (1.0f - mixVal)) + (wetData[s] * mixVal);
             

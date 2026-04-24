@@ -51,6 +51,15 @@ private:
   // Resonant Filter (using modern TPT implementation)
   juce::dsp::StateVariableTPTFilter<float> filter;
 
+  // Pre-allocated dry buffer to avoid allocations in processBlock
+  juce::AudioBuffer<float> dryBuffer;
+
+  // Smoothed parameters
+  juce::LinearSmoothedValue<float> smoothedGain;
+  juce::LinearSmoothedValue<float> smoothedMix;
+  juce::LinearSmoothedValue<float> smoothedCutoff;
+  juce::LinearSmoothedValue<float> smoothedResonance;
+
   // Cached parameter pointers
   std::atomic<float>* gainParam = nullptr;
   std::atomic<float>* driveParam = nullptr;
