@@ -3,7 +3,7 @@
 #include <JuceHeader.h>
 
 void MushinAudioProcessorEditor::MushinWebComponent::handleCustomUrl(const juce::String& url) {
-    auto cmd = url.substring(9); // Skip mushin://
+    auto cmd = url.substring(9); 
     if (cmd.startsWith("setParameterValue?")) {
         auto params = cmd.substring(18);
         auto paramID = params.upToFirstOccurrenceOf("&", false, false).fromFirstOccurrenceOf("id=", false, false);
@@ -15,6 +15,11 @@ void MushinAudioProcessorEditor::MushinWebComponent::handleCustomUrl(const juce:
         if (auto* param = processor.treeState.getParameter(paramID))
             param->setValueNotifyingHost(value);
     }
+}
+
+void MushinAudioProcessorEditor::MushinWebComponent::pageFinishedLoading(const juce::String& url) {
+    juce::ignoreUnused(url);
+    editor.syncAllParameters();
 }
 
 MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
@@ -51,7 +56,7 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
                         }
                         completion (juce::var (true));
                     }), 
-                    p)
+                    p, *this)
 {
     addAndMakeVisible (webComponent);
     webComponent.goToURL (juce::WebBrowserComponent::getResourceProviderRoot());
@@ -79,6 +84,17 @@ MushinAudioProcessorEditor::~MushinAudioProcessorEditor()
     audioProcessor.treeState.removeParameterListener ("cutoff", this);
     audioProcessor.treeState.removeParameterListener ("resonance", this);
     audioProcessor.treeState.removeParameterListener ("mix", this);
+}
+
+void MushinAudioProcessorEditor::syncAllParameters() {
+    auto ids = {"gain", "drive", "exhaustion", "threshold", "cutoff", "resonance", "mix"};
+    for (auto id : ids) {
+        if (auto* param = audioProcessor.treeState.getParameter(id)) {
+            // parameterChanged expects the PLAIN value, but param->getValue() is normalized.
+            // We use convertFrom0to1 to get the actual value (Hz, dB, etc.)
+            parameterChanged(id, param->convertFrom0to1(param->getValue()));
+        }
+    }
 }
 
 void MushinAudioProcessorEditor::paint (juce::Graphics& g) { g.fillAll (juce::Colours::black); }

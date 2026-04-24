@@ -18,22 +18,26 @@ private:
     // Custom subclass to intercept URLs as a fallback bridge
     class MushinWebComponent : public juce::WebBrowserComponent {
     public:
-        MushinWebComponent(const juce::WebBrowserComponent::Options& options, MushinAudioProcessor& p) 
-            : juce::WebBrowserComponent(options), processor(p) {}
+        MushinWebComponent(const juce::WebBrowserComponent::Options& options, MushinAudioProcessor& p, MushinAudioProcessorEditor& ed) 
+            : juce::WebBrowserComponent(options), processor(p), editor(ed) {}
 
         bool pageAboutToLoad(const juce::String& newURL) override {
             if (newURL.startsWith("mushin://")) {
                 handleCustomUrl(newURL);
-                return false; // Prevent actual navigation
+                return false; 
             }
             return true;
         }
 
+        void pageFinishedLoading(const juce::String& url) override;
+
     private:
         void handleCustomUrl(const juce::String& url);
         MushinAudioProcessor& processor;
+        MushinAudioProcessorEditor& editor;
     };
 
+    void syncAllParameters();
     void parameterChanged (const juce::String& parameterID, float newValue) override;
     void timerCallback() override;
 

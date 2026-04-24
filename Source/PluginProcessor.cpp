@@ -74,7 +74,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // Update DSP parameters
+    // Update DSP parameters from atomic pointers
     waveshaper.setDrive (driveParam->load());
     waveshaper.setExhaustion (exhaustionParam->load() > 0.5f);
     waveshaper.setThreshold (thresholdParam->load());
@@ -82,21 +82,19 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     filter.setCutoffFrequency (cutoffParam->load());
     filter.setResonance (resonanceParam->load());
 
-    // Copy input for Dry/Wet mix
+    // Store clean signal for mix
     juce::AudioBuffer<float> dryBuffer;
     dryBuffer.makeCopyOf (buffer);
 
-    // 1. Process through waveshaper
+    // 1. Distortion & Filter processing
     juce::dsp::AudioBlock<float> block (buffer);
     juce::dsp::ProcessContextReplacing<float> context (block);
     waveshaper.process (context);
-
-    // 2. Process through resonant filter
     filter.process (context);
 
-    // 3. Apply Mix and Gain
-    float mix = mixParam->load();
-    float gain = gainParam->load();
+    // 2. Mix & Gain
+    float mixVal = mixParam->load();
+    float gainVal = gainParam->load();
     int numSamples = buffer.getNumSamples();
 
     for (int ch = 0; ch < totalNumInputChannels; ++ch)
@@ -106,13 +104,13 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         
         for (int s = 0; s < numSamples; ++s)
         {
-            // Linear mix
-            wetData[s] = (dryData[s] * (1.0f - mix)) + (wetData[s] * mix);
+            // Linear Dry/Wet interpolation
+            float processed = (dryData[s] * (1.0f - mixVal)) + (wetData[s] * mixVal);
             
-            // Output gain
-            wetData[s] *= gain;
+            // Final Gain
+            wetData[s] = processed * gainVal;
             
-            // Visualization
+            // Push left channel to oscilloscope
             if (ch == 0) pushNextSampleIntoFifo (wetData[s]);
         }
     }
@@ -169,7 +167,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
         juce::NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 0.3f), 20000.0f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "resonance", 1 }, "Filter Resonance", 0.1f, 1.0f, 0.1f));
+        juce::ParameterID { "resonance", 1 }, "Filter Resonance", 0.0f, 1.0f, 0.1f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "mix", 1 }, "Dry/Wet Mix", 0.0f, 1.0f, 1.0f));
