@@ -49,9 +49,17 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     smoothedMix.reset(sampleRate, 0.05);
     smoothedCutoff.reset(sampleRate, 0.05);
     smoothedResonance.reset(sampleRate, 0.05);
+
+    reset();
 }
 
 void MushinAudioProcessor::releaseResources() {}
+
+void MushinAudioProcessor::reset()
+{
+    waveshaper.reset();
+    filter.reset();
+}
 
 bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
@@ -97,22 +105,18 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     for (int ch = 0; ch < totalNumInputChannels; ++ch)
         dryBuffer.copyFrom (ch, 0, buffer, ch, 0, numSamples);
 
-    // 1. Distortion & Filter processing
+    // 1. Distortion
     juce::dsp::AudioBlock<float> block (buffer);
     juce::dsp::ProcessContextReplacing<float> context (block);
-    
-    // Per-sample processing for filter to avoid steps if desired, 
-    // but TPT filter doesn't have a per-sample process that takes context.
-    // We update once per block for simplicity here, or we could loop.
-    filter.setCutoffFrequency (smoothedCutoff.getNextValue());
-    filter.setResonance (smoothedResonance.getNextValue());
-
     waveshaper.process (context);
-    filter.process (context);
 
-    // 2. Mix & Gain
+    // 2. Filter & Mix & Gain (Sample-by-sample for smooth parameters)
     for (int s = 0; s < numSamples; ++s)
     {
+        // Update filter with smoothing
+        filter.setCutoffFrequency (smoothedCutoff.getNextValue());
+        filter.setResonance (smoothedResonance.getNextValue());
+        
         float mixVal = smoothedMix.getNextValue();
         float gainVal = smoothedGain.getNextValue();
 
@@ -121,6 +125,9 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             auto* wetData = buffer.getWritePointer (ch);
             auto* dryData = dryBuffer.getReadPointer (ch);
             
+            // Apply filter per sample
+            wetData[s] = filter.processSample(ch, wetData[s]);
+
             // Linear Dry/Wet interpolation
             float processed = (dryData[s] * (1.0f - mixVal)) + (wetData[s] * mixVal);
             
