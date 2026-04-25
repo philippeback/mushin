@@ -19,7 +19,10 @@ private:
     class MushinWebComponent : public juce::WebBrowserComponent {
     public:
         MushinWebComponent(const juce::WebBrowserComponent::Options& options, MushinAudioProcessor& p, MushinAudioProcessorEditor& ed) 
-            : juce::WebBrowserComponent(options), processor(p), editor(ed) {}
+            : juce::WebBrowserComponent(options), processor(p), editor(ed) 
+        {
+            juce::Logger::writeToLog("MushinWebComponent subclass constructor - base call finished.");
+        }
 
         bool pageAboutToLoad(const juce::String& newURL) override {
             if (newURL.startsWith("mushin://")) {
@@ -42,7 +45,7 @@ private:
     void timerCallback() override;
 
     MushinAudioProcessor& audioProcessor;
-    MushinWebComponent webComponent;
+    std::unique_ptr<MushinWebComponent> webComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MushinAudioProcessorEditor)
 };

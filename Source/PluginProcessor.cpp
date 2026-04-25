@@ -7,6 +7,17 @@ MushinAudioProcessor::MushinAudioProcessor()
                      .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       treeState (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
+    auto logFile = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+        .getChildFile("PhilippeBack")
+        .getChildFile("Mushin")
+        .getChildFile("Mushin_Log.txt");
+    
+    if (!logFile.getParentDirectory().exists())
+        logFile.getParentDirectory().createDirectory();
+
+    juce::Logger::setCurrentLogger (new juce::FileLogger (logFile, "Mushin Log Started", 0));
+    juce::Logger::writeToLog("--- Mushin Processor Initialized ---");
+
     gainParam       = treeState.getRawParameterValue ("gain");
     driveParam      = treeState.getRawParameterValue ("drive");
     exhaustionParam = treeState.getRawParameterValue ("exhaustion");
@@ -190,7 +201,10 @@ void MushinAudioProcessor::pushNextSampleIntoFifo (float sample) noexcept
 }
 
 bool MushinAudioProcessor::hasEditor() const { return true; }
-juce::AudioProcessorEditor* MushinAudioProcessor::createEditor() { return new MushinAudioProcessorEditor (*this); }
+juce::AudioProcessorEditor* MushinAudioProcessor::createEditor() { 
+    juce::Logger::writeToLog("Host called createEditor(). Message Thread: " + juce::String((int)juce::MessageManager::getInstance()->isThisTheMessageThread()));
+    return new MushinAudioProcessorEditor (*this); 
+}
 
 void MushinAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
