@@ -1,2 +1,2 @@
-# Diagramme de blocs du système
+# Schéma du bloc du système
 
