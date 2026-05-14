@@ -1,2 +1,1 @@
-# Schéma du bloc du système
-
+doc\system_design\system_block_diagram.md
