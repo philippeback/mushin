@@ -1,7 +1,9 @@
+// Source/PluginEditor.h
 #pragma once
 
 #include "PluginProcessor.h"
 #include <juce_gui_extra/juce_gui_extra.h>
+#include "PresetManager.h"
 
 class MushinAudioProcessorEditor : public juce::AudioProcessorEditor,
                                    private juce::AudioProcessorValueTreeState::Listener,
@@ -19,7 +21,10 @@ private:
     class MushinWebComponent : public juce::WebBrowserComponent {
     public:
         MushinWebComponent(const juce::WebBrowserComponent::Options& options, MushinAudioProcessor& p, MushinAudioProcessorEditor& ed) 
-            : juce::WebBrowserComponent(options), processor(p), editor(ed) {}
+            : juce::WebBrowserComponent(options), processor(p), editor(ed) 
+        {
+            juce::Logger::writeToLog("MushinWebComponent subclass constructor - base call finished.");
+        }
 
         bool pageAboutToLoad(const juce::String& newURL) override {
             if (newURL.startsWith("mushin://")) {
@@ -31,10 +36,20 @@ private:
 
         void pageFinishedLoading(const juce::String& url) override;
 
+        void registerCallback(const juce::String& name, std::function<void(const juce::var&)> callback) {
+            callbacks[name] = callback;
+        }
+
+        void dispatchCallback(const juce::String& name, const juce::var& args) {
+            if (callbacks.count(name))
+                callbacks[name](args);
+        }
+
     private:
         void handleCustomUrl(const juce::String& url);
         MushinAudioProcessor& processor;
         MushinAudioProcessorEditor& editor;
+        std::map<juce::String, std::function<void(const juce::var&)>> callbacks;
     };
 
     void syncAllParameters();
@@ -42,7 +57,8 @@ private:
     void timerCallback() override;
 
     MushinAudioProcessor& audioProcessor;
-    MushinWebComponent webComponent;
+    std::unique_ptr<MushinWebComponent> webComponent;
+    std::unique_ptr<PresetManager> presetMgr; // New member
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MushinAudioProcessorEditor)
 };

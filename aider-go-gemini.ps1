@@ -14,6 +14,8 @@ if (-not $env:GEMINI_API_KEY) {
     }
 }
 
-# Start aider using the Pro 1.5 model
-aider --model gemini/gemini-1.5-pro-latest
+# Start aider
+aider --model gemini/gemini-1.5-pro-latest --model gemini/gemini-3.1-pro-preview-customtools 
+
+
 
