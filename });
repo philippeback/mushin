@@ -1,0 +1,70 @@
+
+> **Note:** All callbacks run on the UI thread, so no extra locking is required.
+
+### 5.2 Updating the UI after a load
+
+After `loadPreset()` replaces `treeState.state`, we must:
+
+1. Call `treeState.stateChanged();` – this triggers all parameter listeners (including the editor’s `parameterChanged`).  
+2. Emit an event to JS: `emitEvent('presetLoaded', name)`.
+
+---
+
+## 6. Front‑End Integration
+
+| UI Element | Interaction | JS Callback |
+|------------|-------------|-------------|
+| **Preset dropdown** | On change → `backend.loadPreset(name)` | `onPresetLoaded()` updates the selector and clears “modified” flag. |
+| **Save button** | Prompt for name → `backend.savePreset(name)` | `onPresetSaved()` refreshes list. |
+| **Delete button** | Confirm → `backend.deletePreset(name)` | `onPresetDeleted()` removes from dropdown. |
+| **Modified indicator** | Compare current `treeState.state` with the last loaded preset (store a copy in JS). | Show `*` if different. |
+
+> The front‑end should listen to `presetsUpdated` events and rebuild the selector accordingly.
+
+---
+
+## 7. Thread Safety & Error Handling
+
+| Concern | Solution |
+|---------|----------|
+| **File I/O on audio thread** | All preset operations are invoked via UI callbacks → safe. If you ever move them off‑thread, wrap with `juce::MessageManagerLock`. |
+| **Corrupted XML** | `loadPreset()` returns a `Result` with an error message; JS shows toast. |
+| **Missing directory** | Constructor creates the user preset folder if it does not exist. |
+| **Duplicate names** | `savePreset()` overwrites existing file – optionally prompt in UI before overwrite. |
+
+---
+
+## 8. Versioning & Migration
+
+* Store a `version` attribute (currently `"1"`).  
+* On load, check the version; if unsupported, return an error.  
+* Future versions can add new parameters or change structure; implement migration logic inside `loadPreset()`.
+
+---
+
+## 9. Future Enhancements
+
+| Feature | Description |
+|---------|-------------|
+| **Import/Export** | Let users drag‑drop preset XML files into the app. |
+| **Undo/Redo** | Keep a history stack of APVTS states. |
+| **Batch operations** | Rename or duplicate presets via UI. |
+| **Cloud sync** | Store presets in a cloud folder (e.g., OneDrive). |
+
+---
+
+## 10. Summary
+
+1. Create `PresetManager` to encapsulate all file I/O and XML handling.  
+2. Add it as a member of the processor; expose CRUD methods through WebView2 callbacks.  
+3. Use JUCE’s `ValueTree` serialization for full state capture.  
+4. Keep factory presets read‑only in `BinaryData`; user presets live under `%AppData%/Mushin/Presets`.  
+5. Notify JS of changes via events; update UI accordingly.
+
+Implementing the above will give users a robust, cross‑platform preset system that integrates cleanly with both the JUCE backend and the WebView2 front‑end.
+
+## 11. Implementation Files
+
+The following files implement the `PresetManager` class used in the design above.
+
+### src/PresetManager.h
