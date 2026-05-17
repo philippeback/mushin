@@ -15,7 +15,9 @@ if (-not $env:GEMINI_API_KEY) {
 }
 
 # Start aider
-aider --model gemini/gemini-1.5-pro-latest --model gemini/gemini-3.1-pro-preview-customtools 
+aider --dark-mode --model gemini/gemini-3.1-pro-preview  --editor-model gemini/gemini-3.1-flash-preview
+
+# gemini/gemini-1.5-pro-latest --model gemini/gemini-3.1-pro-preview-customtools 
 
 
 
