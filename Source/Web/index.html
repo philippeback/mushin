@@ -42,6 +42,23 @@
             margin-bottom: 8px; padding-bottom: 4px;
         }
 
+        .preset-area {
+            display: flex; gap: 5px; align-items: center;
+        }
+
+        .preset-btn {
+            background: #222; color: #aaa; border: 1px solid #444;
+            font-size: 0.5rem; padding: 2px 6px; cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .preset-btn:hover { color: #fff; border-color: var(--primary); }
+
+        .preset-select {
+            background: #000; color: var(--primary); border: 1px solid #333;
+            font-size: 0.55rem; padding: 1px 4px; width: 120px;
+        }
+
         .title { font-size: 1.1rem; font-weight: 100; letter-spacing: 0.5em; color: #fff; }
 
         .top-section {
@@ -105,8 +122,19 @@
 <body>
     <div class="main-panel">
         <div class="header-area">
-            <div class="title">MUSHIN</div>
-            <div style="font-size:0.5rem; opacity:0.5;">DUAL FILTER LFO MATRIX // MOD-02</div>
+            <div style="display: flex; align-items: baseline; gap: 20px;">
+                <div class="title">MUSHIN</div>
+                <div style="font-size:0.5rem; opacity:0.5; letter-spacing: 2px;">DUAL FILTER LFO MATRIX // MOD-02</div>
+            </div>
+            
+            <div class="preset-area">
+                <select id="presetList" class="preset-select">
+                    <option value="">- SELECT PRESET -</option>
+                </select>
+                <button class="preset-btn" onclick="loadPreset()">Load</button>
+                <button class="preset-btn" onclick="savePreset()">Save</button>
+                <button class="preset-btn" onclick="deletePreset()">Del</button>
+            </div>
         </div>
 
         <!-- CORE STRIP -->
@@ -260,6 +288,7 @@
         <div class="bottom-section">
             <div class="bridge-status" id="bridge-status">BRIDGE: OFFLINE</div>
             <canvas id="waveformCanvas"></canvas>
+            <div id="debug-log"></div>
         </div>
     </div>
 
@@ -268,6 +297,16 @@
         const ctx = canvas.getContext('2d');
         const statusEl = document.getElementById('bridge-status');
         let audioData = new Float32Array(256);
+
+        // Debug Logging
+        function log(msg) {
+            const el = document.getElementById('debug-log');
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            el.appendChild(entry);
+            el.scrollTop = el.scrollHeight;
+            console.log(msg);
+        }
 
         function draw() {
             requestAnimationFrame(draw);
@@ -290,17 +329,39 @@
         draw();
 
         let backend = null;
+        let juceObj = null;
+
         async function initBridge() {
-            const juceObj = window.juce || window.__JUCE__;
+            log("Attempting to detect JUCE bridge...");
+            juceObj = window.juce || window.__JUCE__;
+            
+            if (!juceObj && window.chrome && window.chrome.webview && window.chrome.webview.hostObjects) {
+                log("Using chrome.webview.hostObjects detection");
+                juceObj = window.chrome.webview.hostObjects.juce;
+            }
+
             if (juceObj) {
-                backend = juceObj.getBackend ? await juceObj.getBackend() : (juceObj.backend || juceObj);
-                if (backend) {
-                    statusEl.textContent = "BRIDGE: ONLINE";
-                    statusEl.style.color = "#0f0";
-                    if (backend.addEventListener) {
-                        backend.addEventListener('waveform', data => audioData = new Float32Array(data));
+                log("JUCE Object found!");
+                try {
+                    if (juceObj.getBackend) backend = await juceObj.getBackend();
+                    else if (juceObj.backend) backend = juceObj.backend;
+                    else backend = juceObj;
+
+                    if (backend) {
+                        log("Bridge backend ONLINE");
+                        statusEl.textContent = "BRIDGE: ONLINE";
+                        statusEl.style.color = "#0f0";
+                        if (backend.addEventListener) {
+                            backend.addEventListener('waveform', data => audioData = new Float32Array(data));
+                        }
+                        requestPresetList();
                     }
+                } catch (e) {
+                    log("Error during bridge init: " + e);
                 }
+            } else {
+                log("JUCE Object not found yet, will retry...");
+                setTimeout(initBridge, 500);
             }
         }
 
@@ -348,11 +409,13 @@
 
             if (!skipNative) {
                 if (backend && backend.setParameterValue) backend.setParameterValue(id, normVal);
+                // Fallback URL mechanism
                 window.location.href = "mushin://setParameterValue?id=" + id + "&val=" + normVal;
             }
         }
 
         document.querySelectorAll('input, select').forEach(el => {
+            if (el.id === 'presetList') return;
             const event = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
             el.addEventListener(event, e => {
                 const val = el.type === 'checkbox' ? (el.checked ? 1.0 : 0.0) : parseFloat(el.value);
@@ -360,12 +423,76 @@
             });
         });
 
+        // Bridge Callbacks from C++
         window.setParameterValue = (id, normVal) => {
-            console.log("Sync from C++:", id, normVal);
             const config = params[id]; if (!config) return;
             const el = document.getElementById(id); if(!el) return;
             if (config.type === 'bool') el.checked = normVal > 0.5; else el.value = normVal;
             updateParam(id, normVal, true);
+        };
+
+        // Preset Bridge Functions
+        async function callNative(funcName, args) {
+            log(`Call: ${funcName}`);
+            
+            // 1. Try URL Bridge (Reliable Fallback)
+            if (funcName === "savePreset") window.location.href = `mushin://savePreset?name=${encodeURIComponent(args[0])}`;
+            else if (funcName === "loadPreset") window.location.href = `mushin://loadPreset?name=${encodeURIComponent(args[0])}`;
+            else if (funcName === "deletePreset") window.location.href = `mushin://deletePreset?name=${encodeURIComponent(args[0])}`;
+            else if (funcName === "requestPresetList") window.location.href = `mushin://requestPresetList`;
+
+            // 2. Also try Native Bridge if available
+            if (juceObj && juceObj.juce_invoke) {
+                try { await juceObj.juce_invoke(funcName, args); } catch (e) {}
+            }
+        }
+
+        function savePreset() {
+            const name = prompt("Enter preset name:");
+            if (name) callNative("savePreset", [name]);
+        }
+
+        function loadPreset() {
+            const select = document.getElementById('presetList');
+            const name = select.value;
+            if (name) callNative("loadPreset", [name]);
+        }
+
+        function deletePreset() {
+            const select = document.getElementById('presetList');
+            const name = select.value;
+            if (name && confirm("Delete preset '" + name + "'?")) {
+                callNative("deletePreset", [name]);
+            }
+        }
+
+        function requestPresetList() {
+            callNative("requestPresetList", []);
+        }
+
+        // Callbacks from C++ to JS
+        window.onPresetSaved = () => { log("Preset Saved Successfully"); alert("Preset Saved"); requestPresetList(); };
+        window.onPresetLoaded = () => { log("Preset Loaded Successfully"); alert("Preset Loaded"); };
+        window.onPresetDeleted = () => { log("Preset Deleted Successfully"); alert("Preset Deleted"); requestPresetList(); };
+        window.onPresetError = (msg) => { log("Error: " + msg); alert("Error: " + msg); };
+        window.onPresetListReceived = (list) => {
+            log(`onPresetListReceived called with ${list.length} items`);
+            console.log("Preset List:", list);
+            const select = document.getElementById('presetList');
+            if (!select) {
+                log("ERROR: presetList element not found!");
+                return;
+            }
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">- SELECT PRESET -</option>';
+            list.forEach(name => {
+                log(`Adding preset: ${name}`);
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            });
+            select.value = currentVal;
         };
 
         setTimeout(initBridge, 1000);

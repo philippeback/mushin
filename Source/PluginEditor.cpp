@@ -6,6 +6,7 @@
 #include <memory>
 
 void MushinAudioProcessorEditor::MushinWebComponent::handleCustomUrl(const juce::String& url) {
+    juce::Logger::writeToLog("handleCustomUrl: " + url);
     auto cmd = url.substring(9); 
     if (cmd.startsWith("setParameterValue?")) {
         auto params = cmd.substring(18);
@@ -17,6 +18,43 @@ void MushinAudioProcessorEditor::MushinWebComponent::handleCustomUrl(const juce:
         processor.lastUiValue.store(value);
         if (auto* param = processor.treeState.getParameter(paramID))
             param->setValueNotifyingHost(value);
+    }
+    else if (cmd.startsWith("savePreset?")) {
+        auto name = juce::URL::removeEscapeChars(cmd.fromFirstOccurrenceOf("name=", false, false));
+        juce::Logger::writeToLog("Bridge: savePreset '" + name + "'");
+        juce::Result r = juce::Result::ok();
+        if (editor.presetMgr && editor.presetMgr->savePreset(name, r))
+            juce::MessageManager::callAsync([this] { evaluateJavascript("onPresetSaved();"); });
+        else
+            juce::MessageManager::callAsync([this, r] { evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');"); });
+    }
+    else if (cmd.startsWith("loadPreset?")) {
+        auto name = juce::URL::removeEscapeChars(cmd.fromFirstOccurrenceOf("name=", false, false));
+        juce::Logger::writeToLog("Bridge: loadPreset '" + name + "'");
+        juce::Result r = juce::Result::ok();
+        if (editor.presetMgr && editor.presetMgr->loadPreset(name, r))
+            juce::MessageManager::callAsync([this] { evaluateJavascript("onPresetLoaded();"); });
+        else
+            juce::MessageManager::callAsync([this, r] { evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');"); });
+    }
+    else if (cmd.startsWith("deletePreset?")) {
+        auto name = juce::URL::removeEscapeChars(cmd.fromFirstOccurrenceOf("name=", false, false));
+        juce::Logger::writeToLog("Bridge: deletePreset '" + name + "'");
+        juce::Result r = juce::Result::ok();
+        if (editor.presetMgr && editor.presetMgr->deletePreset(name, r))
+            juce::MessageManager::callAsync([this] { evaluateJavascript("onPresetDeleted();"); });
+        else
+            juce::MessageManager::callAsync([this, r] { evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');"); });
+    }
+    else if (cmd == "requestPresetList") {
+        juce::Logger::writeToLog("Bridge: requestPresetList");
+        if (editor.presetMgr) {
+            auto list = editor.presetMgr->getPresetList();
+            juce::Array<juce::var> jsArray;
+            for (auto& n : list) jsArray.add(n);
+            juce::String json = juce::JSON::toString(jsArray);
+            juce::MessageManager::callAsync([this, json] { evaluateJavascript("onPresetListReceived(" + json + ");"); });
+        }
     }
 }
 
@@ -61,6 +99,18 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
                             .withUserDataFolder(cacheDir)
                             .withBackgroundColour (juce::Colours::darkgrey))
                         .withNativeIntegrationEnabled (true)
+                        .withNativeFunction ("juce_invoke", [this] (const juce::Array<juce::var>& args, juce::WebBrowserComponent::NativeFunctionCompletion completion) {
+                            juce::Logger::writeToLog("Native: juce_invoke called");
+                            if (webComponent != nullptr && args.size() >= 1) {
+                                auto name = args[0].toString();
+                                juce::Logger::writeToLog("Native: dispatching callback: " + name);
+                                juce::var callbackArgs = (args.size() > 1) ? args[1] : juce::var();
+                                webComponent->dispatchCallback (name, callbackArgs);
+                            } else {
+                                juce::Logger::writeToLog("Native: ERROR - webComponent is null or args empty");
+                            }
+                            completion ({});
+                        })
                         .withResourceProvider ([this] (const juce::String& url) -> std::optional<juce::WebBrowserComponent::Resource>
                         {
                             auto path = url;
@@ -89,40 +139,40 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
             webComponent->registerCallback ("savePreset", [this] (const juce::var& args) {
                 if (!presetMgr || !webComponent) return;
                 auto name = args[0].toString();
-                juce::Result r;
+                juce::Result r = juce::Result::ok();
                 if (presetMgr->savePreset(name, r))
-                    webComponent->evaluateJavascript("onPresetSaved();");
+                    juce::MessageManager::callAsync([this] { if (webComponent) webComponent->evaluateJavascript("onPresetSaved();"); });
                 else
-                    webComponent->evaluateJavascript("onPresetError('" + r.getMessage() + "');");
+                    juce::MessageManager::callAsync([this, r] { if (webComponent) webComponent->evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');"); });
             });
 
             webComponent->registerCallback ("loadPreset", [this] (const juce::var& args) {
                 if (!presetMgr || !webComponent) return;
                 auto name = args[0].toString();
-                juce::Result r;
+                juce::Result r = juce::Result::ok();
                 if (presetMgr->loadPreset(name, r))
-                    webComponent->evaluateJavascript("onPresetLoaded();");
+                    juce::MessageManager::callAsync([this] { if (webComponent) webComponent->evaluateJavascript("onPresetLoaded();"); });
                 else
-                    webComponent->evaluateJavascript("onPresetError('" + r.getMessage() + "');");
+                    juce::MessageManager::callAsync([this, r] { if (webComponent) webComponent->evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');"); });
             });
 
             webComponent->registerCallback ("deletePreset", [this] (const juce::var& args) {
                 if (!presetMgr || !webComponent) return;
                 auto name = args[0].toString();
-                juce::Result r;
+                juce::Result r = juce::Result::ok();
                 if (presetMgr->deletePreset(name, r))
-                    webComponent->evaluateJavascript("onPresetDeleted();");
+                    juce::MessageManager::callAsync([this] { if (webComponent) webComponent->evaluateJavascript("onPresetDeleted();"); });
                 else
-                    webComponent->evaluateJavascript("onPresetError('" + r.getMessage() + "');");
+                    juce::MessageManager::callAsync([this, r] { if (webComponent) webComponent->evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');"); });
             });
 
             webComponent->registerCallback ("requestPresetList", [this] (const juce::var&) {
                 if (!presetMgr || !webComponent) return;
                 auto list = presetMgr->getPresetList();
-                juce::var jsArray;
-                for (auto& n : list)
-                    jsArray.append(n);
-                webComponent->evaluateJavascript("onPresetListReceived(" + juce::String(jsArray.toString()) + ");");
+                juce::Array<juce::var> jsArray;
+                for (auto& n : list) jsArray.add(n);
+                juce::String json = juce::JSON::toString(jsArray);
+                juce::MessageManager::callAsync([this, json] { if (webComponent) webComponent->evaluateJavascript("onPresetListReceived(" + json + ");"); });
             });
 
             webComponent->goToURL (juce::WebBrowserComponent::getResourceProviderRoot());

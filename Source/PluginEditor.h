@@ -36,10 +36,20 @@ private:
 
         void pageFinishedLoading(const juce::String& url) override;
 
+        void registerCallback(const juce::String& name, std::function<void(const juce::var&)> callback) {
+            callbacks[name] = callback;
+        }
+
+        void dispatchCallback(const juce::String& name, const juce::var& args) {
+            if (callbacks.count(name))
+                callbacks[name](args);
+        }
+
     private:
         void handleCustomUrl(const juce::String& url);
         MushinAudioProcessor& processor;
         MushinAudioProcessorEditor& editor;
+        std::map<juce::String, std::function<void(const juce::var&)>> callbacks;
     };
 
     void syncAllParameters();

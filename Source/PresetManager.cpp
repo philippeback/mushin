@@ -11,17 +11,21 @@ PresetManager::PresetManager(juce::AudioProcessorValueTreeState& state)
 {
     if (!userPresetDir.exists())
         userPresetDir.createDirectory();
+    
+    juce::Logger::writeToLog("PresetManager: initialized at " + userPresetDir.getFullPathName());
 }
 
 bool PresetManager::savePreset(const juce::String& name, juce::Result& result)
 {
+    juce::Logger::writeToLog("PresetManager: saving preset '" + name + "'");
     auto file = getPresetFile(name);
 
-    // Parse the APVTS state into an XmlElement
-    std::unique_ptr<juce::XmlElement> vtRoot (juce::XmlDocument::parse(apvts.state.toXmlString()));
+    // Use createXml() for reliable serialization
+    auto vtRoot = apvts.state.createXml();
     if (!vtRoot)
     {
         result = juce::Result::fail("Failed to serialize state");
+        juce::Logger::writeToLog("PresetManager: ERROR - createXml returned null");
         return false;
     }
 
@@ -29,20 +33,23 @@ bool PresetManager::savePreset(const juce::String& name, juce::Result& result)
     juce::XmlElement preset ("Preset");
     preset.setAttribute ("name",   name);
     preset.setAttribute ("version","1");
-    preset.addChild(vtRoot.release(), -1, nullptr);
+    preset.addChildElement(vtRoot.release());
 
     if (!preset.writeTo(file))
     {
         result = juce::Result::fail("Failed to write preset file");
+        juce::Logger::writeToLog("PresetManager: ERROR - writeTo failed for " + file.getFullPathName());
         return false;
     }
 
+    juce::Logger::writeToLog("PresetManager: successfully saved to " + file.getFullPathName());
     result = juce::Result::ok();
     return true;
 }
 
 bool PresetManager::loadPreset(const juce::String& name, juce::Result& result)
 {
+    juce::Logger::writeToLog("PresetManager: loading preset '" + name + "'");
     auto file = getPresetFile(name);
     if (!file.existsAsFile())
     {
@@ -80,8 +87,7 @@ bool PresetManager::loadPreset(const juce::String& name, juce::Result& result)
     }
 
     apvts.state = juce::ValueTree::fromXml(*vtRoot);
-    // Notify host of parameter changes
-    apvts.stateChanged();
+    juce::Logger::writeToLog("PresetManager: successfully loaded from " + file.getFullPathName());
 
     result = juce::Result::ok();
     return true;
@@ -89,6 +95,7 @@ bool PresetManager::loadPreset(const juce::String& name, juce::Result& result)
 
 bool PresetManager::deletePreset(const juce::String& name, juce::Result& result)
 {
+    juce::Logger::writeToLog("PresetManager: deleting preset '" + name + "'");
     auto file = getPresetFile(name);
     if (!file.existsAsFile())
     {

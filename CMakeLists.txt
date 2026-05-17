@@ -36,7 +36,11 @@ juce_generate_juce_header(Mushin)
 target_sources(Mushin
     PRIVATE
         Source/PluginProcessor.cpp
+        Source/PluginProcessor.h
         Source/PluginEditor.cpp
+        Source/PluginEditor.h
+        Source/PresetManager.cpp
+        Source/PresetManager.h
         Source/dsp_waveshaper/Waveshaper.h
 )
 
