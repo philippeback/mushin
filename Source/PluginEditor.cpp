@@ -1,6 +1,9 @@
+// Source/PluginEditor.cpp
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
 #include <JuceHeader.h>
+#include "PresetManager.h"
+#include <memory>
 
 void MushinAudioProcessorEditor::MushinWebComponent::handleCustomUrl(const juce::String& url) {
     auto cmd = url.substring(9); 
@@ -31,6 +34,9 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
     
     setResizable(true, true);
     setSize (1200, 800);
+
+    // Instantiate preset manager
+    presetMgr = std::make_unique<PresetManager>(audioProcessor.treeState);
 
     // DEFERRED INITIALIZATION:
     // Some hosts (like Studio One 8) might not have the native window fully ready 
@@ -79,7 +85,46 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
             addAndMakeVisible (*webComponent);
             webComponent->setBounds(getLocalBounds());
             
-            juce::Logger::writeToLog("Deferred Init: Loading URL...");
+            // Register preset callbacks
+            webComponent->registerCallback ("savePreset", [this] (const juce::var& args) {
+                if (!presetMgr || !webComponent) return;
+                auto name = args[0].toString();
+                juce::Result r;
+                if (presetMgr->savePreset(name, r))
+                    webComponent->evaluateJavascript("onPresetSaved();");
+                else
+                    webComponent->evaluateJavascript("onPresetError('" + r.getMessage() + "');");
+            });
+
+            webComponent->registerCallback ("loadPreset", [this] (const juce::var& args) {
+                if (!presetMgr || !webComponent) return;
+                auto name = args[0].toString();
+                juce::Result r;
+                if (presetMgr->loadPreset(name, r))
+                    webComponent->evaluateJavascript("onPresetLoaded();");
+                else
+                    webComponent->evaluateJavascript("onPresetError('" + r.getMessage() + "');");
+            });
+
+            webComponent->registerCallback ("deletePreset", [this] (const juce::var& args) {
+                if (!presetMgr || !webComponent) return;
+                auto name = args[0].toString();
+                juce::Result r;
+                if (presetMgr->deletePreset(name, r))
+                    webComponent->evaluateJavascript("onPresetDeleted();");
+                else
+                    webComponent->evaluateJavascript("onPresetError('" + r.getMessage() + "');");
+            });
+
+            webComponent->registerCallback ("requestPresetList", [this] (const juce::var&) {
+                if (!presetMgr || !webComponent) return;
+                auto list = presetMgr->getPresetList();
+                juce::var jsArray;
+                for (auto& n : list)
+                    jsArray.append(n);
+                webComponent->evaluateJavascript("onPresetListReceived(" + juce::String(jsArray.toString()) + ");");
+            });
+
             webComponent->goToURL (juce::WebBrowserComponent::getResourceProviderRoot());
         } else {
             juce::Logger::writeToLog("Deferred Init: FAILED to create MushinWebComponent.");

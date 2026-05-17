@@ -1,7 +1,9 @@
+// Source/PluginEditor.h
 #pragma once
 
 #include "PluginProcessor.h"
 #include <juce_gui_extra/juce_gui_extra.h>
+#include "PresetManager.h"
 
 class MushinAudioProcessorEditor : public juce::AudioProcessorEditor,
                                    private juce::AudioProcessorValueTreeState::Listener,
@@ -46,6 +48,7 @@ private:
 
     MushinAudioProcessor& audioProcessor;
     std::unique_ptr<MushinWebComponent> webComponent;
+    std::unique_ptr<PresetManager> presetMgr; // New member
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MushinAudioProcessorEditor)
 };
