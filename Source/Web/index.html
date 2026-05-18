@@ -67,8 +67,8 @@
         }
 
         .feature-band {
-            display: grid; grid-template-columns: 2fr 2fr 1.2fr 1.2fr 2.5fr;
-            gap: 8px; height: 180px; border-top: 1px solid var(--marking);
+            display: grid; grid-template-columns: 2fr 2fr 1.2fr 1.2fr 2fr 2.5fr;
+            gap: 8px; height: 210px; border-top: 1px solid var(--marking);
             padding-top: 8px; margin-bottom: 8px;
         }
 
@@ -257,6 +257,62 @@
                 </select>
             </div>
 
+            <!-- Sidechain -->
+            <div class="sub-panel">
+                <div class="sub-panel-title">SIDECHAIN</div>
+                <div style="display:flex; gap:4px; align-items:center;">
+                    <input type="checkbox" id="sc_active">
+                    <div class="label">Active</div>
+                </div>
+                <div class="matrix-grid">
+                    <div>
+                        <div class="label">Src</div>
+                        <select id="sc_source">
+                            <option value="0">Int</option><option value="1">Ext</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="label">Tgt</div>
+                        <select id="sc_target">
+                            <option value="0">Dry</option><option value="1">Cut</option><option value="2">Gain</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="label">Thresh</div>
+                <input type="range" id="sc_threshold" min="0" max="1" step="0.001">
+                <div class="value" id="sc_threshold-val">-24dB</div>
+                
+                <div class="matrix-grid">
+                    <div>
+                        <div class="label">Atk</div>
+                        <input type="range" id="sc_attack" min="0" max="1" step="0.001">
+                        <div class="value" id="sc_attack-val">10ms</div>
+                    </div>
+                    <div>
+                        <div class="label">Rel</div>
+                        <input type="range" id="sc_release" min="0" max="1" step="0.001">
+                        <div class="value" id="sc_release-val">100ms</div>
+                    </div>
+                </div>
+
+                <div class="matrix-grid">
+                    <div>
+                        <div class="label">HPF</div>
+                        <input type="range" id="sc_hp_freq" min="0" max="1" step="0.001">
+                        <div class="value" id="sc_hp_freq-val">20Hz</div>
+                    </div>
+                    <div>
+                        <div class="label">LPF</div>
+                        <input type="range" id="sc_lp_freq" min="0" max="1" step="0.001">
+                        <div class="value" id="sc_lp_freq-val">20k</div>
+                    </div>
+                </div>
+
+                <div class="label">Amount</div>
+                <input type="range" id="sc_amount" min="0" max="1" step="0.001">
+                <div class="value" id="sc_amount-val">0%</div>
+            </div>
+
             <!-- Matrix -->
             <div class="sub-panel">
                 <div class="sub-panel-title">MOD MATRIX (L1 / L2)</div>
@@ -383,7 +439,16 @@
             lfo1_freq: { min: 0.1, max: 50, display: v => v.toFixed(1) + "Hz" },
             lfo1_wave: { type: 'choice', display: v => ["Sine", "Tri", "Saw", "Sqr", "Rnd"][v] },
             lfo2_freq: { min: 0.1, max: 50, display: v => v.toFixed(1) + "Hz" },
-            lfo2_wave: { type: 'choice', display: v => ["Sine", "Tri", "Saw", "Sqr", "Rnd"][v] }
+            lfo2_wave: { type: 'choice', display: v => ["Sine", "Tri", "Saw", "Sqr", "Rnd"][v] },
+            sc_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            sc_source: { type: 'choice', display: v => ["Int", "Ext"][v] },
+            sc_target: { type: 'choice', display: v => ["Dry", "Cut", "Gain"][v] },
+            sc_threshold: { min: -60, max: 0, display: v => v.toFixed(1) + "dB" },
+            sc_attack: { min: 0.1, max: 500, display: v => v.toFixed(1) + "ms" },
+            sc_release: { min: 1, max: 2000, display: v => v.toFixed(0) + "ms" },
+            sc_amount: { min: -100, max: 100, display: v => Math.round(v) + "%" },
+            sc_hp_freq: { min: 20, max: 2000, skew: 0.3, display: v => Math.round(v) + "Hz" },
+            sc_lp_freq: { min: 500, max: 20000, skew: 0.3, display: v => Math.round(v) + "Hz" }
         };
 
         for(let l=1; l<=2; l++) {

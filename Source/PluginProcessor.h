@@ -3,6 +3,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include "dsp_waveshaper/Waveshaper.h"
 #include "dsp/DualFilterLFOMatrix.h"
+#include "dsp_sidechain/SidechainProcessor.h"
 
 class MushinAudioProcessor : public juce::AudioProcessor {
 public:
@@ -50,6 +51,7 @@ private:
 
   mushin::Waveshaper waveshaper;
   mushin::DualFilterLFOMatrix dualFilterSystem;
+  mushin::SidechainProcessor sidechainProcessor;
 
   // Pre-allocated dry buffer to avoid allocations in processBlock
   juce::AudioBuffer<float> dryBuffer;
@@ -86,6 +88,18 @@ private:
   std::atomic<float>* lfo1WaveParam = nullptr;
   std::atomic<float>* lfo2FreqParam = nullptr;
   std::atomic<float>* lfo2WaveParam = nullptr;
+
+  // Sidechain parameters
+  std::atomic<float>* scActiveParam = nullptr;
+  std::atomic<float>* scSourceParam = nullptr;
+  std::atomic<float>* scThresholdParam = nullptr;
+  std::atomic<float>* scAttackParam = nullptr;
+  std::atomic<float>* scReleaseParam = nullptr;
+  std::atomic<float>* scModeParam = nullptr;
+  std::atomic<float>* scAmountParam = nullptr;
+  std::atomic<float>* scTargetParam = nullptr;
+  std::atomic<float>* scHpFreqParam = nullptr;
+  std::atomic<float>* scLpFreqParam = nullptr;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };

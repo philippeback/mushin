@@ -3,8 +3,9 @@
 
 MushinAudioProcessor::MushinAudioProcessor()
     : AudioProcessor (BusesProperties()
-                     .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                     .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
+                     .withInput  ("Input",     juce::AudioChannelSet::stereo(), true)
+                     .withOutput ("Output",    juce::AudioChannelSet::stereo(), true)
+                     .withInput  ("Sidechain", juce::AudioChannelSet::stereo(), false)),
       treeState (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
     auto logFile = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
@@ -44,6 +45,17 @@ MushinAudioProcessor::MushinAudioProcessor()
     lfo1WaveParam = treeState.getRawParameterValue ("lfo1_wave");
     lfo2FreqParam = treeState.getRawParameterValue ("lfo2_freq");
     lfo2WaveParam = treeState.getRawParameterValue ("lfo2_wave");
+
+    scActiveParam    = treeState.getRawParameterValue ("sc_active");
+    scSourceParam    = treeState.getRawParameterValue ("sc_source");
+    scThresholdParam = treeState.getRawParameterValue ("sc_threshold");
+    scAttackParam    = treeState.getRawParameterValue ("sc_attack");
+    scReleaseParam   = treeState.getRawParameterValue ("sc_release");
+    scModeParam      = treeState.getRawParameterValue ("sc_mode");
+    scAmountParam    = treeState.getRawParameterValue ("sc_amount");
+    scTargetParam    = treeState.getRawParameterValue ("sc_target");
+    scHpFreqParam    = treeState.getRawParameterValue ("sc_hp_freq");
+    scLpFreqParam    = treeState.getRawParameterValue ("sc_lp_freq");
 }
 
 MushinAudioProcessor::~MushinAudioProcessor() {}
@@ -70,6 +82,7 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 
     waveshaper.prepare(spec);
     dualFilterSystem.prepare(spec);
+    sidechainProcessor.prepare(spec);
 
     dryBuffer.setSize(spec.numChannels, samplesPerBlock);
 
@@ -85,6 +98,7 @@ void MushinAudioProcessor::reset()
 {
     waveshaper.reset();
     dualFilterSystem.reset();
+    sidechainProcessor.reset();
 }
 
 bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -94,6 +108,13 @@ bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) c
         return false;
 
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+        return false;
+
+    // Sidechain input can be mono or stereo (or disabled)
+    auto scInput = layouts.getChannelSet (true, 1);
+    if (scInput != juce::AudioChannelSet::disabled() && 
+        scInput != juce::AudioChannelSet::mono() && 
+        scInput != juce::AudioChannelSet::stereo())
         return false;
 
     return true;
@@ -142,14 +163,40 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         }
     }
 
+    // Update Sidechain Parameters
+    sidechainProcessor.setActive(scActiveParam->load() > 0.5f);
+    sidechainProcessor.setSource(static_cast<mushin::SidechainProcessor::Source>((int)scSourceParam->load()));
+    sidechainProcessor.setTarget(static_cast<mushin::SidechainProcessor::Target>((int)scTargetParam->load()));
+    sidechainProcessor.setParameters(
+        scAttackParam->load(),
+        scReleaseParam->load(),
+        (int)scModeParam->load() == 1, // RMS
+        scThresholdParam->load(),
+        scAmountParam->load(),
+        scHpFreqParam->load(),
+        scLpFreqParam->load()
+    );
+
     smoothedGain.setTargetValue (gainParam->load());
     smoothedMix.setTargetValue (mixParam->load());
 
     int numSamples = buffer.getNumSamples();
 
     // 2. Store dry signal
-    for (int ch = 0; ch < totalNumInputChannels; ++ch)
-        dryBuffer.copyFrom (ch, 0, buffer, ch, 0, numSamples);
+    dryBuffer.clear();
+    auto mainInputBuffer = getBusBuffer(buffer, true, 0);
+    int channelsToCopy = std::min(mainInputBuffer.getNumChannels(), dryBuffer.getNumChannels());
+    for (int ch = 0; ch < channelsToCopy; ++ch) {
+        dryBuffer.copyFrom (ch, 0, mainInputBuffer, ch, 0, numSamples);
+    }
+
+    // Get sidechain buffer if external and enabled
+    juce::AudioBuffer<float> sidechainBuffer;
+    if (auto* scBus = getBus (true, 1)) {
+        if (scBus->isEnabled()) {
+            sidechainBuffer = getBusBuffer (buffer, true, 1);
+        }
+    }
 
     // 3. Unified Processing Loop (Sample-by-sample)
     for (int s = 0; s < numSamples; ++s)
@@ -157,22 +204,64 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         float mixVal = smoothedMix.getNextValue();
         float gainVal = smoothedGain.getNextValue();
 
+        // Calculate Sidechain modulation value for this sample
+        float scMod = 0.0f;
+        if (sidechainProcessor.isActive()) {
+            float scInputSample = 0.0f;
+            if (sidechainProcessor.getSource() == mushin::SidechainProcessor::Source::External) {
+                // Mix external stereo SC to mono
+                if (sidechainBuffer.getNumChannels() > 0) {
+                    scInputSample = sidechainBuffer.getSample(0, s);
+                    if (sidechainBuffer.getNumChannels() > 1) {
+                        scInputSample = (scInputSample + sidechainBuffer.getSample(1, s)) * 0.5f;
+                    }
+                }
+            } else {
+                // Internal SC uses pre-distortion main input (mixed to mono)
+                scInputSample = dryBuffer.getSample(0, s);
+                if (dryBuffer.getNumChannels() > 1) {
+                    scInputSample = (scInputSample + dryBuffer.getSample(1, s)) * 0.5f;
+                }
+            }
+            scMod = sidechainProcessor.processSample(scInputSample);
+        }
+
         for (int ch = 0; ch < totalNumOutputChannels; ++ch)
         {
-            float drySample = (ch < totalNumInputChannels) ? dryBuffer.getSample(ch, s) : 0.0f;
+            float drySample = dryBuffer.getSample(ch, s);
             float wetSample = drySample;
 
             // STAGE A: Distortion
+            float currentDrive = driveParam->load();
+            if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Drive) {
+                currentDrive *= (1.0f + scMod);
+            }
+            waveshaper.setDrive(std::clamp(currentDrive, 1.0f, 50.0f));
             wetSample = waveshaper.processSample(ch, wetSample);
 
             // STAGE B: Dual Filtering & LFO Matrix
+            // If SC targets Cutoff, we apply it as an offset to the base params
+            if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Cutoff) {
+                // We'll apply it to both filters for now as a 1-octave shift per 1.0 modulation
+                float cutoffOffset = std::pow(2.0f, scMod);
+                dualFilterSystem.baseParams.filterACutoff = filterACutoffParam->load() * cutoffOffset;
+                dualFilterSystem.baseParams.filterBCutoff = filterBCutoffParam->load() * cutoffOffset;
+            } else {
+                dualFilterSystem.baseParams.filterACutoff = filterACutoffParam->load();
+                dualFilterSystem.baseParams.filterBCutoff = filterBCutoffParam->load();
+            }
+            
             wetSample = dualFilterSystem.processSample(ch, wetSample);
 
             // STAGE C: Mix
             float mixedSample = (drySample * (1.0f - mixVal)) + (wetSample * mixVal);
             
             // STAGE D: Final Gain
-            float finalSample = mixedSample * gainVal;
+            float currentGain = gainVal;
+            if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Gain) {
+                currentGain *= (1.0f + scMod);
+            }
+            float finalSample = mixedSample * std::max(0.0f, currentGain);
 
             // NaN SAFETY GUARD
             if (std::isnan(finalSample) || std::isinf(finalSample)) {
@@ -292,6 +381,30 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
                 juce::ParameterID { id, 1 }, name, -1.0f, 1.0f, 0.0f));
         }
     }
+
+    // Sidechain
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "sc_active", 1 }, "SC Active", false));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "sc_source", 1 }, "SC Source", juce::StringArray {"Internal", "External"}, 0));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "sc_threshold", 1 }, "SC Threshold", -60.0f, 0.0f, -24.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "sc_attack", 1 }, "SC Attack", 0.1f, 500.0f, 10.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "sc_release", 1 }, "SC Release", 1.0f, 2000.0f, 100.0f));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "sc_mode", 1 }, "SC Mode", juce::StringArray {"Peak", "RMS"}, 0));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "sc_amount", 1 }, "SC Amount", -1.0f, 1.0f, 0.0f));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "sc_target", 1 }, "SC Target", juce::StringArray {"Drive", "Cutoff", "Gain"}, 2));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "sc_hp_freq", 1 }, "SC HPF", 
+        juce::NormalisableRange<float>(20.0f, 2000.0f, 0.0f, 0.3f), 20.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "sc_lp_freq", 1 }, "SC LPF", 
+        juce::NormalisableRange<float>(500.0f, 20000.0f, 0.0f, 0.3f), 20000.0f));
         
     return { params.begin(), params.end() };
 }
