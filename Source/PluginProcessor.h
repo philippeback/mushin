@@ -41,6 +41,10 @@ public:
 
   void pushNextSampleIntoFifo(float sample) noexcept;
 
+  // Real-time meters
+  std::atomic<float> scMeterLevel { 0.0f };
+  std::atomic<float> scInputPeak { 0.0f };
+
   // Bridge Diagnostics
   std::atomic<bool> bridgeWorked { false };
   std::atomic<float> lastUiValue { -1.0f };

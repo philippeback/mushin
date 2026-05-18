@@ -53,7 +53,7 @@ The sidechain module extracts the volume **envelope** of a control signal and us
 
 ### Target: Drive
 -   **Dynamic Grit:** Set **Amount** to positive. Your distortion will get "angrier" and more saturated during loud peaks of the sidechain signal.
-
+é
 ### Target: Cutoff
 -   **Filter Sweep:** Moves both Filter A and Filter B Cutoff frequencies. 
 -   **Tip:** Use a high **HPF** on the sidechain to make the filter only sweep when high-frequency elements (like snares or hats) hit the sidechain.

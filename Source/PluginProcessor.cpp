@@ -127,6 +127,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
+    // Clear unused output channels
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
@@ -172,7 +173,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         scReleaseParam->load(),
         (int)scModeParam->load() == 1, // RMS
         scThresholdParam->load(),
-        scAmountParam->load(),
+        scAmountParam->load() * 0.01f, // UI is 0-100%, processor expects 0-1.0
         scHpFreqParam->load(),
         scLpFreqParam->load()
     );
@@ -182,21 +183,24 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
 
     int numSamples = buffer.getNumSamples();
 
-    // 2. Store dry signal
+    // 2. Store dry signal - CLONE strictly from Main Input Bus
     dryBuffer.clear();
-    auto mainInputBuffer = getBusBuffer(buffer, true, 0);
-    int channelsToCopy = std::min(mainInputBuffer.getNumChannels(), dryBuffer.getNumChannels());
-    for (int ch = 0; ch < channelsToCopy; ++ch) {
-        dryBuffer.copyFrom (ch, 0, mainInputBuffer, ch, 0, numSamples);
+    auto mainBusBuffer = getBusBuffer(buffer, true, 0);
+    for (int ch = 0; ch < std::min(mainBusBuffer.getNumChannels(), dryBuffer.getNumChannels()); ++ch) {
+        dryBuffer.copyFrom(ch, 0, mainBusBuffer.getReadPointer(ch), numSamples);
     }
 
     // Get sidechain buffer if external and enabled
     juce::AudioBuffer<float> sidechainBuffer;
+    bool scBusEnabled = false;
     if (auto* scBus = getBus (true, 1)) {
         if (scBus->isEnabled()) {
             sidechainBuffer = getBusBuffer (buffer, true, 1);
+            scBusEnabled = true;
         }
     }
+
+    float blockMaxScInput = 0.0f;
 
     // 3. Unified Processing Loop (Sample-by-sample)
     for (int s = 0; s < numSamples; ++s)
@@ -208,7 +212,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         float scMod = 0.0f;
         if (sidechainProcessor.isActive()) {
             float scInputSample = 0.0f;
-            if (sidechainProcessor.getSource() == mushin::SidechainProcessor::Source::External) {
+            if (sidechainProcessor.getSource() == mushin::SidechainProcessor::Source::External && scBusEnabled) {
                 // Mix external stereo SC to mono
                 if (sidechainBuffer.getNumChannels() > 0) {
                     scInputSample = sidechainBuffer.getSample(0, s);
@@ -217,12 +221,14 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
                     }
                 }
             } else {
-                // Internal SC uses pre-distortion main input (mixed to mono)
+                // Internal SC uses dry main input
                 scInputSample = dryBuffer.getSample(0, s);
                 if (dryBuffer.getNumChannels() > 1) {
                     scInputSample = (scInputSample + dryBuffer.getSample(1, s)) * 0.5f;
                 }
             }
+            
+            blockMaxScInput = std::max(blockMaxScInput, std::abs(scInputSample));
             scMod = sidechainProcessor.processSample(scInputSample);
         }
 
@@ -240,9 +246,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             wetSample = waveshaper.processSample(ch, wetSample);
 
             // STAGE B: Dual Filtering & LFO Matrix
-            // If SC targets Cutoff, we apply it as an offset to the base params
             if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Cutoff) {
-                // We'll apply it to both filters for now as a 1-octave shift per 1.0 modulation
                 float cutoffOffset = std::pow(2.0f, scMod);
                 dualFilterSystem.baseParams.filterACutoff = filterACutoffParam->load() * cutoffOffset;
                 dualFilterSystem.baseParams.filterBCutoff = filterBCutoffParam->load() * cutoffOffset;
@@ -266,13 +270,16 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             // NaN SAFETY GUARD
             if (std::isnan(finalSample) || std::isinf(finalSample)) {
                 finalSample = 0.0f;
-                reset(); // Reset engine if blowup occurs
+                reset(); 
             }
 
             buffer.setSample(ch, s, finalSample);
-
-            // Push LEFT channel to UI FIFO once
             if (ch == 0) pushNextSampleIntoFifo (finalSample);
+        }
+
+        if (s == numSamples - 1) {
+            scMeterLevel.store(scMod);
+            scInputPeak.store(blockMaxScInput);
         }
     }
 }
@@ -396,7 +403,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
     params.push_back (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { "sc_mode", 1 }, "SC Mode", juce::StringArray {"Peak", "RMS"}, 0));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "sc_amount", 1 }, "SC Amount", -1.0f, 1.0f, 0.0f));
+        juce::ParameterID { "sc_amount", 1 }, "SC Amount", -100.0f, 100.0f, 0.0f));
     params.push_back (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { "sc_target", 1 }, "SC Target", juce::StringArray {"Drive", "Cutoff", "Gain"}, 2));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
