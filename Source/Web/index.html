@@ -120,6 +120,15 @@
         .matrix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .matrix-cell { display: flex; flex-direction: column; gap: 1px; }
 
+        /* Mod Matrix specific */
+        .mod-matrix-grid { display: grid; grid-template-columns: 35px 1fr 1fr 1fr 1fr; gap: 4px; align-items: center; flex: 1; align-content: space-evenly; }
+        .mod-matrix-header { font-size: 0.45rem; text-transform: uppercase; color: var(--text-main); opacity: 0.7; text-align: center; }
+        .mod-slider-container { position: relative; width: 100%; display: flex; align-items: center; }
+        .mod-slider-container::after {
+            content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            width: 2px; height: 10px; background-color: var(--secondary); pointer-events: none; z-index: 2;
+        }
+
         /* Sidechain Meter Area */
         .sc-visualizer {
             padding: 4px; background: var(--display-bg); border: 1px solid var(--marking);
@@ -291,27 +300,27 @@
                 <!-- Matrix -->
                 <div class="sub-panel" style="flex: 1;">
                     <div class="sub-panel-title">MOD MATRIX (L1 / L2)</div>
-                    <div class="matrix-grid" style="flex: 1; align-content: space-around;">
-                        <div class="matrix-cell">
-                            <div class="label">A-Cut</div>
-                            <input type="range" id="mod_lfo1_target1" min="0" max="1" step="0.001">
-                            <input type="range" id="mod_lfo2_target1" min="0" max="1" step="0.001">
-                        </div>
-                        <div class="matrix-cell">
-                            <div class="label">A-Res</div>
-                            <input type="range" id="mod_lfo1_target2" min="0" max="1" step="0.001">
-                            <input type="range" id="mod_lfo2_target2" min="0" max="1" step="0.001">
-                        </div>
-                        <div class="matrix-cell">
-                            <div class="label">B-Cut</div>
-                            <input type="range" id="mod_lfo1_target4" min="0" max="1" step="0.001">
-                            <input type="range" id="mod_lfo2_target4" min="0" max="1" step="0.001">
-                        </div>
-                        <div class="matrix-cell">
-                            <div class="label">B-Res</div>
-                            <input type="range" id="mod_lfo1_target5" min="0" max="1" step="0.001">
-                            <input type="range" id="mod_lfo2_target5" min="0" max="1" step="0.001">
-                        </div>
+                    <div class="mod-matrix-grid">
+                        <!-- Headers -->
+                        <div></div>
+                        <div class="mod-matrix-header">A-Cut</div>
+                        <div class="mod-matrix-header">A-Res</div>
+                        <div class="mod-matrix-header">B-Cut</div>
+                        <div class="mod-matrix-header">B-Res</div>
+                        
+                        <!-- LFO 1 Row -->
+                        <div class="label" style="text-align: right; margin-right: 4px;">LFO 1</div>
+                        <div class="mod-slider-container"><input type="range" id="mod_lfo1_target1" min="0" max="1" step="0.001"></div>
+                        <div class="mod-slider-container"><input type="range" id="mod_lfo1_target2" min="0" max="1" step="0.001"></div>
+                        <div class="mod-slider-container"><input type="range" id="mod_lfo1_target4" min="0" max="1" step="0.001"></div>
+                        <div class="mod-slider-container"><input type="range" id="mod_lfo1_target5" min="0" max="1" step="0.001"></div>
+
+                        <!-- LFO 2 Row -->
+                        <div class="label" style="text-align: right; margin-right: 4px;">LFO 2</div>
+                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target1" min="0" max="1" step="0.001"></div>
+                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target2" min="0" max="1" step="0.001"></div>
+                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target4" min="0" max="1" step="0.001"></div>
+                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target5" min="0" max="1" step="0.001"></div>
                     </div>
                 </div>
             </div>
@@ -377,7 +386,13 @@
                     </div>
 
                     <div class="label">Amount</div>
-                    <input type="range" id="sc_amount" min="0" max="1" step="0.001">
+                    <div style="display: flex; align-items: center; gap: 4px; width: 100%;">
+                        <div class="label" style="font-size: 0.4rem; opacity: 0.5;">DUCK</div>
+                        <div class="mod-slider-container" style="flex: 1;">
+                            <input type="range" id="sc_amount" min="0" max="1" step="0.001">
+                        </div>
+                        <div class="label" style="font-size: 0.4rem; opacity: 0.5;">GATE</div>
+                    </div>
                     <div class="value" id="sc_amount-val">0%</div>
                 </div>
             </div>

@@ -1,6 +1,10 @@
 # PowerShell script to build the Mushin project in build2
 # Usage: powershell.exe -NoProfile -ExecutionPolicy Bypass -File build.ps1 [target]
 
+# Targets:
+# "Mushin_Standalone"
+# "Mushin_VST3"
+
 param (
     [string]$Target = "Mushin_Standalone"
 )
