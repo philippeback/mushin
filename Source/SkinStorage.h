@@ -14,6 +14,8 @@
         SkinStorage::setSavedSkinIndex (newIdx);             // write when user changes skin
 */
 
+namespace mushin {
+
 class SkinStorage
 {
 public:
@@ -53,3 +55,5 @@ private:
         return props;
     }
 };
+
+} // namespace mushin
