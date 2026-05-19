@@ -79,7 +79,12 @@ public:
 
     void setResonance(float newResonance) {
         float clampedResonance = std::clamp(newResonance, 0.0f, 1.0f);
-        cleanFilter.setResonance(clampedResonance);
+        
+        // Map 0.0 - 1.0 to a sensible Q range for the TPT filter
+        // Q = 0.707 is flat (no resonance). Q = 10.0 is very resonant.
+        float q = 0.707f + (clampedResonance * 9.293f);
+        cleanFilter.setResonance(q);
+        
         ladderFilter.setResonance(clampedResonance);
     }
 

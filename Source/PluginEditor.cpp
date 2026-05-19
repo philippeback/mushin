@@ -229,15 +229,23 @@ void MushinAudioProcessorEditor::parameterChanged (const juce::String& parameter
 
 void MushinAudioProcessorEditor::timerCallback()
 {
+    // Waveform visualization
     int numReady = audioProcessor.abstractFifo.getNumReady();
-    if (numReady <= 0) return;
-    constexpr int numSamplesToVisualise = 256;
-    juce::Array<juce::var> waveformData;
-    int samplesToRead = std::min(numReady, numSamplesToVisualise);
-    int start1, block1, start2, block2;
-    audioProcessor.abstractFifo.prepareToRead (samplesToRead, start1, block1, start2, block2);
-    for (int i = 0; i < block1; ++i) waveformData.add(audioProcessor.audioFifo[(size_t)(start1 + i)]);
-    for (int i = 0; i < block2; ++i) waveformData.add(audioProcessor.audioFifo[(size_t)(start2 + i)]);
-    audioProcessor.abstractFifo.finishedRead (block1 + block2);
-    if (waveformData.size() > 0 && webComponent) webComponent->emitEventIfBrowserIsVisible("waveform", waveformData);
+    if (numReady > 0) {
+        constexpr int numSamplesToVisualise = 256;
+        juce::Array<juce::var> waveformData;
+        int samplesToRead = std::min(numReady, numSamplesToVisualise);
+        int start1, block1, start2, block2;
+        audioProcessor.abstractFifo.prepareToRead (samplesToRead, start1, block1, start2, block2);
+        for (int i = 0; i < block1; ++i) waveformData.add(audioProcessor.audioFifo[(size_t)(start1 + i)]);
+        for (int i = 0; i < block2; ++i) waveformData.add(audioProcessor.audioFifo[(size_t)(start2 + i)]);
+        audioProcessor.abstractFifo.finishedRead (block1 + block2);
+        if (waveformData.size() > 0 && webComponent) webComponent->emitEventIfBrowserIsVisible("waveform", waveformData);
+    }
+
+    // Sidechain meter visualization
+    if (webComponent) {
+        webComponent->emitEventIfBrowserIsVisible("scMeter", (double)audioProcessor.scMeterLevel.load());
+        webComponent->emitEventIfBrowserIsVisible("scPeak", (double)audioProcessor.scInputPeak.load());
+    }
 }
