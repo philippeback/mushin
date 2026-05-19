@@ -9,18 +9,11 @@
         :root {
             /* 
                Variables are now dynamically injected via 'skin.css' served by JUCE.
-               Declarations here act as fallbacks/documentation.
             */
-            --primary: ;
-            --secondary: ;
-            --bg-hardware: ;
-            --text-main: ;
-            --panel-border: ;
-            --marking: ;
-            --display-bg: ;
-            --sc-yellow: ;
-            --sc-input: ;
+            color-scheme: dark;
         }
+
+        option { background: #222; color: #fff; }
 
         body {
             margin: 0; padding: 0;
@@ -35,7 +28,7 @@
         .main-panel {
             position: relative;
             width: 98%; max-width: 1200px; height: 98%;
-            background: #111;
+            background: var(--bg-hardware);
             border: 1px solid var(--panel-border);
             border-radius: 4px;
             box-shadow: 0 50px 100px rgba(0,0,0,0.9);
@@ -54,95 +47,89 @@
         }
 
         .preset-btn {
-            background: #222; color: #aaa; border: 1px solid #444;
+            background: var(--bg-hardware); color: var(--text-main); border: 1px solid var(--marking);
             font-size: 0.5rem; padding: 2px 6px; cursor: pointer;
             text-transform: uppercase;
         }
 
-        .preset-btn:hover { color: #fff; border-color: var(--primary); }
+        .preset-btn:hover { color: var(--primary); border-color: var(--primary); }
 
         .preset-select {
-            background: #000; color: var(--primary); border: 1px solid #333;
+            background: var(--display-bg); color: var(--primary); border: 1px solid var(--marking);
             font-size: 0.55rem; padding: 1px 4px; width: 120px;
         }
 
-        .title { font-size: 1.1rem; font-weight: 100; letter-spacing: 0.5em; color: #fff; }
+        .title { font-size: 1.1rem; font-weight: 100; letter-spacing: 0.5em; color: var(--text-main); }
 
         .top-section {
-            display: grid; grid-template-columns: repeat(6, 1fr);
-            gap: 8px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px;
         }
 
-        .feature-band {
-            display: grid; grid-template-columns: 2fr 2fr 1.2fr 1.2fr 2fr 2.5fr;
-            gap: 8px; height: 260px; border-top: 1px solid var(--marking);
-            padding-top: 8px; margin-bottom: 8px;
+        .feature-grid {
+            display: grid; grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 8px; flex: 1; border-top: 1px solid var(--marking);
+            padding-top: 8px; margin-bottom: 8px; min-height: 0;
         }
+
+        .col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+        .row { display: flex; gap: 8px; }
 
         .control-group {
             display: flex; flex-direction: column; align-items: center;
-            padding: 5px; border: 1px solid rgba(255,255,255,0.03);
-            background: rgba(255,255,255,0.01);
-            justify-content: center;
+            padding: 5px; border: 1px solid var(--marking);
+            background: var(--display-bg);
+            justify-content: center; flex: 1;
         }
 
         .sub-panel {
             display: flex; flex-direction: column; gap: 4px;
             padding: 6px; border: 1px solid var(--marking);
-            background: rgba(0,0,0,0.2);
-            font-size: 0.6rem;
-            position: relative;
-            overflow-y: auto;
+            background: var(--display-bg);
+            font-size: 0.6rem; position: relative;
+            flex: 1;
         }
 
         .sub-panel-title {
-            font-size: 0.5rem; text-align: center; color: var(--primary);
+            font-size: 0.5rem; text-align: center; color: var(--secondary);
             border-bottom: 1px solid var(--marking); margin-bottom: 4px;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.1em; text-transform: uppercase;
         }
 
-        .label { font-size: 0.45rem; text-transform: uppercase; color: #888; }
+        .label { font-size: 0.45rem; text-transform: uppercase; color: var(--text-main); opacity: 0.7; }
 
-        input[type=range] { width: 100%; cursor: pointer; height: 12px; margin: 2px 0; }
-        select { background: #222; color: #fff; border: 1px solid #444; font-size: 0.55rem; width: 100%; padding: 1px; }
+        input[type=range] { width: 100%; cursor: pointer; height: 12px; margin: 2px 0; accent-color: var(--primary); }
+        input[type=checkbox] { accent-color: var(--primary); }
+        select { background: var(--bg-hardware); color: var(--text-main); border: 1px solid var(--marking); font-size: 0.55rem; width: 100%; padding: 1px; }
 
-        .value { font-size: 0.6rem; color: #fff; font-variant-numeric: tabular-nums; }
+        .value { font-size: 0.6rem; color: var(--primary); font-variant-numeric: tabular-nums; }
 
         .bottom-section {
-            flex: 1; min-height: 60px; position: relative;
-            background: var(--display-bg); border: 1px solid #222;
+            height: 60px; position: relative;
+            background: var(--display-bg); border: 1px solid var(--marking);
+            overflow: hidden;
         }
+
+        #debug-log { display: none; }
 
         canvas { width: 100%; height: 100%; }
         
         .bridge-status {
-            position: absolute; top: 2px; right: 5px; font-size: 0.4rem; color: #444; z-index: 5;
+            position: absolute; top: 2px; right: 5px; font-size: 0.4rem; color: var(--text-main); opacity: 0.5; z-index: 5;
         }
 
-        .matrix-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
-        }
-        
-        .matrix-cell {
-            display: flex; flex-direction: column; gap: 1px;
-        }
+        .matrix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .matrix-cell { display: flex; flex-direction: column; gap: 1px; }
 
         /* Sidechain Meter Area */
         .sc-visualizer {
-            padding: 4px; background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.1);
-            display: flex; flex-direction: column; gap: 2px;
-            margin-bottom: 4px;
+            padding: 4px; background: var(--display-bg); border: 1px solid var(--marking);
+            display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px;
         }
         .sc-meter-container {
-            width: 100%; height: 4px; background: #000;
-            border-radius: 1px; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
+            width: 100%; height: 4px; background: var(--bg-hardware);
+            border-radius: 1px; overflow: hidden; border: 1px solid var(--marking);
         }
-        .sc-meter-bar {
-            height: 100%; width: 0%; 
-            transition: width 0.05s linear;
-        }
+        .sc-meter-bar { height: 100%; width: 0%; transition: width 0.05s linear; }
         .sc-bar-mod { background: var(--sc-yellow); box-shadow: 0 0 5px var(--sc-yellow); }
         .sc-bar-in  { background: var(--sc-input); opacity: 0.8; }
     </style>
@@ -201,187 +188,197 @@
                 <input type="range" id="gain" min="0" max="1" step="0.001">
                 <div class="value" id="gain-val">1.00</div>
             </div>
-            <div class="control-group">
-                <div class="label">Routing</div>
-                <select id="routing">
-                    <option value="0">Serial</option>
-                    <option value="1">Parallel</option>
-                </select>
-            </div>
         </div>
 
-        <!-- FEATURE BAND -->
-        <div class="feature-band">
-            <!-- Filter A -->
-            <div class="sub-panel">
-                <div class="sub-panel-title">FILTER A</div>
-                <div class="label">Cutoff</div>
-                <input type="range" id="filter_a_cutoff" min="0" max="1" step="0.001">
-                <div class="value" id="filter_a_cutoff-val">20k</div>
-                <div class="label">Res</div>
-                <input type="range" id="filter_a_resonance" min="0" max="1" step="0.001">
-                <div class="value" id="filter_a_resonance-val">0.1</div>
-                <div class="matrix-grid">
-                    <div>
-                        <div class="label">Type</div>
-                        <select id="filter_a_type">
-                            <option value="0">Clean</option><option value="1">Vintage</option>
-                            <option value="2">Acid</option><option value="3">Digital</option>
-                        </select>
-                    </div>
-                    <div>
-                        <div class="label">Mode</div>
-                        <select id="filter_a_mode">
-                            <option value="0">LP</option><option value="1">HP</option>
-                            <option value="2">BP</option><option value="3">Notch</option>
+        <!-- FEATURE GRID -->
+        <div class="feature-grid">
+            
+            <!-- COLUMN 1: Filters -->
+            <div class="col">
+                <div class="sub-panel" style="flex: 0 0 auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="label">Routing</div>
+                        <select id="routing" style="width: 100px;">
+                            <option value="0">Serial</option>
+                            <option value="1">Parallel</option>
                         </select>
                     </div>
                 </div>
+                <!-- Filter A -->
+                <div class="sub-panel">
+                    <div class="sub-panel-title">FILTER A</div>
+                    <div class="label">Cutoff</div>
+                    <input type="range" id="filter_a_cutoff" min="0" max="1" step="0.001">
+                    <div class="value" id="filter_a_cutoff-val">20k</div>
+                    <div class="label">Res</div>
+                    <input type="range" id="filter_a_resonance" min="0" max="1" step="0.001">
+                    <div class="value" id="filter_a_resonance-val">0.1</div>
+                    <div class="matrix-grid" style="margin-top: auto;">
+                        <div>
+                            <div class="label">Type</div>
+                            <select id="filter_a_type">
+                                <option value="0">Clean</option><option value="1">Vintage</option>
+                                <option value="2">Acid</option><option value="3">Digital</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="label">Mode</div>
+                            <select id="filter_a_mode">
+                                <option value="0">LP</option><option value="1">HP</option>
+                                <option value="2">BP</option><option value="3">Notch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- Filter B -->
+                <div class="sub-panel">
+                    <div class="sub-panel-title">FILTER B</div>
+                    <div class="label">Cutoff</div>
+                    <input type="range" id="filter_b_cutoff" min="0" max="1" step="0.001">
+                    <div class="value" id="filter_b_cutoff-val">20k</div>
+                    <div class="label">Res</div>
+                    <input type="range" id="filter_b_resonance" min="0" max="1" step="0.001">
+                    <div class="value" id="filter_b_resonance-val">0.1</div>
+                    <div class="matrix-grid" style="margin-top: auto;">
+                        <div>
+                            <div class="label">Type</div>
+                            <select id="filter_b_type">
+                                <option value="0">Clean</option><option value="1">Vintage</option>
+                                <option value="2">Acid</option><option value="3">Digital</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="label">Mode</div>
+                            <select id="filter_b_mode">
+                                <option value="0">LP</option><option value="1">HP</option>
+                                <option value="2">BP</option><option value="3">Notch</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Filter B -->
-            <div class="sub-panel">
-                <div class="sub-panel-title">FILTER B</div>
-                <div class="label">Cutoff</div>
-                <input type="range" id="filter_b_cutoff" min="0" max="1" step="0.001">
-                <div class="value" id="filter_b_cutoff-val">20k</div>
-                <div class="label">Res</div>
-                <input type="range" id="filter_b_resonance" min="0" max="1" step="0.001">
-                <div class="value" id="filter_b_resonance-val">0.1</div>
-                <div class="matrix-grid">
-                    <div>
-                        <div class="label">Type</div>
-                        <select id="filter_b_type">
-                            <option value="0">Clean</option><option value="1">Vintage</option>
-                            <option value="2">Acid</option><option value="3">Digital</option>
+            <!-- COLUMN 2: Modulators -->
+            <div class="col">
+                <div class="row" style="flex: 0 0 auto;">
+                    <!-- LFO 1 -->
+                    <div class="sub-panel">
+                        <div class="sub-panel-title">LFO 1</div>
+                        <div class="label">Freq</div>
+                        <input type="range" id="lfo1_freq" min="0" max="1" step="0.001">
+                        <div class="value" id="lfo1_freq-val">1Hz</div>
+                        <div class="label">Wave</div>
+                        <select id="lfo1_wave">
+                            <option value="0">Sine</option><option value="1">Tri</option>
+                            <option value="2">Saw</option><option value="3">Sqr</option>
+                            <option value="4">Rnd</option>
                         </select>
                     </div>
-                    <div>
-                        <div class="label">Mode</div>
-                        <select id="filter_b_mode">
-                            <option value="0">LP</option><option value="1">HP</option>
-                            <option value="2">BP</option><option value="3">Notch</option>
+                    <!-- LFO 2 -->
+                    <div class="sub-panel">
+                        <div class="sub-panel-title">LFO 2</div>
+                        <div class="label">Freq</div>
+                        <input type="range" id="lfo2_freq" min="0" max="1" step="0.001">
+                        <div class="value" id="lfo2_freq-val">1Hz</div>
+                        <div class="label">Wave</div>
+                        <select id="lfo2_wave">
+                            <option value="0">Sine</option><option value="1">Tri</option>
+                            <option value="2">Saw</option><option value="3">Sqr</option>
+                            <option value="4">Rnd</option>
                         </select>
                     </div>
                 </div>
-            </div>
-
-            <!-- LFO 1 -->
-            <div class="sub-panel">
-                <div class="sub-panel-title">LFO 1</div>
-                <div class="label">Freq</div>
-                <input type="range" id="lfo1_freq" min="0" max="1" step="0.001">
-                <div class="value" id="lfo1_freq-val">1Hz</div>
-                <div class="label">Wave</div>
-                <select id="lfo1_wave">
-                    <option value="0">Sine</option><option value="1">Tri</option>
-                    <option value="2">Saw</option><option value="3">Sqr</option>
-                    <option value="4">Rnd</option>
-                </select>
-            </div>
-
-            <!-- LFO 2 -->
-            <div class="sub-panel">
-                <div class="sub-panel-title">LFO 2</div>
-                <div class="label">Freq</div>
-                <input type="range" id="lfo2_freq" min="0" max="1" step="0.001">
-                <div class="value" id="lfo2_freq-val">1Hz</div>
-                <div class="label">Wave</div>
-                <select id="lfo2_wave">
-                    <option value="0">Sine</option><option value="1">Tri</option>
-                    <option value="2">Saw</option><option value="3">Sqr</option>
-                    <option value="4">Rnd</option>
-                </select>
-            </div>
-
-            <!-- Sidechain -->
-            <div class="sub-panel">
-                <div class="sub-panel-title">SIDECHAIN</div>
-                
-                <!-- DIAGNOSTIC VISUALIZERS (Move to Top) -->
-                <div class="sc-visualizer">
-                    <div class="label" style="font-size:0.35rem">In Peak <span id="sc-meter-in-text">0%</span></div>
-                    <div class="sc-meter-container">
-                        <div class="sc-meter-bar sc-bar-in" id="sc-meter-in"></div>
-                    </div>
-                    <div class="label" style="font-size:0.35rem">Mod Level <span id="sc-meter-bar-text">0%</span></div>
-                    <div class="sc-meter-container">
-                        <div class="sc-meter-bar sc-bar-mod" id="sc-meter-bar"></div>
+                <!-- Matrix -->
+                <div class="sub-panel" style="flex: 1;">
+                    <div class="sub-panel-title">MOD MATRIX (L1 / L2)</div>
+                    <div class="matrix-grid" style="flex: 1; align-content: space-around;">
+                        <div class="matrix-cell">
+                            <div class="label">A-Cut</div>
+                            <input type="range" id="mod_lfo1_target1" min="0" max="1" step="0.001">
+                            <input type="range" id="mod_lfo2_target1" min="0" max="1" step="0.001">
+                        </div>
+                        <div class="matrix-cell">
+                            <div class="label">A-Res</div>
+                            <input type="range" id="mod_lfo1_target2" min="0" max="1" step="0.001">
+                            <input type="range" id="mod_lfo2_target2" min="0" max="1" step="0.001">
+                        </div>
+                        <div class="matrix-cell">
+                            <div class="label">B-Cut</div>
+                            <input type="range" id="mod_lfo1_target4" min="0" max="1" step="0.001">
+                            <input type="range" id="mod_lfo2_target4" min="0" max="1" step="0.001">
+                        </div>
+                        <div class="matrix-cell">
+                            <div class="label">B-Res</div>
+                            <input type="range" id="mod_lfo1_target5" min="0" max="1" step="0.001">
+                            <input type="range" id="mod_lfo2_target5" min="0" max="1" step="0.001">
+                        </div>
                     </div>
                 </div>
-
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <div style="display:flex; gap:4px; align-items:center;">
-                        <input type="checkbox" id="sc_active">
-                        <div class="label">Active</div>
-                    </div>
-                    <select id="sc_source" style="width:50px;">
-                        <option value="0">Int</option><option value="1">Ext</option>
-                    </select>
-                    <select id="sc_target" style="width:60px;">
-                        <option value="0">Gain</option><option value="1">Drive</option><option value="2">Cutoff</option>
-                    </select>
-                </div>
-
-                <div class="label">Thresh</div>
-                <input type="range" id="sc_threshold" min="0" max="1" step="0.001">
-                <div class="value" id="sc_threshold-val">-24dB</div>
-                
-                <div class="matrix-grid">
-                    <div>
-                        <div class="label">Atk</div>
-                        <input type="range" id="sc_attack" min="0" max="1" step="0.001">
-                        <div class="value" id="sc_attack-val">10ms</div>
-                    </div>
-                    <div>
-                        <div class="label">Rel</div>
-                        <input type="range" id="sc_release" min="0" max="1" step="0.001">
-                        <div class="value" id="sc_release-val">100ms</div>
-                    </div>
-                </div>
-
-                <div class="matrix-grid">
-                    <div>
-                        <div class="label">HPF</div>
-                        <input type="range" id="sc_hp_freq" min="0" max="1" step="0.001">
-                        <div class="value" id="sc_hp_freq-val">20Hz</div>
-                    </div>
-                    <div>
-                        <div class="label">LPF</div>
-                        <input type="range" id="sc_lp_freq" min="0" max="1" step="0.001">
-                        <div class="value" id="sc_lp_freq-val">20k</div>
-                    </div>
-                </div>
-
-                <div class="label">Amount</div>
-                <input type="range" id="sc_amount" min="0" max="1" step="0.001">
-                <div class="value" id="sc_amount-val">0%</div>
             </div>
 
-            <!-- Matrix -->
-            <div class="sub-panel">
-                <div class="sub-panel-title">MOD MATRIX (L1 / L2)</div>
-                <div class="matrix-grid">
-                    <div class="matrix-cell">
-                        <div class="label">A-Cut</div>
-                        <input type="range" id="mod_lfo1_target1" min="0" max="1" step="0.001">
-                        <input type="range" id="mod_lfo2_target1" min="0" max="1" step="0.001">
+            <!-- COLUMN 3: Sidechain -->
+            <div class="col">
+                <div class="sub-panel">
+                    <div class="sub-panel-title">SIDECHAIN</div>
+                    
+                    <!-- DIAGNOSTIC VISUALIZERS -->
+                    <div class="sc-visualizer">
+                        <div class="label" style="font-size:0.35rem">In Peak <span id="sc-meter-in-text">0%</span></div>
+                        <div class="sc-meter-container">
+                            <div class="sc-meter-bar sc-bar-in" id="sc-meter-in"></div>
+                        </div>
+                        <div class="label" style="font-size:0.35rem">Mod Level <span id="sc-meter-bar-text">0%</span></div>
+                        <div class="sc-meter-container">
+                            <div class="sc-meter-bar sc-bar-mod" id="sc-meter-bar"></div>
+                        </div>
                     </div>
-                    <div class="matrix-cell">
-                        <div class="label">A-Res</div>
-                        <input type="range" id="mod_lfo1_target2" min="0" max="1" step="0.001">
-                        <input type="range" id="mod_lfo2_target2" min="0" max="1" step="0.001">
+
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 4px;">
+                        <div style="display:flex; gap:4px; align-items:center;">
+                            <input type="checkbox" id="sc_active">
+                            <div class="label">Active</div>
+                        </div>
+                        <select id="sc_source" style="width:50px;">
+                            <option value="0">Int</option><option value="1">Ext</option>
+                        </select>
+                        <select id="sc_target" style="width:60px;">
+                            <option value="0">Gain</option><option value="1">Drive</option><option value="2">Cutoff</option>
+                        </select>
                     </div>
-                    <div class="matrix-cell">
-                        <div class="label">B-Cut</div>
-                        <input type="range" id="mod_lfo1_target4" min="0" max="1" step="0.001">
-                        <input type="range" id="mod_lfo2_target4" min="0" max="1" step="0.001">
+
+                    <div class="label">Thresh</div>
+                    <input type="range" id="sc_threshold" min="0" max="1" step="0.001">
+                    <div class="value" id="sc_threshold-val">-24dB</div>
+                    
+                    <div class="matrix-grid">
+                        <div>
+                            <div class="label">Atk</div>
+                            <input type="range" id="sc_attack" min="0" max="1" step="0.001">
+                            <div class="value" id="sc_attack-val">10ms</div>
+                        </div>
+                        <div>
+                            <div class="label">Rel</div>
+                            <input type="range" id="sc_release" min="0" max="1" step="0.001">
+                            <div class="value" id="sc_release-val">100ms</div>
+                        </div>
                     </div>
-                    <div class="matrix-cell">
-                        <div class="label">B-Res</div>
-                        <input type="range" id="mod_lfo1_target5" min="0" max="1" step="0.001">
-                        <input type="range" id="mod_lfo2_target5" min="0" max="1" step="0.001">
+
+                    <div class="matrix-grid">
+                        <div>
+                            <div class="label">HPF</div>
+                            <input type="range" id="sc_hp_freq" min="0" max="1" step="0.001">
+                            <div class="value" id="sc_hp_freq-val">20Hz</div>
+                        </div>
+                        <div>
+                            <div class="label">LPF</div>
+                            <input type="range" id="sc_lp_freq" min="0" max="1" step="0.001">
+                            <div class="value" id="sc_lp_freq-val">20k</div>
+                        </div>
                     </div>
+
+                    <div class="label">Amount</div>
+                    <input type="range" id="sc_amount" min="0" max="1" step="0.001">
+                    <div class="value" id="sc_amount-val">0%</div>
                 </div>
             </div>
         </div>
@@ -415,12 +412,17 @@
 
         function draw() {
             requestAnimationFrame(draw);
-            ctx.fillStyle = '#050505';
+            const computed = getComputedStyle(document.body);
+            const primaryColor = computed.getPropertyValue('--primary').trim() || '#00d2ff';
+            const displayBg = computed.getPropertyValue('--display-bg').trim() || '#050505';
+            const markingColor = computed.getPropertyValue('--marking').trim() || 'rgba(255,255,255,0.02)';
+
+            ctx.fillStyle = displayBg;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.strokeStyle = markingColor;
             for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
             ctx.beginPath();
-            ctx.strokeStyle = '#00d2ff';
+            ctx.strokeStyle = primaryColor;
             ctx.lineWidth = 1.5;
             const sliceWidth = canvas.width / (audioData.length - 1);
             let x = 0;
@@ -538,7 +540,7 @@
         }
 
         document.querySelectorAll('input, select').forEach(el => {
-            if (el.id === 'presetList') return;
+            if (el.id === 'presetList' || el.id === 'themeList') return;
             const event = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
             el.addEventListener(event, e => {
                 const val = el.type === 'checkbox' ? (el.checked ? 1.0 : 0.0) : parseFloat(el.value);
