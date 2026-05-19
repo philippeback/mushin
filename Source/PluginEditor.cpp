@@ -56,6 +56,14 @@ void MushinAudioProcessorEditor::MushinWebComponent::handleCustomUrl(const juce:
             juce::MessageManager::callAsync([this, json] { evaluateJavascript("onPresetListReceived(" + json + ");"); });
         }
     }
+    else if (cmd.startsWith("setTheme?")) {
+        auto name = juce::URL::removeEscapeChars(cmd.fromFirstOccurrenceOf("name=", false, false));
+        juce::Logger::writeToLog("Bridge: setTheme '" + name + "'");
+        editor.currentTheme = name;
+        juce::MessageManager::callAsync([this] { 
+            evaluateJavascript("document.querySelector('link[href^=\"skin.css\"]').href = 'skin.css?t=' + new Date().getTime();"); 
+        });
+    }
 }
 
 void MushinAudioProcessorEditor::MushinWebComponent::pageFinishedLoading(const juce::String& url) {
@@ -118,19 +126,25 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
                             if (path.contains("?")) path = path.upToFirstOccurrenceOf("?", false, false);
 
                             // Handle dynamic skinning
-                            if (path == "skin.css")
+                            if (path.startsWith("skin.css"))
                             {
-                                juce::String css = ":root {";
-                                // Default "Industrial" Theme
-                                css += "--primary: #00d2ff;";
-                                css += "--secondary: #ff0055;";
-                                css += "--bg-hardware: #0a0a0a;";
-                                css += "--text-main: #e0e0e0;";
-                                css += "--panel-border: #2a2a2a;";
-                                css += "--marking: rgba(255, 255, 255, 0.1);";
-                                css += "--display-bg: #050505;";
-                                css += "--sc-yellow: #ffcc00;";
-                                css += "--sc-input: #00ff66;";
+                                juce::String css = ":root {\n";
+                                if (currentTheme == "Synthwave") {
+                                    css += "--primary: #ff00ff;\n--secondary: #00ffff;\n--bg-hardware: #2b0033;\n--text-main: #ffffff;\n--panel-border: #ff00ff;\n--marking: rgba(255, 0, 255, 0.2);\n--display-bg: #1a0026;\n--sc-yellow: #ffff00;\n--sc-input: #00ffcc;\n";
+                                } else if (currentTheme == "Acid") {
+                                    css += "--primary: #bfff00;\n--secondary: #32cd32;\n--bg-hardware: #001a00;\n--text-main: #bfff00;\n--panel-border: #32cd32;\n--marking: rgba(50, 205, 50, 0.2);\n--display-bg: #000000;\n--sc-yellow: #ccff00;\n--sc-input: #00ff00;\n";
+                                } else if (currentTheme == "Firepits") {
+                                    css += "--primary: #ff4500;\n--secondary: #8b0000;\n--bg-hardware: #1a0500;\n--text-main: #ffd700;\n--panel-border: #ff4500;\n--marking: rgba(255, 69, 0, 0.2);\n--display-bg: #0a0200;\n--sc-yellow: #ffcc00;\n--sc-input: #ff0000;\n";
+                                } else if (currentTheme == "Ocean Deep") {
+                                    css += "--primary: #00bfff;\n--secondary: #00008b;\n--bg-hardware: #00051a;\n--text-main: #e0ffff;\n--panel-border: #00bfff;\n--marking: rgba(0, 191, 255, 0.2);\n--display-bg: #00020a;\n--sc-yellow: #ffffff;\n--sc-input: #008080;\n";
+                                } else if (currentTheme == "Ice World") {
+                                    css += "--primary: #f0f8ff;\n--secondary: #b0c4de;\n--bg-hardware: #101820;\n--text-main: #ffffff;\n--panel-border: #afeeee;\n--marking: rgba(240, 248, 255, 0.2);\n--display-bg: #050a10;\n--sc-yellow: #87cefa;\n--sc-input: #e0ffff;\n";
+                                } else if (currentTheme == "Dark Hellish") {
+                                    css += "--primary: #ff0000;\n--secondary: #3d0000;\n--bg-hardware: #050000;\n--text-main: #8b0000;\n--panel-border: #3d0000;\n--marking: rgba(255, 0, 0, 0.1);\n--display-bg: #000000;\n--sc-yellow: #ff4500;\n--sc-input: #660000;\n";
+                                } else {
+                                    // Default "Industrial" Theme
+                                    css += "--primary: #00d2ff;\n--secondary: #ff0055;\n--bg-hardware: #0a0a0a;\n--text-main: #e0e0e0;\n--panel-border: #2a2a2a;\n--marking: rgba(255, 255, 255, 0.1);\n--display-bg: #050505;\n--sc-yellow: #ffcc00;\n--sc-input: #00ff66;\n";
+                                }
                                 css += "}";
                                 
                                 auto data = css.toRawUTF8();
@@ -198,6 +212,16 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
                 for (auto& n : list) jsArray.add(n);
                 juce::String json = juce::JSON::toString(jsArray);
                 juce::MessageManager::callAsync([this, json] { if (webComponent) webComponent->evaluateJavascript("onPresetListReceived(" + json + ");"); });
+            });
+
+            webComponent->registerCallback ("setTheme", [this] (const juce::var& args) {
+                if (!webComponent) return;
+                auto name = args[0].toString();
+                juce::Logger::writeToLog("Native: setTheme '" + name + "'");
+                currentTheme = name;
+                juce::MessageManager::callAsync([this] { 
+                    if (webComponent) webComponent->evaluateJavascript("document.querySelector('link[href^=\"skin.css\"]').href = 'skin.css?t=' + new Date().getTime();"); 
+                });
             });
 
             webComponent->goToURL (juce::WebBrowserComponent::getResourceProviderRoot());

@@ -156,6 +156,15 @@
             </div>
             
             <div class="preset-area">
+                <select id="themeList" class="preset-select" onchange="setTheme(this.value)" style="width:100px;">
+                    <option value="Industrial">Industrial</option>
+                    <option value="Synthwave">Synthwave</option>
+                    <option value="Acid">Acid</option>
+                    <option value="Firepits">Firepits</option>
+                    <option value="Ocean Deep">Ocean Deep</option>
+                    <option value="Ice World">Ice World</option>
+                    <option value="Dark Hellish">Dark Hellish</option>
+                </select>
                 <select id="presetList" class="preset-select">
                     <option value="">- SELECT PRESET -</option>
                 </select>
@@ -552,9 +561,14 @@
             else if (funcName === "loadPreset") window.location.href = `mushin://loadPreset?name=${encodeURIComponent(args[0])}`;
             else if (funcName === "deletePreset") window.location.href = `mushin://deletePreset?name=${encodeURIComponent(args[0])}`;
             else if (funcName === "requestPresetList") window.location.href = `mushin://requestPresetList`;
+            else if (funcName === "setTheme") window.location.href = `mushin://setTheme?name=${encodeURIComponent(args[0])}`;
             if (juceObj && juceObj.juce_invoke) {
                 try { await juceObj.juce_invoke(funcName, args); } catch (e) {}
             }
+        }
+
+        function setTheme(name) {
+            callNative("setTheme", [name]);
         }
 
         function savePreset() {
