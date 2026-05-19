@@ -240,14 +240,14 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             // STAGE A: Distortion
             float currentDrive = driveParam->load();
             if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Drive) {
-                currentDrive *= (1.0f + scMod);
+                currentDrive += (scMod * 20.0f); 
             }
             waveshaper.setDrive(std::clamp(currentDrive, 1.0f, 50.0f));
             wetSample = waveshaper.processSample(ch, wetSample);
 
             // STAGE B: Dual Filtering & LFO Matrix
             if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Cutoff) {
-                float cutoffOffset = std::pow(2.0f, scMod);
+                float cutoffOffset = std::pow(2.0f, scMod * 2.0f);
                 dualFilterSystem.baseParams.filterACutoff = filterACutoffParam->load() * cutoffOffset;
                 dualFilterSystem.baseParams.filterBCutoff = filterBCutoffParam->load() * cutoffOffset;
             } else {
@@ -263,7 +263,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             // STAGE D: Final Gain
             float currentGain = gainVal;
             if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Gain) {
-                currentGain *= (1.0f + scMod);
+                currentGain += scMod;
             }
             float finalSample = mixedSample * std::max(0.0f, currentGain);
 
@@ -371,11 +371,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
 
     // LFOs
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "lfo1_freq", 1 }, "LFO 1 Freq", 0.1f, 50.0f, 1.0f));
+        juce::ParameterID { "lfo1_freq", 1 }, "LFO 1 Freq", 
+        juce::NormalisableRange<float>(0.1f, 20.0f, 0.0f, 0.4f), 1.0f));
     params.push_back (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { "lfo1_wave", 1 }, "LFO 1 Wave", juce::StringArray {"Sine", "Triangle", "Saw", "Square", "Random"}, 0));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "lfo2_freq", 1 }, "LFO 2 Freq", 0.1f, 50.0f, 1.0f));
+        juce::ParameterID { "lfo2_freq", 1 }, "LFO 2 Freq", 
+        juce::NormalisableRange<float>(0.1f, 20.0f, 0.0f, 0.4f), 1.0f));
     params.push_back (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { "lfo2_wave", 1 }, "LFO 2 Wave", juce::StringArray {"Sine", "Triangle", "Saw", "Square", "Random"}, 0));
 
