@@ -116,6 +116,31 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor (MushinAudioProcessor& p)
                             auto path = url;
                             if (path.startsWith("/")) path = path.substring(1);
                             if (path.contains("?")) path = path.upToFirstOccurrenceOf("?", false, false);
+
+                            // Handle dynamic skinning
+                            if (path == "skin.css")
+                            {
+                                juce::String css = ":root {";
+                                // Default "Industrial" Theme
+                                css += "--primary: #00d2ff;";
+                                css += "--secondary: #ff0055;";
+                                css += "--bg-hardware: #0a0a0a;";
+                                css += "--text-main: #e0e0e0;";
+                                css += "--panel-border: #2a2a2a;";
+                                css += "--marking: rgba(255, 255, 255, 0.1);";
+                                css += "--display-bg: #050505;";
+                                css += "--sc-yellow: #ffcc00;";
+                                css += "--sc-input: #00ff66;";
+                                css += "}";
+                                
+                                auto data = css.toRawUTF8();
+                                auto size = (int)strlen(data);
+                                return juce::WebBrowserComponent::Resource {
+                                    std::vector<std::byte> (reinterpret_cast<const std::byte*> (data), reinterpret_cast<const std::byte*> (data) + size),
+                                    "text/css"
+                                };
+                            }
+
                             auto resourceName = (path.isEmpty() || path == "index.html") ? "index_html" : path.replace(".", "_").replace("-", "_");
                             int size = 0;
                             if (auto data = BinaryData::getNamedResource (resourceName.toRawUTF8(), size)) {
