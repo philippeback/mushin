@@ -1068,14 +1068,40 @@
                     </div>
 
                     <div class="matrix-grid">
-                        <div>
+                        <div style="text-align: center;">
                             <div class="label">HPF</div>
-                            <input type="range" id="sc_hp_freq" min="0" max="1" step="0.001">
+                            <div class="mushin-knob mushin-knob-small" id="knob-sc_hp_freq" data-param="sc_hp_freq" data-default="0.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="sc_hp_freq" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
                             <div class="value" id="sc_hp_freq-val">20Hz</div>
                         </div>
-                        <div>
+                        <div style="text-align: center;">
                             <div class="label">LPF</div>
-                            <input type="range" id="sc_lp_freq" min="0" max="1" step="0.001">
+                            <div class="mushin-knob mushin-knob-small" id="knob-sc_lp_freq" data-param="sc_lp_freq" data-default="1.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="sc_lp_freq" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
                             <div class="value" id="sc_lp_freq-val">20k</div>
                         </div>
                     </div>
