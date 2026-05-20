@@ -353,6 +353,238 @@
         .sc-meter-bar { height: 100%; width: 0%; transition: width 0.05s linear; }
         .sc-bar-mod { background: var(--sc-yellow); box-shadow: 0 0 5px var(--sc-yellow); }
         .sc-bar-in  { background: var(--sc-input); opacity: 0.8; }
+
+        /* Custom Premium 3D Toggle Switch Plate for retro-futuristic Moog look */
+        .toggle-plate {
+            position: relative;
+            width: 48px;
+            height: 52px;
+            background: linear-gradient(135deg, #252525 0%, #121212 50%, #080808 100%);
+            border: 1px solid #1a1a1a;
+            border-radius: 3px;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.08),
+                0 3px 6px rgba(0,0,0,0.7),
+                0 0 2px rgba(0,0,0,0.9);
+            margin: 6px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        /* Corner metal screws */
+        .plate-screw {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 1px 1px, #666, #222);
+            box-shadow: 0 0.5px 1px rgba(0,0,0,0.8);
+        }
+        .plate-screw.top-left { top: 2px; left: 2px; }
+        .plate-screw.top-right { top: 2px; right: 2px; }
+        .plate-screw.bottom-left { bottom: 2px; left: 2px; }
+        .plate-screw.bottom-right { bottom: 2px; right: 2px; }
+
+        .mushin-lever-switch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            justify-content: space-evenly;
+            padding: 4px 0;
+            box-sizing: border-box;
+        }
+
+        /* Deep vertical slot bezel */
+        .switch-bezel {
+            width: 16px;
+            height: 30px;
+            background: #050505;
+            border: 1px solid #222;
+            border-radius: 2px;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.95),
+                0 1px 0 rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .switch-slot {
+            width: 6px;
+            height: 24px;
+            background: #000;
+            border-radius: 1px;
+            position: relative;
+        }
+
+        /* 3D lever stem + mechanical head */
+        .switch-lever {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 10px;
+            height: 20px;
+            margin-left: -5px;
+            margin-top: -10px;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            will-change: transform;
+        }
+
+        .lever-stem {
+            width: 3px;
+            height: 14px;
+            background: linear-gradient(to right, #666 0%, #ccc 30%, #fff 50%, #888 70%, #444 100%);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            border-radius: 0.5px;
+        }
+
+        .lever-tip {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 2.5px 2.5px, #ffffff 0%, #b8b8b8 20%, #777777 60%, #333333 100%);
+            border: 0.5px solid #111;
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.6),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            margin-bottom: -3px;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Default OFF (lever pointing down) */
+        .switch-lever {
+            transform: rotateX(20deg) translateY(2px);
+        }
+
+        /* LED Lamp Indicator */
+        .switch-status-lamp {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #0f0505;
+            border: 1px solid #222;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .lamp-lens {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1), transparent 70%);
+        }
+
+        /* Sibling States when checked */
+        #exhaustion:checked ~ .switch-bezel .switch-lever {
+            transform: rotateX(-20deg) translateY(-6px);
+        }
+
+        #exhaustion:checked ~ .switch-bezel .lever-tip {
+            background: radial-gradient(circle at 2.5px 2.5px, #ffffff 0%, var(--primary) 30%, #5d0000 80%, #3d0000 100%);
+            box-shadow: 
+                0 0 6px var(--primary),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        #exhaustion:checked ~ .switch-status-lamp {
+            background: var(--primary);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 
+                0 0 6px var(--primary), 
+                0 0 12px var(--primary),
+                inset 0 1px 1px rgba(255,255,255,0.8);
+        }
+
+        #exhaustion:checked ~ .switch-status-lamp .lamp-lens {
+            background: radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.1) 60%, transparent 100%);
+        }
+
+        /* -------------------------------------------------------------
+           Dynamic "looks like it all changes when turned on" parent states
+           ------------------------------------------------------------- */
+
+        /* Pulsing CRT scanline and warning background on the body when active */
+        body:has(#exhaustion:checked) {
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(255,0,85,0.02) 0%, transparent 80%),
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+            transition: background 0.4s ease;
+        }
+
+        /* Glowing overlay borders and active breathing shadows on the main board */
+        .main-panel:has(#exhaustion:checked) {
+            border-color: var(--primary) !important;
+            box-shadow: 
+                0 30px 100px rgba(0,0,0,0.95),
+                0 0 20px var(--primary),
+                inset 0 0 15px var(--primary) !important;
+            transition: all 0.4s ease;
+        }
+
+        /* Shift background to look hot, electric and fully powered */
+        .main-panel:has(#exhaustion:checked) .control-group {
+            border-color: rgba(255,255,255,0.15) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5) !important;
+            transition: all 0.4s ease;
+        }
+
+        /* High emphasis on the Exhaust card slot itself */
+        .main-panel:has(#exhaustion:checked) #group-exhaustion {
+            border-color: var(--primary) !important;
+            box-shadow: 
+                0 0 15px var(--primary), 
+                inset 0 0 12px rgba(255, 255, 255, 0.02) !important;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.015) 0%, var(--display-bg) 100%) !important;
+        }
+
+        /* Glow and highlight Exhaust panel labels and numeric displays */
+        .main-panel:has(#exhaustion:checked) #group-exhaustion #exhaustion-val {
+            color: var(--primary) !important;
+            font-weight: bold;
+            text-shadow: 0 0 6px var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .main-panel:has(#exhaustion:checked) #group-exhaustion .label {
+            color: #ffffff !important;
+            opacity: 0.95 !important;
+            text-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        /* Boost active sliders and their tracks globally when high voltage mode is active */
+        .main-panel:has(#exhaustion:checked) input[type=range]::-webkit-slider-runnable-track {
+            border-color: var(--primary) !important;
+            box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.95), 0 0 4px var(--primary) !important;
+        }
+
+        .main-panel:has(#exhaustion:checked) input[type=range]::-webkit-slider-thumb {
+            box-shadow: 0 3px 8px rgba(0,0,0,0.9), 0 0 6px var(--primary), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+        }
+
+        /* Let the main logo text breath/pulse in theme glow */
+        .main-panel:has(#exhaustion:checked) .title {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px var(--primary), 0 0 2px var(--primary) !important;
+            animation: mushin-pulse-glow 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes mushin-pulse-glow {
+            0% { text-shadow: 0 0 6px var(--primary), 0 0 2px var(--primary); opacity: 0.9; }
+            100% { text-shadow: 0 0 16px var(--primary), 0 0 4px var(--primary), 0 0 20px var(--primary); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -454,9 +686,29 @@
                 </div>
                 <div class="value" id="threshold-val">1.00</div>
             </div>
-            <div class="control-group">
+            <div class="control-group" id="group-exhaustion">
                 <div class="label">Exhaust</div>
-                <input type="checkbox" id="exhaustion">
+                <div class="toggle-plate">
+                    <div class="plate-screw top-left"></div>
+                    <div class="plate-screw top-right"></div>
+                    <div class="plate-screw bottom-left"></div>
+                    <div class="plate-screw bottom-right"></div>
+                    
+                    <label class="mushin-lever-switch" for="exhaustion">
+                        <input type="checkbox" id="exhaustion" style="display: none;">
+                        <div class="switch-bezel">
+                            <div class="switch-slot">
+                                <div class="switch-lever">
+                                    <div class="lever-stem"></div>
+                                    <div class="lever-tip"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="switch-status-lamp">
+                            <div class="lamp-lens"></div>
+                        </div>
+                    </label>
+                </div>
                 <div class="value" id="exhaustion-val">OFF</div>
             </div>
             <div class="control-group">
@@ -877,19 +1129,44 @@
 
             ctx.fillStyle = displayBg;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid lines
             ctx.strokeStyle = markingColor;
-            for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.width; i+=40) { 
+                ctx.beginPath(); 
+                ctx.moveTo(i,0); 
+                ctx.lineTo(i,canvas.height); 
+                ctx.stroke(); 
+            }
+            
             ctx.beginPath();
             ctx.strokeStyle = primaryColor;
-            ctx.lineWidth = 1.5;
+            
+            // Overloaded analog jitter and intense CRT glow when Exhaustion is enabled
+            const isExhausted = document.getElementById('exhaustion') && document.getElementById('exhaustion').checked;
+            
+            if (isExhausted) {
+                ctx.lineWidth = 2.5;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = primaryColor;
+            } else {
+                ctx.lineWidth = 1.5;
+                ctx.shadowBlur = 0;
+            }
+
             const sliceWidth = canvas.width / (audioData.length - 1);
             let x = 0;
             for (let i = 0; i < audioData.length; i++) {
-                const y = (audioData[i] * 0.4 + 0.5) * canvas.height;
+                // Add high frequency analog thermal noise when hardware is running hot
+                const noise = isExhausted ? (Math.random() - 0.5) * 0.03 : 0;
+                const y = ((audioData[i] + noise) * 0.4 + 0.5) * canvas.height;
                 if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                 x += sliceWidth;
             }
             ctx.stroke();
+            
+            // Reset canvas shadow filter context
+            ctx.shadowBlur = 0;
         }
         draw();
 
