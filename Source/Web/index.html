@@ -117,8 +117,45 @@
             justify-content: center;
         }
 
+        .mushin-knob-big {
+            width: 58px !important;
+            height: 58px !important;
+            margin: 4px auto !important;
+        }
+
+        .mushin-knob-small {
+            width: 36px !important;
+            height: 36px !important;
+            margin: 4px auto !important;
+        }
+
         .mushin-knob:active {
             cursor: grabbing;
+        }
+
+        /* Filter layouts (Side-by-side rows) */
+        .filter-knobs-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 10px;
+            margin: 4px 0;
+            width: 100%;
+        }
+
+        .filter-knob-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Detailed lobed contours for classic Moog large dial details */
+        .bezel-lobe-part {
+            fill: #141414;
+            stroke: #333333;
+            stroke-width: 0.8px;
         }
 
         .mushin-knob:focus-visible .knob-bezel {
@@ -398,12 +435,75 @@
                 <!-- Filter A -->
                 <div class="sub-panel">
                     <div class="sub-panel-title">FILTER A</div>
-                    <div class="label">Cutoff</div>
-                    <input type="range" id="filter_a_cutoff" min="0" max="1" step="0.001">
-                    <div class="value" id="filter_a_cutoff-val">20k</div>
-                    <div class="label">Res</div>
-                    <input type="range" id="filter_a_resonance" min="0" max="1" step="0.001">
-                    <div class="value" id="filter_a_resonance-val">0.1</div>
+                    
+                    <div class="filter-knobs-row">
+                        <!-- Cutoff (Big Lobed Knob) -->
+                        <div class="filter-knob-container">
+                            <div class="label">Cutoff</div>
+                            <div class="mushin-knob mushin-knob-big" id="knob-filter_a_cutoff" data-param="filter_a_cutoff" data-default="1.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <!-- Outer Dynamic Value Track -->
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="45" />
+                                    <path class="knob-value-arc" d="" />
+
+                                    <!-- Fluted Bezel (Moog Scalloped lobes) -->
+                                    <g class="knob-bezel-lobed">
+                                        <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
+                                        <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                        <!-- Overlay hiding internal intersecting strokes -->
+                                        <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
+                                    </g>
+                                    
+                                    <!-- Metallic Cap Dome (reusing global defs) -->
+                                    <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    
+                                    <!-- Rotating Pointer Skirt -->
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="14" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="16" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="filter_a_cutoff" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="filter_a_cutoff-val">20k</div>
+                        </div>
+
+                        <!-- Resonance (Small Knob) -->
+                        <div class="filter-knob-container">
+                            <div class="label">Res</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-filter_a_resonance" data-param="filter_a_resonance" data-default="0.1" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <!-- Outer Dynamic Value Track -->
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+
+                                    <!-- Outer Bezel (Fluted Ring) -->
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    
+                                    <!-- Metallic Cap Dome (reusing global defs) -->
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    
+                                    <!-- Rotating Pointer Skirt -->
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="filter_a_resonance" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="filter_a_resonance-val">0.1</div>
+                        </div>
+                    </div>
+
                     <div class="matrix-grid" style="margin-top: auto;">
                         <div>
                             <div class="label">Type</div>
@@ -421,15 +521,79 @@
                         </div>
                     </div>
                 </div>
+
                 <!-- Filter B -->
                 <div class="sub-panel">
                     <div class="sub-panel-title">FILTER B</div>
-                    <div class="label">Cutoff</div>
-                    <input type="range" id="filter_b_cutoff" min="0" max="1" step="0.001">
-                    <div class="value" id="filter_b_cutoff-val">20k</div>
-                    <div class="label">Res</div>
-                    <input type="range" id="filter_b_resonance" min="0" max="1" step="0.001">
-                    <div class="value" id="filter_b_resonance-val">0.1</div>
+                    
+                    <div class="filter-knobs-row">
+                        <!-- Cutoff (Big Lobed Knob) -->
+                        <div class="filter-knob-container">
+                            <div class="label">Cutoff</div>
+                            <div class="mushin-knob mushin-knob-big" id="knob-filter_b_cutoff" data-param="filter_b_cutoff" data-default="1.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <!-- Outer Dynamic Value Track -->
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="45" />
+                                    <path class="knob-value-arc" d="" />
+
+                                    <!-- Fluted Bezel (Moog Scalloped lobes) -->
+                                    <g class="knob-bezel-lobed">
+                                        <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
+                                        <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                        <!-- Overlay hiding internal intersecting strokes -->
+                                        <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
+                                    </g>
+                                    
+                                    <!-- Metallic Cap Dome (reusing global defs) -->
+                                    <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    
+                                    <!-- Rotating Pointer Skirt -->
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="14" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="16" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="filter_b_cutoff" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="filter_b_cutoff-val">20k</div>
+                        </div>
+
+                        <!-- Resonance (Small Knob) -->
+                        <div class="filter-knob-container">
+                            <div class="label">Res</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-filter_b_resonance" data-param="filter_b_resonance" data-default="0.1" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <!-- Outer Dynamic Value Track -->
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+
+                                    <!-- Outer Bezel (Fluted Ring) -->
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    
+                                    <!-- Metallic Cap Dome (reusing global defs) -->
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    
+                                    <!-- Rotating Pointer Skirt -->
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="filter_b_resonance" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="filter_b_resonance-val">0.1</div>
+                        </div>
+                    </div>
+
                     <div class="matrix-grid" style="margin-top: auto;">
                         <div>
                             <div class="label">Type</div>
