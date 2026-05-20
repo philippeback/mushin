@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Preset name="dual moves" version="1">
+  <PARAMETERS>
+    <PARAM id="gain" value="1.370000004768372"/>
+    <PARAM id="drive" value="12.81999969482422"/>
+    <PARAM id="exhaustion"/>
+    <PARAM id="threshold" value="0.5399999618530273"/>
+    <PARAM id="filter_a_cutoff" value="3196.9013671875"/>
+    <PARAM id="filter_a_drive"/>
+    <PARAM id="filter_a_grit"/>
+    <PARAM id="filter_a_mode"/>
+    <PARAM id="filter_a_resonance" value="0.3599999845027924"/>
+    <PARAM id="filter_a_type"/>
+    <PARAM id="filter_b_cutoff" value="5046.51611328125"/>
+    <PARAM id="filter_b_drive"/>
+    <PARAM id="filter_b_grit"/>
+    <PARAM id="filter_b_mode"/>
+    <PARAM id="filter_b_resonance"/>
+    <PARAM id="filter_b_type"/>
+    <PARAM id="lfo1_freq" value="8.230000495910645"/>
+    <PARAM id="lfo1_wave"/>
+    <PARAM id="lfo2_freq"/>
+    <PARAM id="lfo2_wave" value="4.0"/>
+    <PARAM id="mix" value="0.8799999952316284"/>
+    <PARAM id="mod_lfo1_target1" value="0.6899999380111694"/>
+    <PARAM id="mod_lfo1_target2"/>
+    <PARAM id="mod_lfo1_target3"/>
+    <PARAM id="mod_lfo1_target4" value="-1.0"/>
+    <PARAM id="mod_lfo1_target5" value="-1.0"/>
+    <PARAM id="mod_lfo1_target6"/>
+    <PARAM id="mod_lfo2_target1" value="-1.0"/>
+    <PARAM id="mod_lfo2_target2" value="-1.0"/>
+    <PARAM id="mod_lfo2_target3"/>
+    <PARAM id="mod_lfo2_target4" value="0.8399999141693115"/>
+    <PARAM id="mod_lfo2_target5"/>
+    <PARAM id="mod_lfo2_target6"/>
+    <PARAM id="routing" value="1.0"/>
+  </PARAMETERS>
+</Preset>

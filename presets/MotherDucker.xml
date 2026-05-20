@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Preset name="MotherDucker" version="1">
+  <PARAMETERS>
+    <PARAM id="drive" value="10.09999942779541"/>
+    <PARAM id="exhaustion" value="1.0"/>
+    <PARAM id="filter_a_cutoff" value="361.4566345214844"/>
+    <PARAM id="filter_a_drive" value="1.0"/>
+    <PARAM id="filter_a_grit" value="0.0"/>
+    <PARAM id="filter_a_mode" value="0.0"/>
+    <PARAM id="filter_a_resonance" value="0.699999988079071"/>
+    <PARAM id="filter_a_type" value="0.0"/>
+    <PARAM id="filter_b_cutoff" value="6673.1162109375"/>
+    <PARAM id="filter_b_drive" value="1.0"/>
+    <PARAM id="filter_b_grit" value="0.0"/>
+    <PARAM id="filter_b_mode" value="3.0"/>
+    <PARAM id="filter_b_resonance" value="0.5099999904632568"/>
+    <PARAM id="filter_b_type" value="0.0"/>
+    <PARAM id="gain" value="0.9799999594688416"/>
+    <PARAM id="lfo1_freq" value="0.1017757505178452"/>
+    <PARAM id="lfo1_wave" value="4.0"/>
+    <PARAM id="lfo2_freq" value="0.3660131990909576"/>
+    <PARAM id="lfo2_wave" value="0.0"/>
+    <PARAM id="mix" value="1.0"/>
+    <PARAM id="mod_lfo1_target1" value="1.0"/>
+    <PARAM id="mod_lfo1_target2" value="-0.06000000238418579"/>
+    <PARAM id="mod_lfo1_target3" value="0.0"/>
+    <PARAM id="mod_lfo1_target4" value="0.009999990463256836"/>
+    <PARAM id="mod_lfo1_target5" value="0.0"/>
+    <PARAM id="mod_lfo1_target6" value="0.0"/>
+    <PARAM id="mod_lfo2_target1" value="-0.02000004053115845"/>
+    <PARAM id="mod_lfo2_target2" value="0.04999995231628418"/>
+    <PARAM id="mod_lfo2_target3" value="0.0"/>
+    <PARAM id="mod_lfo2_target4" value="0.809999942779541"/>
+    <PARAM id="mod_lfo2_target5" value="0.0"/>
+    <PARAM id="mod_lfo2_target6" value="0.0"/>
+    <PARAM id="routing" value="1.0"/>
+    <PARAM id="sc_active" value="1.0"/>
+    <PARAM id="sc_amount" value="-38.60000228881836"/>
+    <PARAM id="sc_attack" value="0.1000000014901161"/>
+    <PARAM id="sc_hp_freq" value="20.0"/>
+    <PARAM id="sc_lp_freq" value="20000.0"/>
+    <PARAM id="sc_mode" value="0.0"/>
+    <PARAM id="sc_release" value="116.9399948120117"/>
+    <PARAM id="sc_source" value="1.0"/>
+    <PARAM id="sc_target" value="0.0"/>
+    <PARAM id="sc_threshold" value="-45.72000122070312"/>
+    <PARAM id="threshold" value="0.6399999856948853"/>
+  </PARAMETERS>
+</Preset>

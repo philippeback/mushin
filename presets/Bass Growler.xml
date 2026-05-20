@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<Preset name="Bass Growler" version="1">
+  <PARAMETERS>
+    <PARAM id="drive" value="15"/>
+    <PARAM id="exhaustion" value="0"/>
+    <PARAM id="filter_a_cutoff" value="150"/>
+    <PARAM id="filter_a_drive" value="1"/>
+    <PARAM id="filter_a_grit" value="0"/>
+    <PARAM id="filter_a_mode" value="0"/>
+    <PARAM id="filter_a_resonance" value="0.7"/>
+    <PARAM id="filter_a_type" value="2"/>
+    <PARAM id="filter_b_cutoff" value="20000"/>
+    <PARAM id="filter_b_drive" value="1"/>
+    <PARAM id="filter_b_grit" value="0"/>
+    <PARAM id="filter_b_mode" value="0"/>
+    <PARAM id="filter_b_resonance" value="0.1"/>
+    <PARAM id="filter_b_type" value="0"/>
+    <PARAM id="gain" value="1"/>
+    <PARAM id="lfo1_freq" value="0.8"/>
+    <PARAM id="lfo1_wave" value="0"/>
+    <PARAM id="lfo2_freq" value="1"/>
+    <PARAM id="lfo2_wave" value="0"/>
+    <PARAM id="mix" value="1"/>
+    <PARAM id="mod_lfo1_target1" value="0.4"/>
+    <PARAM id="mod_lfo1_target2" value="0"/>
+    <PARAM id="mod_lfo1_target3" value="0"/>
+    <PARAM id="mod_lfo1_target4" value="0"/>
+    <PARAM id="mod_lfo1_target5" value="0"/>
+    <PARAM id="mod_lfo1_target6" value="0"/>
+    <PARAM id="mod_lfo2_target1" value="0"/>
+    <PARAM id="mod_lfo2_target2" value="0"/>
+    <PARAM id="mod_lfo2_target3" value="0"/>
+    <PARAM id="mod_lfo2_target4" value="0"/>
+    <PARAM id="mod_lfo2_target5" value="0"/>
+    <PARAM id="mod_lfo2_target6" value="0"/>
+    <PARAM id="routing" value="0"/>
+    <PARAM id="sc_active" value="0"/>
+    <PARAM id="sc_amount" value="0"/>
+    <PARAM id="sc_attack" value="10"/>
+    <PARAM id="sc_hp_freq" value="20"/>
+    <PARAM id="sc_lp_freq" value="20000"/>
+    <PARAM id="sc_mode" value="0"/>
+    <PARAM id="sc_release" value="100"/>
+    <PARAM id="sc_source" value="0"/>
+    <PARAM id="sc_target" value="2"/>
+    <PARAM id="sc_threshold" value="-24"/>
+    <PARAM id="threshold" value="1"/>
+  </PARAMETERS>
+</Preset>
