@@ -59,6 +59,8 @@ private:
     MushinAudioProcessor& audioProcessor;
     std::unique_ptr<MushinWebComponent> webComponent;
     std::unique_ptr<PresetManager> presetMgr; // New member
+    
+    juce::String currentTheme = "Industrial";
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MushinAudioProcessorEditor)
 };
