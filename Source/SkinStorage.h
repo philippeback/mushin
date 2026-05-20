@@ -19,21 +19,21 @@ namespace mushin {
 class SkinStorage
 {
 public:
-    /** Returns the index that was saved previously.
-        If no value exists yet, returns 0 (the first theme). */
-    static int getSavedSkinIndex()
+    /** Returns the theme name that was saved previously.
+        If no value exists yet, returns "Industrial". */
+    static juce::String getSavedSkinName()
     {
-        return static_cast<int> (getFile().getIntValue ("skin", 0));
+        return getFile().getValue ("themeName", "Industrial");
     }
 
-    /** Saves the supplied index to disk. */
-    static void setSavedSkinIndex (int index)
+    /** Saves the supplied theme name to disk. */
+    static void setSavedSkinName (const juce::String& name)
     {
-        getFile().setValue ("skin", index);
+        getFile().setValue ("themeName", name);
         bool ok = getFile().saveIfNeeded();
 
         // Debug output – harmless in release builds
-        juce::Logger::writeToLog ("[Skin] Saved index " + juce::String (index) +
+        juce::Logger::writeToLog ("[Skin] Saved theme: " + name +
                                   (ok ? " (file written)" : " (no change)"));
     }
 
@@ -42,17 +42,28 @@ private:
         The folder is created automatically if it does not exist. */
     static juce::PropertiesFile& getFile()
     {
-        static juce::PropertiesFile props (
-            juce::PropertiesFile::Options()
-                .withFilename (juce::File::getSpecialLocation (
-                                   juce::File::userApplicationDataDirectory)
-                               .getChildFile ("MushinPlugin")
-                               .createDirectory()               // ensure folder exists
-                               .getChildFile ("settings.ini"))
-                .withCommonPreferencesFile (false)
-                .withIgnoreCaseOfKeyNames (true));
+        static std::unique_ptr<juce::PropertiesFile> props;
+        
+        if (props == nullptr)
+        {
+            auto dir = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
+                         .getChildFile ("MushinPlugin");
+            
+            if (! dir.exists())
+                dir.createDirectory();
 
-        return props;
+            juce::PropertiesFile::Options opts;
+            opts.applicationName = "MushinPlugin";
+            opts.filenameSuffix = ".ini";
+            opts.folderName = "MushinPlugin";
+            opts.commonToAllUsers = false;
+            opts.ignoreCaseOfKeyNames = true;
+            opts.osxLibrarySubFolder = "Application Support";
+            
+            props = std::make_unique<juce::PropertiesFile> (dir.getChildFile ("settings.ini"), opts);
+        }
+
+        return *props;
     }
 };
 

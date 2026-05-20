@@ -2,6 +2,7 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
 #include "PresetManager.h"
+#include "SkinStorage.h"
 #include <JuceHeader.h>
 #include <memory>
 
@@ -74,6 +75,7 @@ void MushinAudioProcessorEditor::MushinWebComponent::handleCustomUrl(
         cmd.fromFirstOccurrenceOf("name=", false, false));
     juce::Logger::writeToLog("Bridge: setTheme '" + name + "'");
     editor.currentTheme = name;
+    mushin::SkinStorage::setSavedSkinName(name); // Persist selection globally
     juce::MessageManager::callAsync([this] {
       evaluateJavascript("document.querySelector('link[href^=\"skin.css\"]')."
                          "href = 'skin.css?t=' + new Date().getTime();");
@@ -92,6 +94,9 @@ void MushinAudioProcessorEditor::MushinWebComponent::pageFinishedLoading(
 MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
     : AudioProcessorEditor(&p), audioProcessor(p) {
   juce::Logger::writeToLog("--- Mushin Editor Constructor Started ---");
+  
+  currentTheme = mushin::SkinStorage::getSavedSkinName();
+  juce::Logger::writeToLog("Loaded theme from storage: " + currentTheme);
 
   setResizable(true, true);
   setSize(1200, 600);
@@ -381,6 +386,12 @@ void MushinAudioProcessorEditor::syncAllParameters() {
         parameterChanged(pRanged->paramID, pRanged->getValue());
     }
   }
+
+  // Sync theme to UI
+  juce::MessageManager::callAsync([this] {
+    if (webComponent)
+      webComponent->evaluateJavascript("if (window.applyThemeFromNative) window.applyThemeFromNative('" + currentTheme + "');");
+  });
 }
 
 void MushinAudioProcessorEditor::paint(juce::Graphics &g) {
