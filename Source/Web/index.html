@@ -59,6 +59,33 @@
             font-size: 0.55rem; padding: 1px 4px; width: 120px;
         }
 
+        .preset-search {
+            background: var(--display-bg); color: var(--primary); border: 1px solid var(--marking);
+            font-size: 0.55rem; padding: 1px 4px; width: 70px;
+            font-family: inherit;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .preset-search:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 3px var(--primary);
+        }
+        .preset-search::placeholder {
+            color: var(--text-main);
+            opacity: 0.4;
+        }
+
+        .arrow-btn {
+            padding: 2px 4px !important;
+            font-size: 0.55rem !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            box-sizing: border-box;
+        }
+
         .title { font-size: 1.1rem; font-weight: 100; letter-spacing: 0.5em; color: var(--text-main); }
 
         .top-section {
@@ -668,9 +695,12 @@
                     <option value="Ice World">Ice World</option>
                     <option value="Dark Hellish">Dark Hellish</option>
                 </select>
+                <input type="text" id="presetSearch" class="preset-search" placeholder="Search..." oninput="filterPresets()" onkeydown="handleSearchKeyDown(event)">
+                <button id="btnPrevPreset" class="preset-btn arrow-btn" onclick="selectPrevPreset()">◀</button>
                 <select id="presetList" class="preset-select">
                     <option value="">- SELECT PRESET -</option>
                 </select>
+                <button id="btnNextPreset" class="preset-btn arrow-btn" onclick="selectNextPreset()">▶</button>
                 <button class="preset-btn" onclick="loadPreset()">Load</button>
                 <button class="preset-btn" onclick="savePreset()">Save</button>
                 <button class="preset-btn" onclick="deletePreset()">Del</button>
@@ -1901,25 +1931,43 @@
             }
         }
 
+        let allPresets = [];
+        let filteredPresets = [];
+        let suppressPresetAlert = false;
+
         function setTheme(name) {
             callNative("setTheme", [name]);
         }
 
+        window.applyThemeFromNative = (name) => {
+            const select = document.getElementById('themeList');
+            if (select) {
+                select.value = name;
+            }
+        };
+
         function savePreset() {
             const name = prompt("Enter preset name:");
-            if (name) callNative("savePreset", [name]);
+            if (name) {
+                suppressPresetAlert = false;
+                callNative("savePreset", [name]);
+            }
         }
 
         function loadPreset() {
             const select = document.getElementById('presetList');
             const name = select.value;
-            if (name) callNative("loadPreset", [name]);
+            if (name) {
+                suppressPresetAlert = false;
+                callNative("loadPreset", [name]);
+            }
         }
 
         function deletePreset() {
             const select = document.getElementById('presetList');
             const name = select.value;
             if (name && confirm("Delete preset '" + name + "'?")) {
+                suppressPresetAlert = false;
                 callNative("deletePreset", [name]);
             }
         }
@@ -1928,22 +1976,125 @@
             callNative("requestPresetList", []);
         }
 
-        window.onPresetSaved = () => { log("Preset Saved Successfully"); alert("Preset Saved"); requestPresetList(); };
-        window.onPresetLoaded = () => { log("Preset Loaded Successfully"); alert("Preset Loaded"); };
-        window.onPresetDeleted = () => { log("Preset Deleted Successfully"); alert("Preset Deleted"); requestPresetList(); };
-        window.onPresetError = (msg) => { log("Error: " + msg); alert("Error: " + msg); };
-        window.onPresetListReceived = (list) => {
+        function filterPresets() {
+            const searchInput = document.getElementById('presetSearch');
             const select = document.getElementById('presetList');
             if (!select) return;
+
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            // Filter the presets array
+            filteredPresets = allPresets.filter(name => name.toLowerCase().includes(query));
+
+            // Remember selected value before reconstruction
             const currentVal = select.value;
+
+            // Rebuild options
             select.innerHTML = '<option value="">- SELECT PRESET -</option>';
-            list.forEach(name => {
+            filteredPresets.forEach(name => {
                 const opt = document.createElement('option');
                 opt.value = name;
                 opt.textContent = name;
                 select.appendChild(opt);
             });
-            select.value = currentVal;
+
+            // Re-apply selected value if it's still in the filtered list
+            if (filteredPresets.includes(currentVal)) {
+                select.value = currentVal;
+            } else if (filteredPresets.length === 1) {
+                // If there is only one match on the list, just put it in the preset box
+                select.value = filteredPresets[0];
+            } else {
+                select.value = '';
+            }
+
+            // Enable/disable arrows based on whether we have elements
+            const leftArrow = document.getElementById('btnPrevPreset');
+            const rightArrow = document.getElementById('btnNextPreset');
+            if (leftArrow && rightArrow) {
+                const disabled = filteredPresets.length === 0;
+                leftArrow.disabled = disabled;
+                rightArrow.disabled = disabled;
+                leftArrow.style.opacity = disabled ? '0.3' : '1.0';
+                rightArrow.style.opacity = disabled ? '0.3' : '1.0';
+                leftArrow.style.cursor = disabled ? 'not-allowed' : 'pointer';
+                rightArrow.style.cursor = disabled ? 'not-allowed' : 'pointer';
+            }
+        }
+
+        function handleSearchKeyDown(e) {
+            if (e.key === 'Enter') {
+                const select = document.getElementById('presetList');
+                if (select && select.value) {
+                    suppressPresetAlert = false; // Enter activation shows success alert
+                    callNative("loadPreset", [select.value]);
+                }
+            }
+        }
+
+        function selectPrevPreset() {
+            if (filteredPresets.length === 0) return;
+            const select = document.getElementById('presetList');
+            if (!select) return;
+
+            let currentIndex = filteredPresets.indexOf(select.value);
+            let nextIndex;
+            if (currentIndex === -1) {
+                nextIndex = filteredPresets.length - 1;
+            } else {
+                nextIndex = (currentIndex - 1 + filteredPresets.length) % filteredPresets.length;
+            }
+
+            const presetName = filteredPresets[nextIndex];
+            select.value = presetName;
+            suppressPresetAlert = true;
+            callNative("loadPreset", [presetName]);
+        }
+
+        function selectNextPreset() {
+            if (filteredPresets.length === 0) return;
+            const select = document.getElementById('presetList');
+            if (!select) return;
+
+            let currentIndex = filteredPresets.indexOf(select.value);
+            let nextIndex;
+            if (currentIndex === -1) {
+                nextIndex = 0;
+            } else {
+                nextIndex = (currentIndex + 1) % filteredPresets.length;
+            }
+
+            const presetName = filteredPresets[nextIndex];
+            select.value = presetName;
+            suppressPresetAlert = true;
+            callNative("loadPreset", [presetName]);
+        }
+
+        window.onPresetSaved = () => { 
+            log("Preset Saved Successfully"); 
+            alert("Preset Saved"); 
+            requestPresetList(); 
+        };
+        window.onPresetLoaded = () => { 
+            log("Preset Loaded Successfully"); 
+            if (!suppressPresetAlert) {
+                alert("Preset Loaded"); 
+            }
+            suppressPresetAlert = false; 
+        };
+        window.onPresetDeleted = () => { 
+            log("Preset Deleted Successfully"); 
+            alert("Preset Deleted"); 
+            requestPresetList(); 
+        };
+        window.onPresetError = (msg) => { 
+            log("Error: " + msg); 
+            alert("Error: " + msg); 
+            suppressPresetAlert = false;
+        };
+        window.onPresetListReceived = (list) => {
+            allPresets = list || [];
+            filterPresets();
         };
 
         setTimeout(initBridge, 1000);
