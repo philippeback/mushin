@@ -1,0 +1,5 @@
+**3. The Circular Buffer (The Air Gap Suspension)**
+The Air Gap represents an existential pause where forward progress stops and the opposing side takes inventory.
+* **The Math:** Create a circular delay buffer (e.g., 50 to 100 milliseconds long) with a read pointer and a write pointer. 
+* **The Logic:** During normal trend conditions, the write pointer constantly updates the buffer with incoming audio, and the read pointer plays it back. 
+* **The Exhaustion Event:** When exhaustion is flagged and price enters the Air Gap, halt the write pointer but let the read pointer continue looping over the existing buffer with a Hanning window applied to smooth the edges. The forward time of the audio freezes into a static, granular drone. Once the HMA 34 confirms the slide in the opposite direction, clear the buffer and resume the write pointer.
