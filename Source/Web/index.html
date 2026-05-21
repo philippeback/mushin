@@ -1674,6 +1674,7 @@
                 this.element.addEventListener('mousedown', e => this.onMouseDown(e));
                 this.element.addEventListener('touchstart', e => this.onTouchStart(e), { passive: false });
                 this.element.addEventListener('keydown', e => this.onKeyDown(e));
+                this.element.addEventListener('wheel', e => this.onWheel(e), { passive: false });
             }
             
             setValue(normVal, skipNative = false) {
@@ -1753,6 +1754,14 @@
                     this.setValue(val - step);
                     e.preventDefault();
                 }
+            }
+
+            onWheel(e) {
+                e.preventDefault();
+                const direction = e.deltaY < 0 ? 1 : -1;
+                const sensitivity = e.shiftKey ? 0.005 : 0.02;
+                const currentVal = parseFloat(this.element.value || '0');
+                this.setValue(currentVal + direction * sensitivity);
             }
         }
 
