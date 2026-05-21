@@ -47,7 +47,7 @@ public:
         }
     }
 
-    float processSample(int channel, float sample) {
+    float processSample(int channel, float sample, float fmModOffset = 0.0f) {
         // 1. Calculate Modulation (Only update once per sample across all channels)
         // We use a simple trick: only update LFOs on channel 0
         if (channel == 0) {
@@ -58,6 +58,8 @@ public:
             for (int t = 0; t < 6; ++t) {
                 modOffsets[t] = (lfo1Val * modMatrix[0][t]) + (lfo2Val * modMatrix[1][t]);
             }
+            modOffsets[0] += fmModOffset;
+            modOffsets[3] += fmModOffset;
             applyModulation(modOffsets);
         }
 

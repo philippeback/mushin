@@ -27,19 +27,19 @@
 
         .main-panel {
             position: relative;
-            width: 98%; max-width: 1200px; height: 98%;
+            width: 100%; height: 100vh; max-width: 1200px; max-height: 600px;
             background: var(--bg-hardware);
-            border: 1px solid var(--panel-border);
-            border-radius: 4px;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
             display: flex; flex-direction: column;
-            padding: 10px; box-sizing: border-box;
+            padding: 8px; box-sizing: border-box;
         }
 
         .header-area {
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--marking);
-            margin-bottom: 8px; padding-bottom: 4px;
+            margin-bottom: 6px; padding-bottom: 2px;
         }
 
         .preset-area {
@@ -89,17 +89,17 @@
         .title { font-size: 1.1rem; font-weight: 100; letter-spacing: 0.5em; color: var(--text-main); }
 
         .top-section {
-            display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; gap: 6px; margin-bottom: 6px;
         }
 
         .feature-grid {
             display: grid; grid-template-columns: 1fr 1.2fr 1fr;
-            gap: 8px; flex: 1; border-top: 1px solid var(--marking);
-            padding-top: 8px; margin-bottom: 8px; min-height: 0;
+            gap: 6px; flex: 1; border-top: 1px solid var(--marking);
+            padding-top: 6px; margin-bottom: 6px; min-height: 0;
         }
 
-        .col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-        .row { display: flex; gap: 8px; }
+        .col { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+        .row { display: flex; gap: 6px; }
 
         .control-group {
             display: flex; flex-direction: column; align-items: center;
@@ -110,7 +110,7 @@
 
         .sub-panel {
             display: flex; flex-direction: column; gap: 4px;
-            padding: 6px; border: 1px solid var(--marking);
+            padding: 5px; border: 1px solid var(--marking);
             background: var(--display-bg);
             font-size: 0.6rem; position: relative;
             flex: 1;
@@ -118,7 +118,7 @@
 
         .sub-panel-title {
             font-size: 0.5rem; text-align: center; color: var(--secondary);
-            border-bottom: 1px solid var(--marking); margin-bottom: 4px;
+            border-bottom: 1px solid var(--marking); margin-bottom: 3px;
             letter-spacing: 0.1em; text-transform: uppercase;
         }
 
@@ -242,9 +242,9 @@
         }
 
         .mushin-knob-big {
-            width: 58px !important;
-            height: 58px !important;
-            margin: 4px auto !important;
+            width: 52px !important;
+            height: 52px !important;
+            margin: 2px auto !important;
         }
 
         .mushin-knob-small {
@@ -366,6 +366,37 @@
         .mod-slider-container::after {
             content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
             width: 2px; height: 10px; background-color: var(--secondary); pointer-events: none; z-index: 2;
+        }
+        .mod-matrix-grid input[type=range] {
+            height: 10px;
+            margin: 0;
+        }
+        .mod-matrix-grid input[type=range]::-webkit-slider-runnable-track {
+            height: 3px;
+            background-image: 
+                linear-gradient(to right, var(--primary) 0%, var(--primary) var(--track-fill, 0%), transparent var(--track-fill, 0%), transparent 100%),
+                linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mod-matrix-grid input[type=range]::-webkit-slider-thumb {
+            height: 10px;
+            width: 8px;
+            margin-top: -4px;
+            border-radius: 1px;
+            background: linear-gradient(to bottom, #ffffff 0%, #aaaaaa 100%);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        .mod-matrix-grid input[type=range]::-moz-range-track {
+            height: 3px;
+            background: linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mod-matrix-grid input[type=range]::-moz-range-thumb {
+            height: 10px;
+            width: 8px;
+            border-radius: 1px;
+            background: linear-gradient(to bottom, #ffffff 0%, #aaaaaa 100%);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         /* Sidechain Meter Area */
@@ -683,6 +714,7 @@
             <div style="display: flex; align-items: baseline; gap: 20px;">
                 <div class="title">MUSHIN</div>
                 <div style="font-size:0.5rem; opacity:0.5; letter-spacing: 2px;">DUAL FILTER LFO MATRIX // MOD-02</div>
+                <div class="bridge-status" id="bridge-status" style="position: static; font-size: 0.45rem; opacity: 0.6; text-transform: uppercase; margin-left: 15px; top: auto; right: auto; z-index: auto;">BRIDGE: OFFLINE</div>
             </div>
             
             <div class="preset-area">
@@ -1134,29 +1166,37 @@
                         <div class="mod-slider-container"><input type="range" id="mod_lfo2_target1" min="0" max="1" step="0.001"></div>
                         <div class="mod-slider-container"><input type="range" id="mod_lfo2_target2" min="0" max="1" step="0.001"></div>
                         <div class="mod-slider-container"><input type="range" id="mod_lfo2_target4" min="0" max="1" step="0.001"></div>
-                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target5" min="0" max="1" step="0.001"></div>
                     </div>
+                </div>
+                <!-- OSCILLOSCOPE (BOTTOM CENTER) -->
+                <div class="sub-panel" style="flex: 0 0 70px; height: 70px; min-height: 70px; padding: 4px; box-sizing: border-box; overflow: hidden; margin-top: 2px;">
+                    <div class="sub-panel-title" style="margin-bottom: 2px; font-size: 0.45rem;">OSCILLOSCOPE</div>
+                    <canvas id="waveformCanvas" width="380" height="50" style="display: block; width: 100%; height: calc(100% - 12px); background: #050505; border: 1px solid var(--marking); border-radius: 2px; box-sizing: border-box;"></canvas>
                 </div>
             </div>
 
-            <!-- COLUMN 3: Sidechain -->
+            <!-- COLUMN 3: Sidechain & Noise Generator -->
             <div class="col">
                 <div class="sub-panel">
                     <div class="sub-panel-title">SIDECHAIN</div>
                     
-                    <!-- DIAGNOSTIC VISUALIZERS -->
-                    <div class="sc-visualizer">
-                        <div class="label" style="font-size:0.35rem">In Peak <span id="sc-meter-in-text">0%</span></div>
-                        <div class="sc-meter-container">
-                            <div class="sc-meter-bar sc-bar-in" id="sc-meter-in"></div>
+                    <!-- DIAGNOSTIC VISUALIZERS (HORIZONTAL LAYOUT) -->
+                    <div class="sc-visualizer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 2px 4px; margin-bottom: 2px;">
+                        <div>
+                            <div class="label" style="font-size:0.35rem; display: flex; justify-content: space-between;"><span>In Peak</span> <span id="sc-meter-in-text">0%</span></div>
+                            <div class="sc-meter-container" style="height: 3px;">
+                                <div class="sc-meter-bar sc-bar-in" id="sc-meter-in"></div>
+                            </div>
                         </div>
-                        <div class="label" style="font-size:0.35rem">Mod Level <span id="sc-meter-bar-text">0%</span></div>
-                        <div class="sc-meter-container">
-                            <div class="sc-meter-bar sc-bar-mod" id="sc-meter-bar"></div>
+                        <div>
+                            <div class="label" style="font-size:0.35rem; display: flex; justify-content: space-between;"><span>Mod Lvl</span> <span id="sc-meter-bar-text">0%</span></div>
+                            <div class="sc-meter-container" style="height: 3px;">
+                                <div class="sc-meter-bar sc-bar-mod" id="sc-meter-bar"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 4px;">
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 2px;">
                         <div style="display:flex; gap:4px; align-items:center;">
                             <input type="checkbox" id="sc_active">
                             <div class="label">Active</div>
@@ -1169,24 +1209,84 @@
                         </select>
                     </div>
 
-                    <div class="label">Thresh</div>
-                    <input type="range" id="sc_threshold" min="0" max="1" step="0.001">
-                    <div class="value" id="sc_threshold-val">-24dB</div>
-                    
-                    <div class="matrix-grid">
+                    <!-- THRESH, AMOUNT, ATK, REL KNOBS -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; margin-top: 2px; text-align: center;">
                         <div>
-                            <div class="label">Atk</div>
-                            <input type="range" id="sc_attack" min="0" max="1" step="0.001">
+                            <div class="label" title="Threshold">Thresh</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-sc_threshold" data-param="sc_threshold" data-default="0.6" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="sc_threshold" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="sc_threshold-val">-24dB</div>
+                        </div>
+                        <div>
+                            <div class="label" title="Amount">Amount</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-sc_amount" data-param="sc_amount" data-default="0.5" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="sc_amount" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="sc_amount-val">0%</div>
+                        </div>
+                        <div>
+                            <div class="label" title="Attack">Atk</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-sc_attack" data-param="sc_attack" data-default="0.02" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="sc_attack" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
                             <div class="value" id="sc_attack-val">10ms</div>
                         </div>
                         <div>
-                            <div class="label">Rel</div>
-                            <input type="range" id="sc_release" min="0" max="1" step="0.001">
+                            <div class="label" title="Release">Rel</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-sc_release" data-param="sc_release" data-default="0.05" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="sc_release" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
                             <div class="value" id="sc_release-val">100ms</div>
                         </div>
                     </div>
 
-                    <div class="matrix-grid">
+                    <!-- HPF & LPF KNOBS -->
+                    <div class="matrix-grid" style="margin-top: 2px;">
                         <div style="text-align: center;">
                             <div class="label">HPF</div>
                             <div class="mushin-knob mushin-knob-small" id="knob-sc_hp_freq" data-param="sc_hp_freq" data-default="0.0" tabindex="0">
@@ -1224,25 +1324,97 @@
                             <div class="value" id="sc_lp_freq-val">20k</div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="label">Amount</div>
-                    <div style="display: flex; align-items: center; gap: 4px; width: 100%;">
-                        <div class="label" style="font-size: 0.4rem; opacity: 0.5;">DUCK</div>
-                        <div class="mod-slider-container" style="flex: 1;">
-                            <input type="range" id="sc_amount" min="0" max="1" step="0.001">
+                <!-- NOISE / GENERATOR -->
+                <div class="sub-panel" style="margin-top: 6px;">
+                    <div class="sub-panel-title">NOISE / GENERATOR</div>
+                    
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 2px;">
+                        <div style="display:flex; gap:4px; align-items:center;">
+                            <input type="checkbox" id="noise_active">
+                            <div class="label">Active</div>
                         </div>
-                        <div class="label" style="font-size: 0.4rem; opacity: 0.5;">GATE</div>
+                        <select id="noise_routing" style="width:75px;">
+                            <option value="0">Pre-Dist</option>
+                            <option value="1">Pre-Filter</option>
+                            <option value="2">Post-Filter</option>
+                        </select>
                     </div>
-                    <div class="value" id="sc_amount-val">0%</div>
+
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 4px;">
+                        <div class="label" style="flex:1;">Type</div>
+                        <select id="noise_type" style="width:110px;">
+                            <option value="0">White Noise</option>
+                            <option value="1">Pink Noise</option>
+                            <option value="2">Sine Tone</option>
+                            <option value="3">Triangle Wave</option>
+                            <option value="4">Sawtooth Wave</option>
+                            <option value="5">Square Wave</option>
+                        </select>
+                    </div>
+
+                    <!-- NOISE PARAMETERS IN 3-COLUMN GRID -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 2px;">
+                        <div style="text-align: center;">
+                            <div class="label">Freq</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-noise_freq" data-param="noise_freq" data-default="0.25" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="noise_freq" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="noise_freq-val">440Hz</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="label">Level</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-noise_level" data-param="noise_level" data-default="0.1" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="noise_level" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="noise_level-val">-20dB</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="label">FM Mod</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-noise_fm_mod" data-param="noise_fm_mod" data-default="0.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="noise_fm_mod" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="noise_fm_mod-val">0%</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="bottom-section">
-            <div class="bridge-status" id="bridge-status">BRIDGE: OFFLINE</div>
-            <canvas id="waveformCanvas"></canvas>
-            <div id="debug-log"></div>
-        </div>
+        <div id="debug-log" style="display: none;"></div>
     </div>
 
     <script>
@@ -1389,7 +1561,13 @@
             sc_release: { min: 1, max: 2000, display: v => v.toFixed(0) + "ms" },
             sc_amount: { min: -100, max: 100, display: v => Math.round(v) + "%" },
             sc_hp_freq: { min: 20, max: 2000, skew: 0.3, display: v => Math.round(v) + "Hz" },
-            sc_lp_freq: { min: 500, max: 20000, skew: 0.3, display: v => Math.round(v) + "Hz" }
+            sc_lp_freq: { min: 500, max: 20000, skew: 0.3, display: v => Math.round(v) + "Hz" },
+            noise_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            noise_type: { type: 'choice', display: v => ["White Noise", "Pink Noise", "Sine Tone", "Triangle", "Sawtooth", "Square"][v] },
+            noise_freq: { min: 20, max: 20000, skew: 0.3, display: v => Math.round(v) + "Hz" },
+            noise_level: { min: 0, max: 100, display: v => Math.round(v) + "%" },
+            noise_routing: { type: 'choice', display: v => ["Pre-Dist", "Pre-Filter", "Post-Filter"][v] },
+            noise_fm_mod: { min: 0, max: 100, display: v => Math.round(v) + "%" }
         };
 
         for(let l=1; l<=2; l++) {

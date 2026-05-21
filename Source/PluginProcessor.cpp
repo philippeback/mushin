@@ -56,6 +56,13 @@ MushinAudioProcessor::MushinAudioProcessor()
     scTargetParam    = treeState.getRawParameterValue ("sc_target");
     scHpFreqParam    = treeState.getRawParameterValue ("sc_hp_freq");
     scLpFreqParam    = treeState.getRawParameterValue ("sc_lp_freq");
+
+    noiseActiveParam  = treeState.getRawParameterValue ("noise_active");
+    noiseTypeParam    = treeState.getRawParameterValue ("noise_type");
+    noiseFreqParam    = treeState.getRawParameterValue ("noise_freq");
+    noiseLevelParam   = treeState.getRawParameterValue ("noise_level");
+    noiseRoutingParam = treeState.getRawParameterValue ("noise_routing");
+    noiseFmModParam   = treeState.getRawParameterValue ("noise_fm_mod");
 }
 
 MushinAudioProcessor::~MushinAudioProcessor() {}
@@ -83,6 +90,7 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     waveshaper.prepare(spec);
     dualFilterSystem.prepare(spec);
     sidechainProcessor.prepare(spec);
+    noiseOscillator.prepare(spec);
 
     dryBuffer.setSize(spec.numChannels, samplesPerBlock);
 
@@ -99,6 +107,7 @@ void MushinAudioProcessor::reset()
     waveshaper.reset();
     dualFilterSystem.reset();
     sidechainProcessor.reset();
+    noiseOscillator.reset();
 }
 
 bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -208,6 +217,18 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         float mixVal = smoothedMix.getNextValue();
         float gainVal = smoothedGain.getNextValue();
 
+        // Calculate Noise Generator sample and FM modulation offset for this sample
+        float genSample = 0.0f;
+        bool noiseActive = (noiseActiveParam != nullptr && noiseActiveParam->load() > 0.5f);
+        if (noiseActive) {
+            noiseOscillator.setType((int)noiseTypeParam->load());
+            noiseOscillator.setFrequency(noiseFreqParam->load());
+            genSample = noiseOscillator.nextSample() * noiseLevelParam->load();
+        }
+
+        float fmAmount = (noiseFmModParam != nullptr) ? noiseFmModParam->load() : 0.0f;
+        float currentFmMod = genSample * fmAmount;
+
         // Calculate Sidechain modulation value for this sample
         float scMod = 0.0f;
         if (sidechainProcessor.isActive()) {
@@ -237,7 +258,11 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             float drySample = dryBuffer.getSample(ch, s);
             float wetSample = drySample;
 
-            // STAGE A: Distortion
+            // STAGE A: Distortion (Pre-Dist Injection)
+            if (noiseActive && (int)noiseRoutingParam->load() == 0) {
+                wetSample += genSample;
+            }
+
             float currentDrive = driveParam->load();
             if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Drive) {
                 currentDrive += (scMod * 20.0f); 
@@ -245,7 +270,11 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             waveshaper.setDrive(std::clamp(currentDrive, 1.0f, 50.0f));
             wetSample = waveshaper.processSample(ch, wetSample);
 
-            // STAGE B: Dual Filtering & LFO Matrix
+            // STAGE B: Dual Filtering & LFO Matrix (Pre-Filter Injection)
+            if (noiseActive && (int)noiseRoutingParam->load() == 1) {
+                wetSample += genSample;
+            }
+
             if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Cutoff) {
                 float cutoffOffset = std::pow(2.0f, scMod * 2.0f);
                 dualFilterSystem.baseParams.filterACutoff = filterACutoffParam->load() * cutoffOffset;
@@ -255,12 +284,17 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
                 dualFilterSystem.baseParams.filterBCutoff = filterBCutoffParam->load();
             }
             
-            wetSample = dualFilterSystem.processSample(ch, wetSample);
+            wetSample = dualFilterSystem.processSample(ch, wetSample, currentFmMod);
 
-            // STAGE C: Mix
+            // STAGE C: Post-Filter Injection
+            if (noiseActive && (int)noiseRoutingParam->load() == 2) {
+                wetSample += genSample;
+            }
+
+            // STAGE D: Mix
             float mixedSample = (drySample * (1.0f - mixVal)) + (wetSample * mixVal);
             
-            // STAGE D: Final Gain
+            // STAGE E: Final Gain
             float currentGain = gainVal;
             if (sidechainProcessor.isActive() && sidechainProcessor.getTarget() == mushin::SidechainProcessor::Target::Gain) {
                 currentGain += scMod;
@@ -414,6 +448,23 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "sc_lp_freq", 1 }, "SC LPF", 
         juce::NormalisableRange<float>(500.0f, 20000.0f, 0.0f, 0.3f), 20000.0f));
+
+    // Noise Oscillator
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "noise_active", 1 }, "Noise Active", false));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "noise_type", 1 }, "Noise Type", 
+        juce::StringArray {"White Noise", "Pink Noise", "Sine Tone", "Triangle Wave", "Sawtooth Wave", "Square Wave"}, 0));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "noise_freq", 1 }, "Noise Freq", 
+        juce::NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 0.3f), 440.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "noise_level", 1 }, "Noise Level", 0.0f, 1.0f, 0.1f));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "noise_routing", 1 }, "Noise Routing", 
+        juce::StringArray {"Pre-Dist", "Pre-Filter", "Post-Filter"}, 0));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "noise_fm_mod", 1 }, "Filter FM Mod", 0.0f, 1.0f, 0.0f));
         
     return { params.begin(), params.end() };
 }
