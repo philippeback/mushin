@@ -4,6 +4,7 @@
 #include "dsp_waveshaper/Waveshaper.h"
 #include "dsp/DualFilterLFOMatrix.h"
 #include "dsp_sidechain/SidechainProcessor.h"
+#include "dsp/NoiseOscillator.h"
 
 class MushinAudioProcessor : public juce::AudioProcessor {
 public:
@@ -56,6 +57,7 @@ private:
   mushin::Waveshaper waveshaper;
   mushin::DualFilterLFOMatrix dualFilterSystem;
   mushin::SidechainProcessor sidechainProcessor;
+  mushin::NoiseOscillator noiseOscillator;
 
   // Pre-allocated dry buffer to avoid allocations in processBlock
   juce::AudioBuffer<float> dryBuffer;
@@ -104,6 +106,14 @@ private:
   std::atomic<float>* scTargetParam = nullptr;
   std::atomic<float>* scHpFreqParam = nullptr;
   std::atomic<float>* scLpFreqParam = nullptr;
+
+  // Noise Oscillator parameters
+  std::atomic<float>* noiseActiveParam = nullptr;
+  std::atomic<float>* noiseTypeParam = nullptr;
+  std::atomic<float>* noiseFreqParam = nullptr;
+  std::atomic<float>* noiseLevelParam = nullptr;
+  std::atomic<float>* noiseRoutingParam = nullptr;
+  std::atomic<float>* noiseFmModParam = nullptr;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };
