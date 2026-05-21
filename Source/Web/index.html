@@ -581,9 +581,72 @@
             animation: mushin-pulse-glow 2.5s infinite alternate ease-in-out;
         }
 
-        @keyframes mushin-pulse-glow {
-            0% { text-shadow: 0 0 6px var(--primary), 0 0 2px var(--primary); opacity: 0.9; }
-            100% { text-shadow: 0 0 16px var(--primary), 0 0 4px var(--primary), 0 0 20px var(--primary); opacity: 1; }
+        /* Premium Waveform shape selector and interactive values styling */
+        .value.interactive {
+            cursor: pointer;
+            transition: color 0.1s ease, text-shadow 0.1s ease;
+            position: relative;
+        }
+        .value.interactive:hover {
+            color: #fff;
+            text-shadow: 0 0 4px var(--primary);
+        }
+        .value-input {
+            background: #050505;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            font-family: inherit;
+            font-size: 0.6rem;
+            width: 48px;
+            height: 14px;
+            padding: 0 2px;
+            box-sizing: border-box;
+            outline: none;
+            text-align: center;
+            border-radius: 2px;
+            box-shadow: 0 0 4px rgba(0, 210, 255, 0.2);
+        }
+        .wave-selector {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            width: 100%;
+        }
+        .wave-btn {
+            flex: 1;
+            height: 22px;
+            background: #0d0d0d;
+            border: 1px solid var(--panel-border);
+            border-radius: 2px;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .wave-btn svg {
+            width: 18px;
+            height: 9px;
+            display: block;
+            pointer-events: none;
+        }
+        .wave-btn path {
+            transition: stroke 0.2s ease;
+        }
+        .wave-btn:hover {
+            color: #aaa;
+            border-color: #555;
+            background: #141414;
+        }
+        .wave-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(0, 210, 255, 0.05);
+            box-shadow: 0 0 6px rgba(0, 210, 255, 0.2), inset 0 0 4px rgba(0, 210, 255, 0.1);
+            filter: drop-shadow(0 0 2px var(--primary));
         }
     </style>
 </head>
@@ -970,26 +1033,52 @@
                         <div class="sub-panel-title">LFO 1</div>
                         <div class="label">Freq</div>
                         <input type="range" id="lfo1_freq" min="0" max="1" step="0.001">
-                        <div class="value" id="lfo1_freq-val">1Hz</div>
+                        <div class="value interactive" id="lfo1_freq-val">1.00Hz</div>
                         <div class="label">Wave</div>
-                        <select id="lfo1_wave">
-                            <option value="0">Sine</option><option value="1">Tri</option>
-                            <option value="2">Saw</option><option value="3">Sqr</option>
-                            <option value="4">Rnd</option>
-                        </select>
+                        <input type="hidden" id="lfo1_wave" value="0">
+                        <div class="wave-selector" data-input-id="lfo1_wave">
+                            <button class="wave-btn active" data-value="0" title="Sine">
+                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 Q 5 0.5 9 4.5 T 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            </button>
+                            <button class="wave-btn" data-value="1" title="Triangle">
+                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 1.5 L 13 7.5 L 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <button class="wave-btn" data-value="2" title="Sawtooth">
+                                <svg viewBox="0 0 18 9"><path d="M 1 7.5 L 13 1.5 L 13 7.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <button class="wave-btn" data-value="3" title="Square">
+                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 1.5 L 13 1.5 L 13 7.5 L 17 7.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <button class="wave-btn" data-value="4" title="Random">
+                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 7.5 L 9 7.5 L 9 1.5 L 13 1.5 L 13 5.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
                     </div>
                     <!-- LFO 2 -->
                     <div class="sub-panel">
                         <div class="sub-panel-title">LFO 2</div>
                         <div class="label">Freq</div>
                         <input type="range" id="lfo2_freq" min="0" max="1" step="0.001">
-                        <div class="value" id="lfo2_freq-val">1Hz</div>
+                        <div class="value interactive" id="lfo2_freq-val">1.00Hz</div>
                         <div class="label">Wave</div>
-                        <select id="lfo2_wave">
-                            <option value="0">Sine</option><option value="1">Tri</option>
-                            <option value="2">Saw</option><option value="3">Sqr</option>
-                            <option value="4">Rnd</option>
-                        </select>
+                        <input type="hidden" id="lfo2_wave" value="0">
+                        <div class="wave-selector" data-input-id="lfo2_wave">
+                            <button class="wave-btn active" data-value="0" title="Sine">
+                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 Q 5 0.5 9 4.5 T 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            </button>
+                            <button class="wave-btn" data-value="1" title="Triangle">
+                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 1.5 L 13 7.5 L 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <button class="wave-btn" data-value="2" title="Sawtooth">
+                                <svg viewBox="0 0 18 9"><path d="M 1 7.5 L 13 1.5 L 13 7.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <button class="wave-btn" data-value="3" title="Square">
+                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 1.5 L 13 1.5 L 13 7.5 L 17 7.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <button class="wave-btn" data-value="4" title="Random">
+                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 7.5 L 9 7.5 L 9 1.5 L 13 1.5 L 13 5.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <!-- Matrix -->
@@ -1258,9 +1347,9 @@
             filter_b_resonance: { min: 0, max: 1, display: v => v.toFixed(2) },
             filter_b_type: { type: 'choice', display: v => ["Clean", "Vintage", "Acid", "Digital"][v] },
             filter_b_mode: { type: 'choice', display: v => ["LP", "HP", "BP", "Notch"][v] },
-            lfo1_freq: { min: 0.1, max: 50, display: v => v.toFixed(1) + "Hz" },
+            lfo1_freq: { min: 0.1, max: 20, skew: 0.4, display: v => v.toFixed(2) + "Hz" },
             lfo1_wave: { type: 'choice', display: v => ["Sine", "Tri", "Saw", "Sqr", "Rnd"][v] },
-            lfo2_freq: { min: 0.1, max: 50, display: v => v.toFixed(1) + "Hz" },
+            lfo2_freq: { min: 0.1, max: 20, skew: 0.4, display: v => v.toFixed(2) + "Hz" },
             lfo2_wave: { type: 'choice', display: v => ["Sine", "Tri", "Saw", "Sqr", "Rnd"][v] },
             sc_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
             sc_source: { type: 'choice', display: v => ["Int", "Ext"][v] },
@@ -1279,12 +1368,44 @@
             }
         }
 
+        function syncWaveSelectorUI(id, normVal) {
+            const selector = document.querySelector(`.wave-selector[data-input-id="${id}"]`);
+            if (!selector) return;
+            
+            const buttons = selector.querySelectorAll('.wave-btn');
+            const numChoices = buttons.length;
+            const choiceIndex = Math.round(normVal * (numChoices - 1));
+            
+            buttons.forEach(btn => {
+                const btnVal = parseInt(btn.getAttribute('data-value'), 10);
+                if (btnVal === choiceIndex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            const hiddenInput = document.getElementById(id);
+            if (hiddenInput) {
+                hiddenInput.value = choiceIndex;
+            }
+        }
+
         function updateParam(id, normVal, skipNative = false) {
             const config = params[id];
             if(!config) return;
             let realVal;
-            if (config.type === 'bool' || config.type === 'choice') {
+            if (config.type === 'bool') {
                 realVal = normVal;
+            } else if (config.type === 'choice') {
+                let numChoices = 2;
+                const el = document.getElementById(id);
+                if (el && el.tagName === 'SELECT') {
+                    numChoices = el.options.length;
+                } else if (id === 'lfo1_wave' || id === 'lfo2_wave') {
+                    numChoices = 5;
+                }
+                realVal = Math.round(normVal * (numChoices - 1));
             } else if (config.skew) {
                 realVal = config.min + (config.max - config.min) * Math.pow(normVal, 1/config.skew);
             } else {
@@ -1292,12 +1413,19 @@
             }
             
             const valEl = document.getElementById(id + '-val');
-            if(valEl) valEl.textContent = config.display(realVal);
+            if(valEl) {
+                valEl.textContent = config.display(realVal);
+            }
 
             // Sync dynamic slider track fill
             const el = document.getElementById(id);
             if (el && el.tagName === 'INPUT' && el.type === 'range') {
                 el.style.setProperty('--track-fill', (normVal * 100) + '%');
+            }
+
+            // Sync wave selector buttons if applicable
+            if (id === 'lfo1_wave' || id === 'lfo2_wave') {
+                syncWaveSelectorUI(id, normVal);
             }
 
             if (!skipNative) {
@@ -1307,10 +1435,22 @@
         }
 
         document.querySelectorAll('input, select').forEach(el => {
-            if (el.id === 'presetList' || el.id === 'themeList') return;
+            if (el.id === 'presetList' || el.id === 'themeList' || el.type === 'hidden') return;
             const event = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
             el.addEventListener(event, e => {
-                const val = el.type === 'checkbox' ? (el.checked ? 1.0 : 0.0) : parseFloat(el.value);
+                let val;
+                if (el.type === 'checkbox') {
+                    val = el.checked ? 1.0 : 0.0;
+                } else if (el.tagName === 'SELECT') {
+                    const config = params[el.id];
+                    if (config && config.type === 'choice') {
+                        val = parseFloat(el.value) / (el.options.length - 1);
+                    } else {
+                        val = parseFloat(el.value);
+                    }
+                } else {
+                    val = parseFloat(el.value);
+                }
                 updateParam(el.id, val);
             });
         });
@@ -1319,7 +1459,22 @@
         window.setParameterValue = (id, normVal) => {
             const config = params[id]; if (!config) return;
             const el = document.getElementById(id); if(!el) return;
-            if (config.type === 'bool') el.checked = normVal > 0.5; else el.value = normVal;
+            
+            if (config.type === 'bool') {
+                el.checked = normVal > 0.5;
+            } else if (config.type === 'choice') {
+                let numChoices = 2;
+                if (el.tagName === 'SELECT') {
+                    numChoices = el.options.length;
+                } else if (id === 'lfo1_wave' || id === 'lfo2_wave') {
+                    numChoices = 5;
+                }
+                const choiceIndex = Math.round(normVal * (numChoices - 1));
+                el.value = choiceIndex;
+            } else {
+                el.value = normVal;
+            }
+            
             updateParam(id, normVal, true);
 
             // Sync custom knobs if they exist
@@ -1503,6 +1658,214 @@
                 }
             }
         }
+
+        class MushinSlider {
+            constructor(element) {
+                this.element = element;
+                this.paramId = element.id;
+                this.isDragging = false;
+                this.startX = 0;
+                this.startValue = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.element.addEventListener('mousedown', e => this.onMouseDown(e));
+                this.element.addEventListener('touchstart', e => this.onTouchStart(e), { passive: false });
+                this.element.addEventListener('keydown', e => this.onKeyDown(e));
+            }
+            
+            setValue(normVal, skipNative = false) {
+                const clampedVal = Math.min(1.0, Math.max(0.0, normVal));
+                this.element.value = clampedVal;
+                updateParam(this.paramId, clampedVal, skipNative);
+            }
+            
+            onMouseDown(e) {
+                if (e.button !== 0) return;
+                this.isDragging = true;
+                this.startX = e.clientX;
+                this.startValue = parseFloat(this.element.value || '0');
+                this.pixelRange = this.element.getBoundingClientRect().width || 120;
+                
+                this.mouseMoveHandler = e => this.onMouseMove(e);
+                this.mouseUpHandler = () => this.onMouseUp();
+                
+                document.addEventListener('mousemove', this.mouseMoveHandler);
+                document.addEventListener('mouseup', this.mouseUpHandler);
+                
+                e.preventDefault();
+            }
+            
+            onMouseMove(e) {
+                if (!this.isDragging) return;
+                const deltaX = e.clientX - this.startX;
+                const sensitivity = e.shiftKey ? 0.15 : 1.0;
+                const deltaVal = (deltaX / this.pixelRange) * sensitivity;
+                this.setValue(this.startValue + deltaVal);
+            }
+            
+            onMouseUp() {
+                this.isDragging = false;
+                document.removeEventListener('mousemove', this.mouseMoveHandler);
+                document.removeEventListener('mouseup', this.mouseUpHandler);
+            }
+            
+            onTouchStart(e) {
+                if (e.touches.length !== 1) return;
+                this.isDragging = true;
+                this.startX = e.touches[0].clientX;
+                this.startValue = parseFloat(this.element.value || '0');
+                this.pixelRange = this.element.getBoundingClientRect().width || 120;
+                
+                this.touchMoveHandler = e => this.onTouchMove(e);
+                this.touchEndHandler = () => this.onTouchEnd();
+                
+                document.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
+                document.addEventListener('touchend', this.touchEndHandler);
+                
+                e.preventDefault();
+            }
+            
+            onTouchMove(e) {
+                if (!this.isDragging || e.touches.length !== 1) return;
+                const deltaX = e.touches[0].clientX - this.startX;
+                const sensitivity = e.shiftKey ? 0.15 : 1.0;
+                const deltaVal = (deltaX / this.pixelRange) * sensitivity;
+                this.setValue(this.startValue + deltaVal);
+                e.preventDefault();
+            }
+            
+            onTouchEnd() {
+                this.isDragging = false;
+                document.removeEventListener('touchmove', this.touchMoveHandler);
+                document.removeEventListener('touchend', this.touchEndHandler);
+            }
+
+            onKeyDown(e) {
+                const step = e.shiftKey ? 0.002 : 0.01;
+                let val = parseFloat(this.element.value || '0');
+                if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+                    this.setValue(val + step);
+                    e.preventDefault();
+                } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+                    this.setValue(val - step);
+                    e.preventDefault();
+                }
+            }
+        }
+
+        // Initialize custom sliders on LFO Freq
+        const lfoSliders = {};
+        ['lfo1_freq', 'lfo2_freq'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                lfoSliders[id] = new MushinSlider(el);
+            }
+        });
+
+        // Initialize Wave Selectors
+        document.querySelectorAll('.wave-selector').forEach(selector => {
+            const id = selector.getAttribute('data-input-id');
+            const hiddenInput = document.getElementById(id);
+            const buttons = selector.querySelectorAll('.wave-btn');
+            
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const choiceIndex = parseInt(btn.getAttribute('data-value'), 10);
+                    const normVal = choiceIndex / (buttons.length - 1);
+                    
+                    if (hiddenInput) {
+                        hiddenInput.value = choiceIndex;
+                    }
+                    
+                    // Set active visual state
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Notify Native / APVTS
+                    updateParam(id, normVal);
+                });
+            });
+        });
+
+        // Initialize In-Place Numeric Value Editing
+        document.querySelectorAll('.value.interactive').forEach(valEl => {
+            valEl.addEventListener('click', function(e) {
+                if (valEl.querySelector('input')) return;
+
+                const id = valEl.id.replace('-val', '');
+                const slider = document.getElementById(id);
+                if (!slider) return;
+
+                const config = params[id];
+                if (!config) return;
+
+                const normVal = parseFloat(slider.value || '0');
+                const realVal = config.skew 
+                    ? config.min + (config.max - config.min) * Math.pow(normVal, 1 / config.skew)
+                    : config.min + (config.max - config.min) * normVal;
+
+                const originalText = valEl.textContent;
+
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'value-input';
+                input.step = '0.01';
+                input.min = config.min;
+                input.max = config.max;
+                input.value = realVal.toFixed(2);
+
+                valEl.innerHTML = '';
+                valEl.appendChild(input);
+                input.focus();
+                input.select();
+
+                let finished = false;
+
+                const commit = () => {
+                    if (finished) return;
+                    finished = true;
+                    
+                    let val = parseFloat(input.value);
+                    if (isNaN(val)) {
+                        valEl.textContent = originalText;
+                        return;
+                    }
+                    
+                    // Clamp
+                    val = Math.max(config.min, Math.min(config.max, val));
+                    
+                    // Convert back to normVal using inverse skew
+                    const range = config.max - config.min;
+                    const normVal = config.skew
+                        ? Math.pow((val - config.min) / range, config.skew)
+                        : (val - config.min) / range;
+                    
+                    slider.value = normVal;
+                    // Trigger dynamic slider fill track
+                    slider.style.setProperty('--track-fill', (normVal * 100) + '%');
+                    
+                    updateParam(id, normVal);
+                };
+
+                const cancel = () => {
+                    if (finished) return;
+                    finished = true;
+                    valEl.textContent = originalText;
+                };
+
+                input.addEventListener('blur', commit);
+                input.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        commit();
+                    } else if (e.key === 'Escape') {
+                        cancel();
+                    }
+                });
+            });
+        });
 
         // Initialize custom knobs
         document.querySelectorAll('.mushin-knob').forEach(el => {
