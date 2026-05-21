@@ -1165,7 +1165,7 @@
                             <option value="0">Int</option><option value="1">Ext</option>
                         </select>
                         <select id="sc_target" style="width:60px;">
-                            <option value="0">Gain</option><option value="1">Drive</option><option value="2">Cutoff</option>
+                            <option value="0">Drive</option><option value="1">Cutoff</option><option value="2">Gain</option>
                         </select>
                     </div>
 
@@ -1383,7 +1383,7 @@
             lfo2_wave: { type: 'choice', display: v => ["Sine", "Tri", "Saw", "Sqr", "Rnd"][v] },
             sc_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
             sc_source: { type: 'choice', display: v => ["Int", "Ext"][v] },
-            sc_target: { type: 'choice', display: v => ["Dry", "Cut", "Gain"][v] },
+            sc_target: { type: 'choice', display: v => ["Drive", "Cut", "Gain"][v] },
             sc_threshold: { min: -60, max: 0, display: v => v.toFixed(1) + "dB" },
             sc_attack: { min: 0.1, max: 500, display: v => v.toFixed(1) + "ms" },
             sc_release: { min: 1, max: 2000, display: v => v.toFixed(0) + "ms" },
