@@ -97,11 +97,223 @@
 
         .label { font-size: 0.45rem; text-transform: uppercase; color: var(--text-main); opacity: 0.7; }
 
-        input[type=range] { width: 100%; cursor: pointer; height: 12px; margin: 2px 0; accent-color: var(--primary); }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 16px;
+            background: transparent;
+            margin: 2px 0;
+            outline: none;
+        }
+
+        /* Webkit / Chromium / Safari / Edge Track */
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 5px;
+            background: #141414; /* slightly brighter dark base */
+            /* Multi-layer background:
+               1. Left-aligned glowing accent active fill (tracked via dynamic CSS variable --track-fill)
+               2. Precision vertical scale ticks (repeating ticks every 10% for Moog synthesizer hardware haptics)
+               3. Sleek horizontal drop-shadow gradient */
+            background-image: 
+                linear-gradient(to right, var(--primary) 0%, var(--primary) var(--track-fill, 0%), transparent var(--track-fill, 0%), transparent 100%),
+                repeating-linear-gradient(to right, transparent, transparent 9%, rgba(255,255,255,0.06) 9%, rgba(255,255,255,0.06) 10%),
+                linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.16); /* high contrast outline so slot is clearly visible even on dark backgrounds */
+            border-radius: 2px;
+            box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.95);
+        }
+
+        /* Webkit / Chromium / Safari / Edge Thumb (High-Contrast Machined Metal Fader Cap) */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 14px;
+            border-radius: 2px;
+            /* Polished brushed-aluminum gradient overlaid with sharp primary center stripe */
+            background: linear-gradient(to right, rgba(0,0,0,0) 42%, var(--primary) 42%, var(--primary) 58%, rgba(0,0,0,0) 58%),
+                        linear-gradient(to bottom, #ffffff 0%, #d8d8d8 25%, #aaaaaa 65%, #777777 100%);
+            border: 1px solid #111111;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.9);
+            cursor: pointer;
+            margin-top: -6px; /* (Track height 5px - Thumb height 16px) / 2 = -5.5px */
+            transition: box-shadow 0.1s ease, background 0.1s ease, transform 0.1s ease;
+        }
+
+        /* Hover state for discoverability */
+        input[type=range]::-webkit-slider-thumb:hover {
+            box-shadow: 0 3px 8px rgba(0,0,0,0.9), 0 0 4px var(--primary), inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+
+        /* Active / Interacting states */
+        input[type=range]:active::-webkit-slider-thumb {
+            background: linear-gradient(to right, rgba(0,0,0,0) 42%, #ffffff 42%, #ffffff 58%, rgba(0,0,0,0) 58%),
+                        linear-gradient(to bottom, #ffffff 0%, #e8e8e8 25%, #c0c0c0 65%, #999999 100%);
+            box-shadow: 0 0 8px var(--primary), 0 4px 10px rgba(0,0,0,0.9);
+            transform: scale(1.05);
+        }
+
+        /* Gecko / Firefox Track */
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 5px;
+            background: repeating-linear-gradient(to right, transparent, transparent 9%, rgba(255,255,255,0.06) 9%, rgba(255,255,255,0.06) 10%),
+                        linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 2px;
+            box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.95);
+        }
+
+        /* Gecko / Firefox Thumb */
+        input[type=range]::-moz-range-thumb {
+            height: 16px;
+            width: 14px;
+            border-radius: 2px;
+            background: linear-gradient(to right, rgba(0,0,0,0) 42%, var(--primary) 42%, var(--primary) 58%, rgba(0,0,0,0) 58%),
+                        linear-gradient(to bottom, #ffffff 0%, #d8d8d8 25%, #aaaaaa 65%, #777777 100%);
+            border: 1px solid #111111;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.9);
+            cursor: pointer;
+            transition: box-shadow 0.1s ease, background 0.1s ease, transform 0.1s ease;
+        }
+
+        input[type=range]::-moz-range-thumb:hover {
+            box-shadow: 0 3px 8px rgba(0,0,0,0.9), 0 0 4px var(--primary), inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+
+        input[type=range]:active::-moz-range-thumb {
+            background: linear-gradient(to right, rgba(0,0,0,0) 42%, #ffffff 42%, #ffffff 58%, rgba(0,0,0,0) 58%),
+                        linear-gradient(to bottom, #ffffff 0%, #e8e8e8 25%, #c0c0c0 65%, #999999 100%);
+            box-shadow: 0 0 8px var(--primary), 0 4px 10px rgba(0,0,0,0.9);
+            transform: scale(1.05);
+        }
+
+        input[type=range]::-moz-range-progress {
+            height: 5px;
+            background: var(--primary);
+            border-radius: 2px 0 0 2px;
+            box-shadow: 0 0 4px var(--primary);
+        }
+
         input[type=checkbox] { accent-color: var(--primary); }
         select { background: var(--bg-hardware); color: var(--text-main); border: 1px solid var(--marking); font-size: 0.55rem; width: 100%; padding: 1px; }
-
         .value { font-size: 0.6rem; color: var(--primary); font-variant-numeric: tabular-nums; }
+
+        /* Custom Moog-Style Knob Styles */
+        .mushin-knob {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            margin: 6px auto;
+            cursor: grab;
+            outline: none;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mushin-knob-big {
+            width: 58px !important;
+            height: 58px !important;
+            margin: 4px auto !important;
+        }
+
+        .mushin-knob-small {
+            width: 36px !important;
+            height: 36px !important;
+            margin: 4px auto !important;
+        }
+
+        .mushin-knob:active {
+            cursor: grabbing;
+        }
+
+        /* Filter layouts (Side-by-side rows) */
+        .filter-knobs-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 10px;
+            margin: 4px 0;
+            width: 100%;
+        }
+
+        .filter-knob-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Detailed lobed contours for classic Moog large dial details */
+        .bezel-lobe-part {
+            fill: #141414;
+            stroke: #333333;
+            stroke-width: 0.8px;
+        }
+
+        .mushin-knob:focus-visible .knob-bezel {
+            stroke: var(--primary);
+            stroke-width: 1.5px;
+        }
+
+        .knob-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /* Background track circular marking */
+        .knob-track-bg {
+            fill: none;
+            stroke: var(--marking);
+            stroke-width: 3.5;
+            stroke-linecap: round;
+        }
+
+        /* Active value arc matching theme */
+        .knob-value-arc {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 4;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 3px var(--primary));
+            transition: stroke 0.3s ease;
+        }
+
+        /* Heavy dark fluted bezel */
+        .knob-bezel {
+            fill: #111111;
+            stroke: #333333;
+            stroke-width: 1.2;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+        }
+
+        /* Metallic cap dome */
+        .knob-dome {
+            stroke: #222222;
+            stroke-width: 0.5;
+        }
+
+        /* High contrast pointer line and dot */
+        .knob-pointer-line {
+            stroke: var(--primary);
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 2px var(--primary));
+        }
+
+        .knob-pointer-dot {
+            fill: #ffffff;
+        }
+
+        .knob-pointer-group {
+            transform-origin: 50px 50px;
+            will-change: transform;
+        }
 
         .bottom-section {
             height: 60px; position: relative;
@@ -141,6 +353,238 @@
         .sc-meter-bar { height: 100%; width: 0%; transition: width 0.05s linear; }
         .sc-bar-mod { background: var(--sc-yellow); box-shadow: 0 0 5px var(--sc-yellow); }
         .sc-bar-in  { background: var(--sc-input); opacity: 0.8; }
+
+        /* Custom Premium 3D Toggle Switch Plate for retro-futuristic Moog look */
+        .toggle-plate {
+            position: relative;
+            width: 48px;
+            height: 52px;
+            background: linear-gradient(135deg, #252525 0%, #121212 50%, #080808 100%);
+            border: 1px solid #1a1a1a;
+            border-radius: 3px;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.08),
+                0 3px 6px rgba(0,0,0,0.7),
+                0 0 2px rgba(0,0,0,0.9);
+            margin: 6px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        /* Corner metal screws */
+        .plate-screw {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 1px 1px, #666, #222);
+            box-shadow: 0 0.5px 1px rgba(0,0,0,0.8);
+        }
+        .plate-screw.top-left { top: 2px; left: 2px; }
+        .plate-screw.top-right { top: 2px; right: 2px; }
+        .plate-screw.bottom-left { bottom: 2px; left: 2px; }
+        .plate-screw.bottom-right { bottom: 2px; right: 2px; }
+
+        .mushin-lever-switch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            justify-content: space-evenly;
+            padding: 4px 0;
+            box-sizing: border-box;
+        }
+
+        /* Deep vertical slot bezel */
+        .switch-bezel {
+            width: 16px;
+            height: 30px;
+            background: #050505;
+            border: 1px solid #222;
+            border-radius: 2px;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.95),
+                0 1px 0 rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .switch-slot {
+            width: 6px;
+            height: 24px;
+            background: #000;
+            border-radius: 1px;
+            position: relative;
+        }
+
+        /* 3D lever stem + mechanical head */
+        .switch-lever {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 10px;
+            height: 20px;
+            margin-left: -5px;
+            margin-top: -10px;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            will-change: transform;
+        }
+
+        .lever-stem {
+            width: 3px;
+            height: 14px;
+            background: linear-gradient(to right, #666 0%, #ccc 30%, #fff 50%, #888 70%, #444 100%);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            border-radius: 0.5px;
+        }
+
+        .lever-tip {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 2.5px 2.5px, #ffffff 0%, #b8b8b8 20%, #777777 60%, #333333 100%);
+            border: 0.5px solid #111;
+            box-shadow: 
+                0 2px 4px rgba(0,0,0,0.6),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            margin-bottom: -3px;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Default OFF (lever pointing down) */
+        .switch-lever {
+            transform: rotateX(20deg) translateY(2px);
+        }
+
+        /* LED Lamp Indicator */
+        .switch-status-lamp {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #0f0505;
+            border: 1px solid #222;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .lamp-lens {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1), transparent 70%);
+        }
+
+        /* Sibling States when checked */
+        #exhaustion:checked ~ .switch-bezel .switch-lever {
+            transform: rotateX(-20deg) translateY(-6px);
+        }
+
+        #exhaustion:checked ~ .switch-bezel .lever-tip {
+            background: radial-gradient(circle at 2.5px 2.5px, #ffffff 0%, var(--primary) 30%, #5d0000 80%, #3d0000 100%);
+            box-shadow: 
+                0 0 6px var(--primary),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        #exhaustion:checked ~ .switch-status-lamp {
+            background: var(--primary);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 
+                0 0 6px var(--primary), 
+                0 0 12px var(--primary),
+                inset 0 1px 1px rgba(255,255,255,0.8);
+        }
+
+        #exhaustion:checked ~ .switch-status-lamp .lamp-lens {
+            background: radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.1) 60%, transparent 100%);
+        }
+
+        /* -------------------------------------------------------------
+           Dynamic "looks like it all changes when turned on" parent states
+           ------------------------------------------------------------- */
+
+        /* Pulsing CRT scanline and warning background on the body when active */
+        body:has(#exhaustion:checked) {
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(255,0,85,0.02) 0%, transparent 80%),
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+            transition: background 0.4s ease;
+        }
+
+        /* Glowing overlay borders and active breathing shadows on the main board */
+        .main-panel:has(#exhaustion:checked) {
+            border-color: var(--primary) !important;
+            box-shadow: 
+                0 30px 100px rgba(0,0,0,0.95),
+                0 0 20px var(--primary),
+                inset 0 0 15px var(--primary) !important;
+            transition: all 0.4s ease;
+        }
+
+        /* Shift background to look hot, electric and fully powered */
+        .main-panel:has(#exhaustion:checked) .control-group {
+            border-color: rgba(255,255,255,0.15) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5) !important;
+            transition: all 0.4s ease;
+        }
+
+        /* High emphasis on the Exhaust card slot itself */
+        .main-panel:has(#exhaustion:checked) #group-exhaustion {
+            border-color: var(--primary) !important;
+            box-shadow: 
+                0 0 15px var(--primary), 
+                inset 0 0 12px rgba(255, 255, 255, 0.02) !important;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.015) 0%, var(--display-bg) 100%) !important;
+        }
+
+        /* Glow and highlight Exhaust panel labels and numeric displays */
+        .main-panel:has(#exhaustion:checked) #group-exhaustion #exhaustion-val {
+            color: var(--primary) !important;
+            font-weight: bold;
+            text-shadow: 0 0 6px var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .main-panel:has(#exhaustion:checked) #group-exhaustion .label {
+            color: #ffffff !important;
+            opacity: 0.95 !important;
+            text-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        /* Boost active sliders and their tracks globally when high voltage mode is active */
+        .main-panel:has(#exhaustion:checked) input[type=range]::-webkit-slider-runnable-track {
+            border-color: var(--primary) !important;
+            box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.95), 0 0 4px var(--primary) !important;
+        }
+
+        .main-panel:has(#exhaustion:checked) input[type=range]::-webkit-slider-thumb {
+            box-shadow: 0 3px 8px rgba(0,0,0,0.9), 0 0 6px var(--primary), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+        }
+
+        /* Let the main logo text breath/pulse in theme glow */
+        .main-panel:has(#exhaustion:checked) .title {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px var(--primary), 0 0 2px var(--primary) !important;
+            animation: mushin-pulse-glow 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes mushin-pulse-glow {
+            0% { text-shadow: 0 0 6px var(--primary), 0 0 2px var(--primary); opacity: 0.9; }
+            100% { text-shadow: 0 0 16px var(--primary), 0 0 4px var(--primary), 0 0 20px var(--primary); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -174,27 +618,151 @@
         <div class="top-section">
             <div class="control-group">
                 <div class="label">Drive</div>
-                <input type="range" id="drive" min="0" max="1" step="0.001">
+                <!-- Custom Moog Knob for Drive -->
+                <div class="mushin-knob" id="knob-drive" data-param="drive" data-default="0.0" tabindex="0">
+                    <svg viewBox="0 0 100 100" class="knob-svg">
+                        <defs>
+                            <radialGradient id="metallic-dome" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+                                <stop offset="0%" stop-color="#fdfdfd" />
+                                <stop offset="30%" stop-color="#dcdcdc" />
+                                <stop offset="70%" stop-color="#8a8a8a" />
+                                <stop offset="100%" stop-color="#4a4a4a" />
+                            </radialGradient>
+                            <linearGradient id="brushed-reflection" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="rgba(255,255,255,0.15)" />
+                                <stop offset="45%" stop-color="rgba(0,0,0,0.3)" />
+                                <stop offset="50%" stop-color="rgba(255,255,255,0.4)" />
+                                <stop offset="55%" stop-color="rgba(0,0,0,0.3)" />
+                                <stop offset="100%" stop-color="rgba(255,255,255,0.15)" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Outer Dynamic Value Track -->
+                        <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                        <path class="knob-value-arc" d="" />
+
+                        <!-- Outer Bezel (Fluted Ring) -->
+                        <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                        
+                        <!-- Metallic Cap Dome -->
+                        <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                        <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                        
+                        <!-- Rotating Pointer Skirt -->
+                        <g class="knob-pointer-group">
+                            <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                            <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                        </g>
+                    </svg>
+                    <!-- Hidden slider to preserve parameter bindings -->
+                    <input type="range" id="drive" min="0" max="1" step="0.001" style="display: none;">
+                </div>
                 <div class="value" id="drive-val">1.0</div>
             </div>
             <div class="control-group">
                 <div class="label">Thresh</div>
-                <input type="range" id="threshold" min="0" max="1" step="0.001">
+                <!-- Custom Moog Knob for Threshold -->
+                <div class="mushin-knob" id="knob-threshold" data-param="threshold" data-default="1.0" tabindex="0">
+                    <svg viewBox="0 0 100 100" class="knob-svg">
+                        <!-- Outer Dynamic Value Track -->
+                        <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                        <path class="knob-value-arc" d="" />
+
+                        <!-- Outer Bezel (Fluted Ring) -->
+                        <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                        
+                        <!-- Metallic Cap Dome (reusing global defs) -->
+                        <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                        <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                        
+                        <!-- Rotating Pointer Skirt -->
+                        <g class="knob-pointer-group">
+                            <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                            <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                        </g>
+                    </svg>
+                    <!-- Hidden slider to preserve parameter bindings -->
+                    <input type="range" id="threshold" min="0" max="1" step="0.001" style="display: none;">
+                </div>
                 <div class="value" id="threshold-val">1.00</div>
             </div>
-            <div class="control-group">
+            <div class="control-group" id="group-exhaustion">
                 <div class="label">Exhaust</div>
-                <input type="checkbox" id="exhaustion">
+                <div class="toggle-plate">
+                    <div class="plate-screw top-left"></div>
+                    <div class="plate-screw top-right"></div>
+                    <div class="plate-screw bottom-left"></div>
+                    <div class="plate-screw bottom-right"></div>
+                    
+                    <label class="mushin-lever-switch" for="exhaustion">
+                        <input type="checkbox" id="exhaustion" style="display: none;">
+                        <div class="switch-bezel">
+                            <div class="switch-slot">
+                                <div class="switch-lever">
+                                    <div class="lever-stem"></div>
+                                    <div class="lever-tip"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="switch-status-lamp">
+                            <div class="lamp-lens"></div>
+                        </div>
+                    </label>
+                </div>
                 <div class="value" id="exhaustion-val">OFF</div>
             </div>
             <div class="control-group">
                 <div class="label">Mix</div>
-                <input type="range" id="mix" min="0" max="1" step="0.001">
+                <!-- Custom Moog Knob for Mix -->
+                <div class="mushin-knob" id="knob-mix" data-param="mix" data-default="1.0" tabindex="0">
+                    <svg viewBox="0 0 100 100" class="knob-svg">
+                        <!-- Outer Dynamic Value Track -->
+                        <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                        <path class="knob-value-arc" d="" />
+
+                        <!-- Outer Bezel (Fluted Ring) -->
+                        <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                        
+                        <!-- Metallic Cap Dome (reusing global defs) -->
+                        <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                        <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                        
+                        <!-- Rotating Pointer Skirt -->
+                        <g class="knob-pointer-group">
+                            <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                            <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                        </g>
+                    </svg>
+                    <!-- Hidden slider to preserve parameter bindings -->
+                    <input type="range" id="mix" min="0" max="1" step="0.001" style="display: none;">
+                </div>
                 <div class="value" id="mix-val">100%</div>
             </div>
             <div class="control-group">
                 <div class="label">Gain</div>
-                <input type="range" id="gain" min="0" max="1" step="0.001">
+                <!-- Custom Moog Knob for Gain -->
+                <div class="mushin-knob" id="knob-gain" data-param="gain" data-default="0.5" tabindex="0">
+                    <svg viewBox="0 0 100 100" class="knob-svg">
+                        <!-- Outer Dynamic Value Track -->
+                        <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                        <path class="knob-value-arc" d="" />
+
+                        <!-- Outer Bezel (Fluted Ring) -->
+                        <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                        
+                        <!-- Metallic Cap Dome (reusing global defs) -->
+                        <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                        <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                        
+                        <!-- Rotating Pointer Skirt -->
+                        <g class="knob-pointer-group">
+                            <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                            <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                        </g>
+                    </svg>
+                    <!-- Hidden slider to preserve parameter bindings -->
+                    <input type="range" id="gain" min="0" max="1" step="0.001" style="display: none;">
+                </div>
                 <div class="value" id="gain-val">1.00</div>
             </div>
         </div>
@@ -216,12 +784,75 @@
                 <!-- Filter A -->
                 <div class="sub-panel">
                     <div class="sub-panel-title">FILTER A</div>
-                    <div class="label">Cutoff</div>
-                    <input type="range" id="filter_a_cutoff" min="0" max="1" step="0.001">
-                    <div class="value" id="filter_a_cutoff-val">20k</div>
-                    <div class="label">Res</div>
-                    <input type="range" id="filter_a_resonance" min="0" max="1" step="0.001">
-                    <div class="value" id="filter_a_resonance-val">0.1</div>
+                    
+                    <div class="filter-knobs-row">
+                        <!-- Cutoff (Big Lobed Knob) -->
+                        <div class="filter-knob-container">
+                            <div class="label">Cutoff</div>
+                            <div class="mushin-knob mushin-knob-big" id="knob-filter_a_cutoff" data-param="filter_a_cutoff" data-default="1.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <!-- Outer Dynamic Value Track -->
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="45" />
+                                    <path class="knob-value-arc" d="" />
+
+                                    <!-- Fluted Bezel (Moog Scalloped lobes) -->
+                                    <g class="knob-bezel-lobed">
+                                        <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
+                                        <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                        <!-- Overlay hiding internal intersecting strokes -->
+                                        <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
+                                    </g>
+                                    
+                                    <!-- Metallic Cap Dome (reusing global defs) -->
+                                    <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    
+                                    <!-- Rotating Pointer Skirt -->
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="14" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="16" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="filter_a_cutoff" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="filter_a_cutoff-val">20k</div>
+                        </div>
+
+                        <!-- Resonance (Small Knob) -->
+                        <div class="filter-knob-container">
+                            <div class="label">Res</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-filter_a_resonance" data-param="filter_a_resonance" data-default="0.1" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <!-- Outer Dynamic Value Track -->
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+
+                                    <!-- Outer Bezel (Fluted Ring) -->
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    
+                                    <!-- Metallic Cap Dome (reusing global defs) -->
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    
+                                    <!-- Rotating Pointer Skirt -->
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="filter_a_resonance" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="filter_a_resonance-val">0.1</div>
+                        </div>
+                    </div>
+
                     <div class="matrix-grid" style="margin-top: auto;">
                         <div>
                             <div class="label">Type</div>
@@ -239,15 +870,79 @@
                         </div>
                     </div>
                 </div>
+
                 <!-- Filter B -->
                 <div class="sub-panel">
                     <div class="sub-panel-title">FILTER B</div>
-                    <div class="label">Cutoff</div>
-                    <input type="range" id="filter_b_cutoff" min="0" max="1" step="0.001">
-                    <div class="value" id="filter_b_cutoff-val">20k</div>
-                    <div class="label">Res</div>
-                    <input type="range" id="filter_b_resonance" min="0" max="1" step="0.001">
-                    <div class="value" id="filter_b_resonance-val">0.1</div>
+                    
+                    <div class="filter-knobs-row">
+                        <!-- Cutoff (Big Lobed Knob) -->
+                        <div class="filter-knob-container">
+                            <div class="label">Cutoff</div>
+                            <div class="mushin-knob mushin-knob-big" id="knob-filter_b_cutoff" data-param="filter_b_cutoff" data-default="1.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <!-- Outer Dynamic Value Track -->
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="45" />
+                                    <path class="knob-value-arc" d="" />
+
+                                    <!-- Fluted Bezel (Moog Scalloped lobes) -->
+                                    <g class="knob-bezel-lobed">
+                                        <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
+                                        <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                        <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                        <!-- Overlay hiding internal intersecting strokes -->
+                                        <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
+                                    </g>
+                                    
+                                    <!-- Metallic Cap Dome (reusing global defs) -->
+                                    <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    
+                                    <!-- Rotating Pointer Skirt -->
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="14" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="16" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="filter_b_cutoff" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="filter_b_cutoff-val">20k</div>
+                        </div>
+
+                        <!-- Resonance (Small Knob) -->
+                        <div class="filter-knob-container">
+                            <div class="label">Res</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-filter_b_resonance" data-param="filter_b_resonance" data-default="0.1" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <!-- Outer Dynamic Value Track -->
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+
+                                    <!-- Outer Bezel (Fluted Ring) -->
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    
+                                    <!-- Metallic Cap Dome (reusing global defs) -->
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    
+                                    <!-- Rotating Pointer Skirt -->
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="filter_b_resonance" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="filter_b_resonance-val">0.1</div>
+                        </div>
+                    </div>
+
                     <div class="matrix-grid" style="margin-top: auto;">
                         <div>
                             <div class="label">Type</div>
@@ -373,14 +1068,40 @@
                     </div>
 
                     <div class="matrix-grid">
-                        <div>
+                        <div style="text-align: center;">
                             <div class="label">HPF</div>
-                            <input type="range" id="sc_hp_freq" min="0" max="1" step="0.001">
+                            <div class="mushin-knob mushin-knob-small" id="knob-sc_hp_freq" data-param="sc_hp_freq" data-default="0.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="sc_hp_freq" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
                             <div class="value" id="sc_hp_freq-val">20Hz</div>
                         </div>
-                        <div>
+                        <div style="text-align: center;">
                             <div class="label">LPF</div>
-                            <input type="range" id="sc_lp_freq" min="0" max="1" step="0.001">
+                            <div class="mushin-knob mushin-knob-small" id="knob-sc_lp_freq" data-param="sc_lp_freq" data-default="1.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="sc_lp_freq" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
                             <div class="value" id="sc_lp_freq-val">20k</div>
                         </div>
                     </div>
@@ -434,19 +1155,44 @@
 
             ctx.fillStyle = displayBg;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid lines
             ctx.strokeStyle = markingColor;
-            for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.width; i+=40) { 
+                ctx.beginPath(); 
+                ctx.moveTo(i,0); 
+                ctx.lineTo(i,canvas.height); 
+                ctx.stroke(); 
+            }
+            
             ctx.beginPath();
             ctx.strokeStyle = primaryColor;
-            ctx.lineWidth = 1.5;
+            
+            // Overloaded analog jitter and intense CRT glow when Exhaustion is enabled
+            const isExhausted = document.getElementById('exhaustion') && document.getElementById('exhaustion').checked;
+            
+            if (isExhausted) {
+                ctx.lineWidth = 2.5;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = primaryColor;
+            } else {
+                ctx.lineWidth = 1.5;
+                ctx.shadowBlur = 0;
+            }
+
             const sliceWidth = canvas.width / (audioData.length - 1);
             let x = 0;
             for (let i = 0; i < audioData.length; i++) {
-                const y = (audioData[i] * 0.4 + 0.5) * canvas.height;
+                // Add high frequency analog thermal noise when hardware is running hot
+                const noise = isExhausted ? (Math.random() - 0.5) * 0.03 : 0;
+                const y = ((audioData[i] + noise) * 0.4 + 0.5) * canvas.height;
                 if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                 x += sliceWidth;
             }
             ctx.stroke();
+            
+            // Reset canvas shadow filter context
+            ctx.shadowBlur = 0;
         }
         draw();
 
@@ -548,6 +1294,12 @@
             const valEl = document.getElementById(id + '-val');
             if(valEl) valEl.textContent = config.display(realVal);
 
+            // Sync dynamic slider track fill
+            const el = document.getElementById(id);
+            if (el && el.tagName === 'INPUT' && el.type === 'range') {
+                el.style.setProperty('--track-fill', (normVal * 100) + '%');
+            }
+
             if (!skipNative) {
                 if (backend && backend.setParameterValue) backend.setParameterValue(id, normVal);
                 window.location.href = "mushin://setParameterValue?id=" + id + "&val=" + normVal;
@@ -569,7 +1321,200 @@
             const el = document.getElementById(id); if(!el) return;
             if (config.type === 'bool') el.checked = normVal > 0.5; else el.value = normVal;
             updateParam(id, normVal, true);
+
+            // Sync custom knobs if they exist
+            if (window.knobs && window.knobs[id]) {
+                window.knobs[id].updateFromExternal(normVal);
+            }
         };
+
+        // Custom Premium UI Knob Controller Engine
+        window.knobs = {};
+
+        class MushinKnob {
+            constructor(element) {
+                this.element = element;
+                this.paramId = element.getAttribute('data-param');
+                this.defaultValue = parseFloat(element.getAttribute('data-default') || '0.0');
+                
+                this.hiddenInput = element.querySelector('input');
+                this.pointerGroup = element.querySelector('.knob-pointer-group');
+                this.valueArc = element.querySelector('.knob-value-arc');
+                
+                this.minVal = parseFloat(this.hiddenInput.min || '0');
+                this.maxVal = parseFloat(this.hiddenInput.max || '1');
+                this.step = parseFloat(this.hiddenInput.step || '0.001');
+                this.value = parseFloat(this.hiddenInput.value || this.defaultValue.toString());
+                
+                // Traditional Moog knob angle span: 270 degrees (-135deg to +135deg)
+                this.minAngle = -135;
+                this.maxAngle = 135;
+                
+                this.isDragging = false;
+                this.startY = 0;
+                this.startValue = 0;
+                this.pixelRange = 150; // Drag range in pixels for full [0..1] range
+                
+                this.init();
+            }
+            
+            init() {
+                this.element.addEventListener('mousedown', e => this.onMouseDown(e));
+                this.element.addEventListener('touchstart', e => this.onTouchStart(e), { passive: false });
+                this.element.addEventListener('dblclick', () => this.resetToDefault());
+                this.element.addEventListener('wheel', e => this.onWheel(e), { passive: false });
+                this.element.addEventListener('keydown', e => this.onKeyDown(e));
+                
+                // Initial visual setup
+                this.updateUI(this.value);
+            }
+            
+            setValue(normVal, skipNative = false) {
+                const clampedVal = Math.min(this.maxVal, Math.max(this.minVal, normVal));
+                const steppedVal = Math.round(clampedVal / this.step) * this.step;
+                
+                if (steppedVal === this.value) return;
+                
+                this.value = steppedVal;
+                this.hiddenInput.value = steppedVal;
+                
+                this.updateUI(steppedVal);
+                
+                // Notify the main parameter handler flow
+                updateParam(this.paramId, steppedVal, skipNative);
+            }
+
+            updateFromExternal(normVal) {
+                const clampedVal = Math.min(this.maxVal, Math.max(this.minVal, normVal));
+                const steppedVal = Math.round(clampedVal / this.step) * this.step;
+                this.value = steppedVal;
+                this.hiddenInput.value = steppedVal;
+                this.updateUI(steppedVal);
+            }
+            
+            updateUI(normVal) {
+                const percentage = (normVal - this.minVal) / (this.maxVal - this.minVal);
+                const angle = this.minAngle + percentage * (this.maxAngle - this.minAngle);
+                
+                this.pointerGroup.style.transform = `rotate(${angle}deg)`;
+                this.updateArc(percentage);
+            }
+            
+            updateArc(percentage) {
+                if (percentage <= 0.001) {
+                    this.valueArc.setAttribute('d', '');
+                    return;
+                }
+                const radius = 44;
+                const cx = 50;
+                const cy = 50;
+                
+                const startRad = (this.minAngle - 90) * Math.PI / 180;
+                const currentRad = ((this.minAngle + percentage * 270) - 90) * Math.PI / 180;
+                
+                const x1 = cx + radius * Math.cos(startRad);
+                const y1 = cy + radius * Math.sin(startRad);
+                const x2 = cx + radius * Math.cos(currentRad);
+                const y2 = cy + radius * Math.sin(currentRad);
+                
+                const largeArcFlag = percentage > 0.66 ? 1 : 0;
+                
+                const pathData = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`;
+                this.valueArc.setAttribute('d', pathData);
+            }
+            
+            onMouseDown(e) {
+                this.isDragging = true;
+                this.startY = e.clientY;
+                this.startValue = this.value;
+                
+                this.mouseMoveHandler = e => this.onMouseMove(e);
+                this.mouseUpHandler = () => this.onMouseUp();
+                
+                document.addEventListener('mousemove', this.mouseMoveHandler);
+                document.addEventListener('mouseup', this.mouseUpHandler);
+                
+                e.preventDefault();
+            }
+            
+            onMouseMove(e) {
+                if (!this.isDragging) return;
+                const deltaY = this.startY - e.clientY;
+                const sensitivity = e.shiftKey ? 0.15 : 1.0;
+                const deltaVal = (deltaY / this.pixelRange) * (this.maxVal - this.minVal) * sensitivity;
+                this.setValue(this.startValue + deltaVal);
+            }
+            
+            onMouseUp() {
+                this.isDragging = false;
+                document.removeEventListener('mousemove', this.mouseMoveHandler);
+                document.removeEventListener('mouseup', this.mouseUpHandler);
+            }
+
+            onTouchStart(e) {
+                if (e.touches.length !== 1) return;
+                this.isDragging = true;
+                this.startY = e.touches[0].clientY;
+                this.startValue = this.value;
+                
+                this.touchMoveHandler = e => this.onTouchMove(e);
+                this.touchEndHandler = () => this.onTouchEnd();
+                
+                document.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
+                document.addEventListener('touchend', this.touchEndHandler);
+                
+                e.preventDefault();
+            }
+            
+            onTouchMove(e) {
+                if (!this.isDragging || e.touches.length !== 1) return;
+                const deltaY = this.startY - e.touches[0].clientY;
+                const sensitivity = e.shiftKey ? 0.15 : 1.0;
+                const deltaVal = (deltaY / this.pixelRange) * (this.maxVal - this.minVal) * sensitivity;
+                this.setValue(this.startValue + deltaVal);
+                e.preventDefault();
+            }
+            
+            onTouchEnd() {
+                this.isDragging = false;
+                document.removeEventListener('touchmove', this.touchMoveHandler);
+                document.removeEventListener('touchend', this.touchEndHandler);
+            }
+            
+            resetToDefault() {
+                this.setValue(this.defaultValue);
+            }
+            
+            onWheel(e) {
+                e.preventDefault();
+                const direction = e.deltaY < 0 ? 1 : -1;
+                const sensitivity = e.shiftKey ? 0.005 : 0.02;
+                this.setValue(this.value + direction * sensitivity);
+            }
+            
+            onKeyDown(e) {
+                const step = e.shiftKey ? this.step : this.step * 10;
+                if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+                    this.setValue(this.value + step);
+                    e.preventDefault();
+                } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+                    this.setValue(this.value - step);
+                    e.preventDefault();
+                }
+            }
+        }
+
+        // Initialize custom knobs
+        document.querySelectorAll('.mushin-knob').forEach(el => {
+            const knob = new MushinKnob(el);
+            window.knobs[knob.paramId] = knob;
+        });
+
+        // Initialize dynamic slider track fills on startup
+        document.querySelectorAll('input[type=range]').forEach(el => {
+            const val = parseFloat(el.value || '0');
+            el.style.setProperty('--track-fill', (val * 100) + '%');
+        });
 
         // Preset Bridge Functions
         async function callNative(funcName, args) {
