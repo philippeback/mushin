@@ -127,7 +127,7 @@
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
-            height: 16px;
+            height: 22px;
             background: transparent;
             margin: 2px 0;
             outline: none;
@@ -136,7 +136,7 @@
         /* Webkit / Chromium / Safari / Edge Track */
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
-            height: 5px;
+            height: 8px;
             background: #141414; /* slightly brighter dark base */
             /* Multi-layer background:
                1. Left-aligned glowing accent active fill (tracked via dynamic CSS variable --track-fill)
@@ -147,23 +147,23 @@
                 repeating-linear-gradient(to right, transparent, transparent 9%, rgba(255,255,255,0.06) 9%, rgba(255,255,255,0.06) 10%),
                 linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
             border: 1px solid rgba(255, 255, 255, 0.16); /* high contrast outline so slot is clearly visible even on dark backgrounds */
-            border-radius: 2px;
+            border-radius: 3px;
             box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.95);
         }
 
         /* Webkit / Chromium / Safari / Edge Thumb (High-Contrast Machined Metal Fader Cap) */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 16px;
-            width: 14px;
-            border-radius: 2px;
+            height: 22px;
+            width: 18px;
+            border-radius: 3px;
             /* Polished brushed-aluminum gradient overlaid with sharp primary center stripe */
             background: linear-gradient(to right, rgba(0,0,0,0) 42%, var(--primary) 42%, var(--primary) 58%, rgba(0,0,0,0) 58%),
                         linear-gradient(to bottom, #ffffff 0%, #d8d8d8 25%, #aaaaaa 65%, #777777 100%);
             border: 1px solid #111111;
             box-shadow: 0 3px 6px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.9);
             cursor: pointer;
-            margin-top: -6px; /* (Track height 5px - Thumb height 16px) / 2 = -5.5px */
+            margin-top: -7px; /* (Track height 8px - Thumb height 22px) / 2 = -7px */
             transition: box-shadow 0.1s ease, background 0.1s ease, transform 0.1s ease;
         }
 
@@ -183,19 +183,19 @@
         /* Gecko / Firefox Track */
         input[type=range]::-moz-range-track {
             width: 100%;
-            height: 5px;
+            height: 8px;
             background: repeating-linear-gradient(to right, transparent, transparent 9%, rgba(255,255,255,0.06) 9%, rgba(255,255,255,0.06) 10%),
                         linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
             border: 1px solid rgba(255, 255, 255, 0.16);
-            border-radius: 2px;
+            border-radius: 3px;
             box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.95);
         }
 
         /* Gecko / Firefox Thumb */
         input[type=range]::-moz-range-thumb {
-            height: 16px;
-            width: 14px;
-            border-radius: 2px;
+            height: 22px;
+            width: 18px;
+            border-radius: 3px;
             background: linear-gradient(to right, rgba(0,0,0,0) 42%, var(--primary) 42%, var(--primary) 58%, rgba(0,0,0,0) 58%),
                         linear-gradient(to bottom, #ffffff 0%, #d8d8d8 25%, #aaaaaa 65%, #777777 100%);
             border: 1px solid #111111;
@@ -216,9 +216,9 @@
         }
 
         input[type=range]::-moz-range-progress {
-            height: 5px;
+            height: 8px;
             background: var(--primary);
-            border-radius: 2px 0 0 2px;
+            border-radius: 3px 0 0 3px;
             box-shadow: 0 0 4px var(--primary);
         }
 
@@ -229,9 +229,9 @@
         /* Custom Moog-Style Knob Styles */
         .mushin-knob {
             position: relative;
-            width: 48px;
-            height: 48px;
-            margin: 6px auto;
+            width: 56px;
+            height: 56px;
+            margin: 4px auto;
             cursor: grab;
             outline: none;
             user-select: none;
@@ -242,14 +242,14 @@
         }
 
         .mushin-knob-big {
-            width: 52px !important;
-            height: 52px !important;
+            width: 64px !important;
+            height: 64px !important;
             margin: 2px auto !important;
         }
 
         .mushin-knob-small {
-            width: 36px !important;
-            height: 36px !important;
+            width: 44px !important;
+            height: 44px !important;
             margin: 4px auto !important;
         }
 
@@ -415,8 +415,8 @@
         /* Custom Premium 3D Toggle Switch Plate for retro-futuristic Moog look */
         .toggle-plate {
             position: relative;
-            width: 48px;
-            height: 52px;
+            width: 58px;
+            height: 64px;
             background: linear-gradient(135deg, #252525 0%, #121212 50%, #080808 100%);
             border: 1px solid #1a1a1a;
             border-radius: 3px;
@@ -459,8 +459,8 @@
 
         /* Deep vertical slot bezel */
         .switch-bezel {
-            width: 16px;
-            height: 30px;
+            width: 20px;
+            height: 38px;
             background: #050505;
             border: 1px solid #222;
             border-radius: 2px;
@@ -473,8 +473,8 @@
         }
 
         .switch-slot {
-            width: 6px;
-            height: 24px;
+            width: 8px;
+            height: 30px;
             background: #000;
             border-radius: 1px;
             position: relative;
@@ -485,10 +485,10 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 10px;
-            height: 20px;
-            margin-left: -5px;
-            margin-top: -10px;
+            width: 12px;
+            height: 26px;
+            margin-left: -6px;
+            margin-top: -13px;
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             flex-direction: column;
@@ -498,23 +498,23 @@
         }
 
         .lever-stem {
-            width: 3px;
-            height: 14px;
+            width: 4px;
+            height: 18px;
             background: linear-gradient(to right, #666 0%, #ccc 30%, #fff 50%, #888 70%, #444 100%);
             box-shadow: 0 1px 2px rgba(0,0,0,0.5);
             border-radius: 0.5px;
         }
 
         .lever-tip {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: radial-gradient(circle at 2.5px 2.5px, #ffffff 0%, #b8b8b8 20%, #777777 60%, #333333 100%);
             border: 0.5px solid #111;
             box-shadow: 
                 0 2px 4px rgba(0,0,0,0.6),
                 inset 0 1px 0 rgba(255,255,255,0.8);
-            margin-bottom: -3px;
+            margin-bottom: -4px;
             transition: background 0.2s ease, box-shadow 0.2s ease;
         }
 
@@ -525,8 +525,8 @@
 
         /* LED Lamp Indicator */
         .switch-status-lamp {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: #0f0505;
             border: 1px solid #222;
@@ -546,7 +546,7 @@
 
         /* Sibling States when checked */
         #exhaustion:checked ~ .switch-bezel .switch-lever {
-            transform: rotateX(-20deg) translateY(-6px);
+            transform: rotateX(-20deg) translateY(-8px);
         }
 
         #exhaustion:checked ~ .switch-bezel .lever-tip {
