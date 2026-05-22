@@ -2504,14 +2504,10 @@
 
         window.onPresetSaved = () => { 
             log("Preset Saved Successfully"); 
-            alert("Preset Saved"); 
             requestPresetList(); 
         };
         window.onPresetLoaded = () => { 
             log("Preset Loaded Successfully"); 
-            if (!suppressPresetAlert) {
-                alert("Preset Loaded"); 
-            }
             suppressPresetAlert = false; 
         };
         window.onPresetDeleted = () => { 
