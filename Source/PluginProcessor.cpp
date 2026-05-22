@@ -63,6 +63,15 @@ MushinAudioProcessor::MushinAudioProcessor()
     noiseLevelParam   = treeState.getRawParameterValue ("noise_level");
     noiseRoutingParam = treeState.getRawParameterValue ("noise_routing");
     noiseFmModParam   = treeState.getRawParameterValue ("noise_fm_mod");
+
+    tgActiveParam  = treeState.getRawParameterValue ("tg_active");
+    tgMixParam     = treeState.getRawParameterValue ("tg_mix");
+    tgPatternParam = treeState.getRawParameterValue ("tg_pattern");
+    tgRateParam    = treeState.getRawParameterValue ("tg_rate");
+    tgStartParam   = treeState.getRawParameterValue ("tg_start");
+    tgHoldParam    = treeState.getRawParameterValue ("tg_hold");
+    tgEndParam     = treeState.getRawParameterValue ("tg_end");
+    tgDepthParam   = treeState.getRawParameterValue ("tg_depth");
 }
 
 MushinAudioProcessor::~MushinAudioProcessor() {}
@@ -97,6 +106,8 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     smoothedGain.reset(sampleRate, 0.05);
     smoothedMix.reset(sampleRate, 0.05);
 
+    tranceGate.prepare (sampleRate);
+
     reset();
 }
 
@@ -108,6 +119,7 @@ void MushinAudioProcessor::reset()
     dualFilterSystem.reset();
     sidechainProcessor.reset();
     noiseOscillator.reset();
+    tranceGate.reset();
 }
 
 bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -190,6 +202,61 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     smoothedGain.setTargetValue (gainParam->load());
     smoothedMix.setTargetValue (mixParam->load());
 
+    // 1.5. Calculate Trance Gate block parameters
+    double bpm = 120.0;
+    double playheadSamples = 0.0;
+    bool isPlaying = false;
+
+    if (auto* ph = getPlayHead()) {
+        if (auto posInfo = ph->getPosition()) {
+            bpm = posInfo->getBpm().hasValue() ? *(posInfo->getBpm()) : 120.0;
+            playheadSamples = posInfo->getTimeInSamples().hasValue() ? (double)*(posInfo->getTimeInSamples()) : 0.0;
+            isPlaying = posInfo->getIsPlaying();
+        }
+    }
+
+    if (isPlaying) {
+        tranceGate.setCurrentSamplePosition (playheadSamples);
+    }
+
+    double rateFactor = 4.0; // 1/16
+    int rateIdx = (int)tgRateParam->load();
+    if (rateIdx == 1) rateFactor = 2.0;      // 1/8
+    else if (rateIdx == 2) rateFactor = 1.0; // 1/4
+
+    double sRate = getSampleRate();
+    double stepDurationSeconds = 60.0 / (bpm * rateFactor);
+    double stepDurationSamples = stepDurationSeconds * sRate;
+    double cycleDurationSamples = stepDurationSamples * 16.0;
+
+    // Pattern Mask
+    int patternIdx = (int)tgPatternParam->load();
+    uint16_t patternMask = 0;
+    if (patternIdx >= 0 && patternIdx < (int)mushin::presetPatterns.size()) {
+        patternMask = mushin::presetPatterns[patternIdx].mask;
+    }
+
+    // Envelope calculations
+    double startSamples = (tgStartParam->load() * 0.001) * sRate;
+    double endSamples = (tgEndParam->load() * 0.001) * sRate;
+    double holdFraction = tgHoldParam->load() * 0.01;
+    double holdWidthSamples = stepDurationSamples * holdFraction;
+
+    double maxTransitionSamples = stepDurationSamples * 0.5;
+    if (startSamples > maxTransitionSamples) startSamples = maxTransitionSamples;
+    if (endSamples > maxTransitionSamples) endSamples = maxTransitionSamples;
+
+    double attackEnd = startSamples;
+    double decayStart = holdWidthSamples - endSamples;
+    if (decayStart < attackEnd) {
+        attackEnd = holdWidthSamples * 0.5;
+        decayStart = holdWidthSamples * 0.5;
+    }
+
+    float baseAtten = 1.0f - tgDepthParam->load() * 0.01f;
+    float tgMix = tgMixParam->load();
+    bool tgActive = (tgActiveParam->load() > 0.5f) && (stepDurationSamples > 0.0);
+
     int numSamples = buffer.getNumSamples();
 
     // 2. Store dry signal - CLONE strictly from Main Input Bus
@@ -259,6 +326,16 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             scMod = sidechainProcessor.processSample(scInputSample);
         }
 
+        float tgGain = 1.0f;
+        if (tgActive) {
+            tgGain = tranceGate.processSample (
+                tranceGate.getCurrentSamplePosition() + s,
+                stepDurationSamples, cycleDurationSamples,
+                patternMask, holdWidthSamples, attackEnd, decayStart,
+                baseAtten, tgMix
+            );
+        }
+
         for (int ch = 0; ch < totalNumOutputChannels; ++ch)
         {
             float drySample = dryBuffer.getSample(ch, s);
@@ -299,6 +376,11 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
 
             // STAGE D: Mix
             float mixedSample = (drySample * (1.0f - mixVal)) + (wetSample * mixVal);
+
+            // STAGE D.5: Trance Gate
+            if (tgActive) {
+                mixedSample *= tgGain;
+            }
             
             // STAGE E: Final Gain
             float currentGain = gainVal;
@@ -321,6 +403,10 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             scMeterLevel.store(scMod);
             scInputPeak.store(blockMaxScInput);
         }
+    }
+
+    if (!isPlaying && tgActive) {
+        tranceGate.advanceFreeRunningClock (numSamples, cycleDurationSamples);
     }
 }
 
@@ -472,6 +558,25 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "noise_fm_mod", 1 }, "Filter FM Mod", 0.0f, 1.0f, 0.0f));
         
+    // Trance Gate
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "tg_active", 1 }, "Gate Active", false));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "tg_mix", 1 }, "Gate Mix", 0.0f, 1.0f, 1.0f));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "tg_pattern", 1 }, "Gate Pattern", 
+        juce::StringArray {"Straight 16th", "Offbeat 16th", "Classic 1", "Classic 2", "Four-On-Floor", "Galop", "Space Gate", "Euclidean 5"}, 0));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "tg_rate", 1 }, "Gate Rate", juce::StringArray {"1/16", "1/8", "1/4"}, 0));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "tg_start", 1 }, "Gate Start", 0.0f, 100.0f, 5.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "tg_hold", 1 }, "Gate Hold", 10.0f, 100.0f, 50.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "tg_end", 1 }, "Gate End", 0.0f, 200.0f, 10.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "tg_depth", 1 }, "Gate Depth", 0.0f, 100.0f, 100.0f));
+
     return { params.begin(), params.end() };
 }
 

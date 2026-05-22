@@ -5,6 +5,7 @@
 #include "dsp/DualFilterLFOMatrix.h"
 #include "dsp_sidechain/SidechainProcessor.h"
 #include "dsp/NoiseOscillator.h"
+#include "dsp/TranceGateProcessor.h"
 
 class MushinAudioProcessor : public juce::AudioProcessor {
 public:
@@ -51,6 +52,8 @@ public:
   std::atomic<float> lastUiValue { -1.0f };
   juce::String lastParamId { "none" };
 
+  int getTranceGateCurrentStep() const { return tranceGate.getCurrentStep(); }
+
 private:
   juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
@@ -58,6 +61,7 @@ private:
   mushin::DualFilterLFOMatrix dualFilterSystem;
   mushin::SidechainProcessor sidechainProcessor;
   mushin::NoiseOscillator noiseOscillator;
+  mushin::TranceGateProcessor tranceGate;
 
   // Pre-allocated dry buffer to avoid allocations in processBlock
   juce::AudioBuffer<float> dryBuffer;
@@ -114,6 +118,16 @@ private:
   std::atomic<float>* noiseLevelParam = nullptr;
   std::atomic<float>* noiseRoutingParam = nullptr;
   std::atomic<float>* noiseFmModParam = nullptr;
+
+  // Trance Gate parameters
+  std::atomic<float>* tgActiveParam = nullptr;
+  std::atomic<float>* tgMixParam = nullptr;
+  std::atomic<float>* tgPatternParam = nullptr;
+  std::atomic<float>* tgRateParam = nullptr;
+  std::atomic<float>* tgStartParam = nullptr;
+  std::atomic<float>* tgHoldParam = nullptr;
+  std::atomic<float>* tgEndParam = nullptr;
+  std::atomic<float>* tgDepthParam = nullptr;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };

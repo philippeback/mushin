@@ -441,5 +441,7 @@ void MushinAudioProcessorEditor::timerCallback() {
         "scMeter", (double)audioProcessor.scMeterLevel.load());
     webComponent->emitEventIfBrowserIsVisible(
         "scPeak", (double)audioProcessor.scInputPeak.load());
+    webComponent->emitEventIfBrowserIsVisible(
+        "tgStep", (double)audioProcessor.getTranceGateCurrentStep());
   }
 }
