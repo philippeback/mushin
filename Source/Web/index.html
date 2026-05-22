@@ -122,7 +122,7 @@
             letter-spacing: 0.1em; text-transform: uppercase;
         }
 
-        .label { font-size: 0.45rem; text-transform: uppercase; color: var(--text-main); opacity: 0.7; }
+        .label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-main); opacity: 0.85; }
 
         input[type=range] {
             -webkit-appearance: none;
@@ -223,7 +223,7 @@
         }
 
         input[type=checkbox] { accent-color: var(--primary); }
-        select { background: var(--bg-hardware); color: var(--text-main); border: 1px solid var(--marking); font-size: 0.55rem; width: 100%; padding: 1px; }
+        select { background: var(--bg-hardware); color: var(--text-main); border: 1px solid var(--marking); font-size: 0.65rem; width: 100%; padding: 3px; }
         .value { font-size: 0.6rem; color: var(--primary); font-variant-numeric: tabular-nums; }
 
         /* Custom Moog-Style Knob Styles */
@@ -360,41 +360,41 @@
         .matrix-cell { display: flex; flex-direction: column; gap: 1px; }
 
         /* Mod Matrix specific */
-        .mod-matrix-grid { display: grid; grid-template-columns: 35px 1fr 1fr 1fr 1fr; gap: 4px; align-items: center; flex: 1; align-content: space-evenly; }
-        .mod-matrix-header { font-size: 0.45rem; text-transform: uppercase; color: var(--text-main); opacity: 0.7; text-align: center; }
+        .mod-matrix-grid { display: grid; grid-template-columns: 45px 1fr 1fr 1fr 1fr; gap: 4px; align-items: center; flex: 1; align-content: space-evenly; }
+        .mod-matrix-header { font-size: 0.65rem; text-transform: uppercase; color: var(--text-main); opacity: 0.85; text-align: center; }
         .mod-slider-container { position: relative; width: 100%; display: flex; align-items: center; }
         .mod-slider-container::after {
             content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-            width: 2px; height: 10px; background-color: var(--secondary); pointer-events: none; z-index: 2;
+            width: 2px; height: 16px; background-color: var(--secondary); pointer-events: none; z-index: 2;
         }
         .mod-matrix-grid input[type=range] {
-            height: 10px;
+            height: 16px;
             margin: 0;
         }
         .mod-matrix-grid input[type=range]::-webkit-slider-runnable-track {
-            height: 3px;
+            height: 5px;
             background-image: 
                 linear-gradient(to right, var(--primary) 0%, var(--primary) var(--track-fill, 0%), transparent var(--track-fill, 0%), transparent 100%),
                 linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .mod-matrix-grid input[type=range]::-webkit-slider-thumb {
-            height: 10px;
-            width: 8px;
-            margin-top: -4px;
-            border-radius: 1px;
+            height: 16px;
+            width: 12px;
+            margin-top: -5.5px;
+            border-radius: 1.5px;
             background: linear-gradient(to bottom, #ffffff 0%, #aaaaaa 100%);
             box-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
         .mod-matrix-grid input[type=range]::-moz-range-track {
-            height: 3px;
+            height: 5px;
             background: linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .mod-matrix-grid input[type=range]::-moz-range-thumb {
-            height: 10px;
-            width: 8px;
-            border-radius: 1px;
+            height: 16px;
+            width: 12px;
+            border-radius: 1.5px;
             background: linear-gradient(to bottom, #ffffff 0%, #aaaaaa 100%);
             box-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
@@ -899,7 +899,7 @@
             <div class="col">
                 <div class="sub-panel" style="flex: 0 0 auto;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div class="label">Routing</div>
+                        <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 1.0rem; letter-spacing: 0.1em;">ROUTING</div>
                         <select id="routing" style="width: 100px;">
                             <option value="0">Serial</option>
                             <option value="1">Parallel</option>
@@ -1183,13 +1183,13 @@
                     <!-- DIAGNOSTIC VISUALIZERS (HORIZONTAL LAYOUT) -->
                     <div class="sc-visualizer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 2px 4px; margin-bottom: 2px;">
                         <div>
-                            <div class="label" style="font-size:0.35rem; display: flex; justify-content: space-between;"><span>In Peak</span> <span id="sc-meter-in-text">0%</span></div>
+                            <div class="label" style="font-size:0.5rem; display: flex; justify-content: space-between;"><span>In Peak</span> <span id="sc-meter-in-text">0%</span></div>
                             <div class="sc-meter-container" style="height: 3px;">
                                 <div class="sc-meter-bar sc-bar-in" id="sc-meter-in"></div>
                             </div>
                         </div>
                         <div>
-                            <div class="label" style="font-size:0.35rem; display: flex; justify-content: space-between;"><span>Mod Lvl</span> <span id="sc-meter-bar-text">0%</span></div>
+                            <div class="label" style="font-size:0.5rem; display: flex; justify-content: space-between;"><span>Mod Lvl</span> <span id="sc-meter-bar-text">0%</span></div>
                             <div class="sc-meter-container" style="height: 3px;">
                                 <div class="sc-meter-bar sc-bar-mod" id="sc-meter-bar"></div>
                             </div>
