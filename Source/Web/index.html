@@ -1201,8 +1201,8 @@
                             <input type="checkbox" id="sc_active">
                             <div class="label">Active</div>
                         </div>
-                        <select id="sc_source" style="width:50px;">
-                            <option value="0">Int</option><option value="1">Ext</option>
+                        <select id="sc_source" style="width:65px;">
+                            <option value="0">Int</option><option value="1">Ext</option><option value="2">Test</option>
                         </select>
                         <select id="sc_target" style="width:60px;">
                             <option value="0">Drive</option><option value="1">Cutoff</option><option value="2">Gain</option>
@@ -1554,7 +1554,7 @@
             lfo2_freq: { min: 0.1, max: 20, skew: 0.4, display: v => v.toFixed(2) + "Hz" },
             lfo2_wave: { type: 'choice', display: v => ["Sine", "Tri", "Saw", "Sqr", "Rnd"][v] },
             sc_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
-            sc_source: { type: 'choice', display: v => ["Int", "Ext"][v] },
+            sc_source: { type: 'choice', display: v => ["Int", "Ext", "Test"][v] },
             sc_target: { type: 'choice', display: v => ["Drive", "Cut", "Gain"][v] },
             sc_threshold: { min: -60, max: 0, display: v => v.toFixed(1) + "dB" },
             sc_attack: { min: 0.1, max: 500, display: v => v.toFixed(1) + "ms" },

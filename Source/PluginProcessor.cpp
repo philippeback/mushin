@@ -220,7 +220,10 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         // Calculate Noise Generator sample and FM modulation offset for this sample
         float genSample = 0.0f;
         bool noiseActive = (noiseActiveParam != nullptr && noiseActiveParam->load() > 0.5f);
-        if (noiseActive) {
+        bool testSignalForSidechain = (sidechainProcessor.isActive() && 
+                                       sidechainProcessor.getSource() == mushin::SidechainProcessor::Source::TestSignal);
+        
+        if (noiseActive || testSignalForSidechain) {
             noiseOscillator.setType((int)noiseTypeParam->load());
             noiseOscillator.setFrequency(noiseFreqParam->load());
             genSample = noiseOscillator.nextSample() * noiseLevelParam->load();
@@ -241,6 +244,9 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
                         scInputSample = (scInputSample + sidechainBuffer.getSample(1, s)) * 0.5f;
                     }
                 }
+            } else if (sidechainProcessor.getSource() == mushin::SidechainProcessor::Source::TestSignal) {
+                // Test signal source
+                scInputSample = genSample;
             } else {
                 // Internal SC uses dry main input
                 scInputSample = dryBuffer.getSample(0, s);
@@ -429,7 +435,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
     params.push_back (std::make_unique<juce::AudioParameterBool> (
         juce::ParameterID { "sc_active", 1 }, "SC Active", false));
     params.push_back (std::make_unique<juce::AudioParameterChoice> (
-        juce::ParameterID { "sc_source", 1 }, "SC Source", juce::StringArray {"Internal", "External"}, 0));
+        juce::ParameterID { "sc_source", 1 }, "SC Source", juce::StringArray {"Internal", "External", "Test Signal"}, 0));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "sc_threshold", 1 }, "SC Threshold", -60.0f, 0.0f, -24.0f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
