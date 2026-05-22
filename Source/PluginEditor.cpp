@@ -166,54 +166,54 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
                 juce::String css = ":root {\n";
                 if (currentTheme == "Synthwave") {
                   css +=
-                      "--primary: #ff00ff;\n--secondary: "
-                      "#00ffff;\n--bg-hardware: #2b0033;\n--text-main: "
-                      "#ffffff;\n--panel-border: #ff00ff;\n--marking: "
-                      "rgba(255, 0, 255, 0.2);\n--display-bg: "
-                      "#1a0026;\n--sc-yellow: #ffff00;\n--sc-input: #00ffcc;\n";
+                      "--primary: #ff00aa;\n--secondary: "
+                      "#00ffff;\n--bg-hardware: #14091a;\n--text-main: "
+                      "#ebd6f5;\n--panel-border: #461c5c;\n--marking: "
+                      "rgba(255, 0, 255, 0.15);\n--display-bg: "
+                      "#200f29;\n--sc-yellow: #ffff00;\n--sc-input: #00ffcc;\n";
                 } else if (currentTheme == "Acid") {
                   css +=
                       "--primary: #bfff00;\n--secondary: "
-                      "#32cd32;\n--bg-hardware: #001a00;\n--text-main: "
-                      "#bfff00;\n--panel-border: #32cd32;\n--marking: rgba(50, "
-                      "205, 50, 0.2);\n--display-bg: #000000;\n--sc-yellow: "
-                      "#ccff00;\n--sc-input: #00ff00;\n";
+                      "#39ff14;\n--bg-hardware: #091209;\n--text-main: "
+                      "#e2ebd2;\n--panel-border: #284d28;\n--marking: "
+                      "rgba(191, 255, 0, 0.15);\n--display-bg: "
+                      "#122412;\n--sc-yellow: #dfff4f;\n--sc-input: #00ff3c;\n";
                 } else if (currentTheme == "Firepits") {
                   css +=
-                      "--primary: #ff4500;\n--secondary: "
-                      "#8b0000;\n--bg-hardware: #1a0500;\n--text-main: "
-                      "#ffd700;\n--panel-border: #ff4500;\n--marking: "
-                      "rgba(255, 69, 0, 0.2);\n--display-bg: "
-                      "#0a0200;\n--sc-yellow: #ffcc00;\n--sc-input: #ff0000;\n";
+                      "--primary: #ff3c00;\n--secondary: "
+                      "#ff6600;\n--bg-hardware: #120906;\n--text-main: "
+                      "#f5e6de;\n--panel-border: #4d2010;\n--marking: "
+                      "rgba(255, 69, 0, 0.15);\n--display-bg: "
+                      "#22120b;\n--sc-yellow: #ffcc00;\n--sc-input: #ff3333;\n";
                 } else if (currentTheme == "Ocean Deep") {
                   css +=
-                      "--primary: #00bfff;\n--secondary: "
-                      "#00008b;\n--bg-hardware: #00051a;\n--text-main: "
-                      "#e0ffff;\n--panel-border: #00bfff;\n--marking: rgba(0, "
-                      "191, 255, 0.2);\n--display-bg: #00020a;\n--sc-yellow: "
-                      "#ffffff;\n--sc-input: #008080;\n";
+                      "--primary: #00f3ff;\n--secondary: "
+                      "#00bfff;\n--bg-hardware: #060b1a;\n--text-main: "
+                      "#e3f0f5;\n--panel-border: #1d305c;\n--marking: "
+                      "rgba(0, 243, 255, 0.15);\n--display-bg: "
+                      "#0f1830;\n--sc-yellow: #ccff33;\n--sc-input: #008080;\n";
                 } else if (currentTheme == "Ice World") {
                   css +=
-                      "--primary: #f0f8ff;\n--secondary: "
-                      "#b0c4de;\n--bg-hardware: #101820;\n--text-main: "
-                      "#ffffff;\n--panel-border: #afeeee;\n--marking: "
-                      "rgba(240, 248, 255, 0.2);\n--display-bg: "
-                      "#050a10;\n--sc-yellow: #87cefa;\n--sc-input: #e0ffff;\n";
+                      "--primary: #66e0ff;\n--secondary: "
+                      "#a5c1eb;\n--bg-hardware: #0f151c;\n--text-main: "
+                      "#ffffff;\n--panel-border: #384c61;\n--marking: "
+                      "rgba(102, 224, 255, 0.15);\n--display-bg: "
+                      "#1a2430;\n--sc-yellow: #ffff66;\n--sc-input: #e0ffff;\n";
                 } else if (currentTheme == "Dark Hellish") {
                   css +=
-                      "--primary: #ff0000;\n--secondary: "
-                      "#3d0000;\n--bg-hardware: #050000;\n--text-main: "
-                      "#8b0000;\n--panel-border: #3d0000;\n--marking: "
-                      "rgba(255, 0, 0, 0.1);\n--display-bg: "
-                      "#000000;\n--sc-yellow: #ff4500;\n--sc-input: #660000;\n";
+                      "--primary: #ff2200;\n--secondary: "
+                      "#ff4d4d;\n--bg-hardware: #0e0606;\n--text-main: "
+                      "#e6cfcf;\n--panel-border: #301414;\n--marking: "
+                      "rgba(255, 77, 77, 0.15);\n--display-bg: "
+                      "#180a0a;\n--sc-yellow: #ffcc00;\n--sc-input: #990000;\n";
                 } else {
                   // Default "Industrial" Theme
                   css +=
-                      "--primary: #00d2ff;\n--secondary: "
-                      "#ff0055;\n--bg-hardware: #0a0a0a;\n--text-main: "
-                      "#e0e0e0;\n--panel-border: #2a2a2a;\n--marking: "
-                      "rgba(255, 255, 255, 0.1);\n--display-bg: "
-                      "#050505;\n--sc-yellow: #ffcc00;\n--sc-input: #00ff66;\n";
+                      "--primary: #00bfff;\n--secondary: "
+                      "#ff9f00;\n--bg-hardware: #111111;\n--text-main: "
+                      "#f0f0f0;\n--panel-border: #333333;\n--marking: "
+                      "rgba(255, 255, 255, 0.12);\n--display-bg: "
+                      "#1c1c1c;\n--sc-yellow: #ffcc00;\n--sc-input: #00ff66;\n";
                 }
                 css += "}";
 
