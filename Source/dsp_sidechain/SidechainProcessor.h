@@ -9,7 +9,8 @@ class SidechainProcessor {
 public:
     enum class Source {
         Internal,
-        External
+        External,
+        TestSignal
     };
 
     enum class Target {
