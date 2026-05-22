@@ -99,7 +99,7 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
   juce::Logger::writeToLog("Loaded theme from storage: " + currentTheme);
 
   setResizable(true, true);
-  setSize(1200, 600);
+  setSize(1200, 680);
 
   // Instantiate preset manager
   presetMgr = std::make_unique<PresetManager>(audioProcessor.treeState);
