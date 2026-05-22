@@ -98,7 +98,7 @@ A simple `juce::dsp::IIR::Filter` (Highpass/Lowpass) will be added to the `Mushi
 | Parameter ID | Name | Type | Range | Default |
 |--------------|------|------|-------|---------|
 | `sc_active` | SC Active | Bool | [Off, On] | Off |
-| `sc_source` | SC Source | Choice | [Internal, External] | Internal |
+| `sc_source` | SC Source | Choice | [Internal, External, Test Signal] | Internal |
 | `sc_threshold` | SC Threshold | Float | [-60dB, 0dB] | -24dB |
 | `sc_attack` | SC Attack | Float | [0.1ms, 500ms] | 10ms |
 | `sc_release` | SC Release | Float | [1ms, 2000ms] | 100ms |
@@ -112,11 +112,12 @@ A simple `juce::dsp::IIR::Filter` (Highpass/Lowpass) will be added to the `Mushi
 
 ## 5. Integration in `processBlock`
 
-The sidechain signal processing will occur within the sample-by-sample loop:
+The sidechain signal processing occurs within the sample-by-sample loop:
 
 1. **Extract Sidechain Sample:**
-   - If `sc_source == External`: Read from `getBusBuffer (true, 1)`.
-   - If `sc_source == Internal`: Read from main input buffer (pre-distortion).
+   - If `sc_source == External` (Index 1): Read from the secondary input bus buffer (`getBusBuffer (true, 1)`).
+   - If `sc_source == Internal` (Index 0): Read from the main input buffer (pre-distortion).
+   - If `sc_source == Test Signal` (Index 2): Read from the internal Noise/Generator output sample.
 2. **Filter (Optional):** Apply SC HPF/LPF to the sidechain sample.
 3. **Envelope Follow:** Pass sample through `mushin::EnvelopeFollower`.
 4. **Modulate:** 
@@ -139,3 +140,42 @@ The sidechain signal processing will occur within the sample-by-sample loop:
 2. **Phase Correlation:** Ensure internal sidechaining doesn't introduce unwanted phase issues (though it's a modulation source, so phase matters less than timing).
 3. **Latency:** Verify zero-latency operation for the sidechain path.
 4. **UI Responsiveness:** Ensure the SC meter in the Web UI is fluid and accurate.
+
+---
+
+## 8. Silent Sidechain Testing via "Test Signal" Source
+
+### 8.1 The Design Challenge
+To verify sidechain threshold, attack, release, and amount behaviors, users require a steady test signal. While the synthesizer's built-in **Noise Generator** can serve this role, turning on the generator traditionally routes its loud signal directly to the master output. This disrupts the environment and prevents the user from testing the compression/expansion envelope silently.
+
+### 8.2 Silent Processing Integration
+To resolve this, we restructured the DSP loop in `PluginProcessor.cpp` to decouple generator DSP processing from audible master routing. 
+
+If the sidechain source is set to `Test Signal` (Index 2), the noise oscillator runs its state equations and generates samples to feed the sidechain envelope follower *regardless* of whether the master noise output is active:
+
+```cpp
+// Within the sample loop inside processBlock():
+float noiseSample = 0.0f;
+bool noiseAudible = (noiseActiveParam->load() > 0.5f);
+bool noiseNeededForSidechain = (scActive && (scSource == 2)); // 2 = Test Signal
+
+// Process the noise generator if it's audibly active OR needed silently for sidechaining
+if (noiseAudible || noiseNeededForSidechain)
+{
+    noiseSample = noiseOscillator.process(noiseFreq, noiseLevel, noiseFmMod);
+}
+
+// 1. Extract sidechain sample
+float scSample = 0.0f;
+if (scSource == 0)      scSample = inputSample;
+else if (scSource == 1) scSample = externalSidechainSample;
+else if (scSource == 2) scSample = noiseSample; // Silently routed test signal
+
+// 2. Mix audible noise to master ONLY if the Noise Panel active button is actually toggled ON
+if (noiseAudible)
+{
+    masterOutputSample += noiseSample;
+}
+```
+
+This elegant routing allows users to toggle the Sidechain source to `Test` and tweak sidechain envelope shapes, thresholds, and compression/expansion reactions instantly and silently.

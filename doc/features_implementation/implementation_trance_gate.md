@@ -149,35 +149,42 @@ We will add the following parameters in `PluginProcessor.cpp` under `createParam
 
 ## 4. Web UI Component Design
 
-The Trance Gate UI will be placed as a dedicated sub-panel inside Column 3, underneath the **Noise / Generator** panel, ensuring layout symmetry.
+To deliver a premium hardware look and avoid cluttering Column 3, the Trance Gate UI is implemented as a **full-width bottom rack strip** located directly below the main feature grid.
 
 ### 4.1 UI Layout Structure (HTML)
 ```html
-<!-- TRANCE GATE PANEL -->
-<div class="sub-panel" style="margin-top: 6px;">
-    <div class="sub-panel-title">TRANCE GATE</div>
-    
-    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 4px;">
-        <div style="display:flex; gap:4px; align-items:center;">
+<!-- TRANCE GATE FULL-WIDTH STRIP -->
+<div class="sub-panel" style="margin-top: 6px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px; padding: 6px 16px; min-height: 75px; height: 75px; box-sizing: border-box; flex: 0 0 auto;">
+    <!-- Left Side: Controls -->
+    <div style="display: flex; align-items: center; gap: 10px; flex: 0 0 auto;">
+        <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.9rem; text-align: left; margin-right: 6px;">TRANCE GATE</div>
+        <div style="display: flex; align-items: center; gap: 4px;">
             <input type="checkbox" id="tg_active">
-            <div class="label">Active</div>
+            <div class="label" style="font-size: 0.65rem;">Active</div>
         </div>
-        <select id="tg_pattern" style="width:110px;"></select>
-        <select id="tg_rate" style="width:50px;">
+        <select id="tg_pattern" style="width: 120px; font-size: 0.6rem; padding: 2px;">
+            <option value="0">Straight 16th</option>
+            <option value="1">Offbeat 16th</option>
+            <option value="2">Classic 1</option>
+            ...
+        </select>
+        <select id="tg_rate" style="width: 55px; font-size: 0.6rem; padding: 2px;">
             <option value="0">1/16</option>
             <option value="1">1/8</option>
             <option value="2">1/4</option>
         </select>
     </div>
 
-    <!-- 16-STEP PREVIEW GRID -->
-    <div class="tg-step-grid" id="tg_grid_container" style="display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; margin-bottom: 6px; padding: 2px;">
-        <!-- Generating 16 steps programmatically -->
+    <!-- Middle: 16-step LED indicators (centered) -->
+    <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+        <div class="tg-step-grid" id="tg_grid_container" style="width: 320px; margin-bottom: 0; padding: 3px;">
+            <!-- 16 generated circles -->
+        </div>
     </div>
 
-    <!-- TG PARAMETERS IN 5-COLUMN GRID -->
-    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center;">
-        <!-- Mix, Depth, Start, Hold, End Knobs -->
+    <!-- Right Side: 5 Knob Cluster -->
+    <div style="display: flex; gap: 8px; flex: 0 0 auto; align-items: center;">
+        <!-- Mix, Depth, Atk (Start), Hold (Width), Dec (End) Knobs -->
     </div>
 </div>
 ```
@@ -187,50 +194,82 @@ All colors reference the dynamically injected CSS custom variables to respect th
 
 ```css
 /* Step Grid LEDs */
+.tg-step-grid {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    gap: 2.5px;
+    margin-bottom: 4px;
+    padding: 3px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--marking);
+    border-radius: 3px;
+}
+
 .tg-step-led {
-    height: 8px;
-    background: var(--display-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 1.5px;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
-    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    height: 9px;
+    background: #0f0f0f;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 255, 255, 0.03);
+    transition: background 0.1s ease, box-shadow 0.1s ease;
 }
 
 .tg-step-led.active {
-    background: var(--primary);
-    border-color: var(--primary);
-    box-shadow: 0 0 4px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: #1a1a1a;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.8);
+}
+
+.tg-step-led.active-playhead {
+    background: var(--primary) !important;
+    box-shadow: 0 0 10px var(--primary), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
+    border-color: var(--primary) !important;
 }
 ```
 
 ### 4.3 JavaScript Controller (UI Sync)
+A high-frequency `tgStep` listener handles real-time playhead sweeping.
+
 ```javascript
-const tgPatterns = [0xAAAA, 0x5555, 0xEEEE, 0x9999, 0xF0F0, 0xD7D7, 0x8888, 0x8912];
-
-function updateStepGrid(patternIndex) {
-    const mask = tgPatterns[patternIndex] || 0;
-    const container = document.getElementById('tg_grid_container');
-    container.innerHTML = '';
-    
-    for (let step = 0; step < 16; ++step) {
-        const led = document.createElement('div');
-        led.className = 'tg-step-led';
-        const isActive = (mask & (1 << step)) !== 0;
-        if (isActive) {
-            led.classList.add('active');
+// Sync active step glow sequence from C++ high-frequency dispatch
+window.addEventListener("tgStep", (e) => {
+    const activeStep = Math.round(e.detail);
+    const leds = document.querySelectorAll(".tg-step-led");
+    leds.forEach((led, idx) => {
+        if (idx === activeStep) {
+            led.classList.add("active-playhead");
+        } else {
+            led.classList.remove("active-playhead");
         }
-        container.appendChild(led);
-    }
-}
-
-// Bind to tg_pattern choice parameter updates
+    });
+});
 ```
 
 ---
 
-## 5. Implementation Roadmap
+## 5. Implementation Roadmap (Status: Completed)
 
-1. **DSP Integration**: Add `TranceGateProcessor.h` to the DSP source tree. Instance the processor in `PluginProcessor.h` and place it in the serial processing line inside `PluginProcessor::processBlock` after stage D (Mix) but before stage E (Final Gain).
-2. **APVTS & Host Sync**: Register the parameters in `createParameterLayout()` and hook up playhead position fetching.
-3. **HTML/JS Layout**: Add the sub-panel code to `index.html`, construct the 16-step visual LED grid, and bind the parameters to the bidirectional JS bridge.
-4. **Compile & Verification**: Build and test the gated envelope across multiple rates (1/16, 1/8, 1/4) in a DAW to ensure sample-accurate tempo sync.
+1. **DSP Integration [DONE]**: Created `TranceGateProcessor.h`. Connected inside serial DSP thread in `PluginProcessor::processBlock` between Stage D (Mix) and Stage E (Final Gain).
+2. **APVTS & Host Sync [DONE]**: Registered 8 `tg_` parameters. Structured sample-accurate envelope calculations and fallback free-running counters.
+3. **HTML/JS Layout [DONE]**: Implemented horizontal full-width bottom strip in `index.html`. Linked bidirectional bindings for choice arrays and knob components.
+4. **Compile & Verification [DONE]**: Verified tempo sync playhead sweeps and dynamic HSL theming integrations.
+
+---
+
+## 6. Layout & UX Refinements
+
+### 6.1 Layout Shift to Bottom Strip
+Initially, the Trance Gate was slotted into Column 3. Due to vertical stacking heights (Sidechain, Noise, and Trance Gate in one column), controls were squeezed and clipped. Moving the Trance Gate to a dedicated full-width strip below the three-column `.feature-grid` optimized Column 3 vertical space and improved usability.
+
+### 6.2 Editor Window Height Adjustments
+To prevent overflowing viewport clipping, the C++ editor size dimensions in `PluginEditor.cpp` were scaled up:
+- **Original**: `1200x600` (clipped bottom panels)
+- **First Iteration**: `1200x680` (improved, but still caused clipping on some displays)
+- **Final Design**: `1200x760` (provides ample space for the `.feature-grid` columns and the `75px` bottom Trance Gate strip to fit snugly and cleanly).
+
+### 6.3 Preset UX Polish (Modal Alert Removal)
+To ensure a modern, uninterrupted user workflow, modal alert popups upon successful preset operations were removed:
+- Removed `alert("Preset Saved");` from `window.onPresetSaved`.
+- Removed `alert("Preset Loaded");` from `window.onPresetLoaded`.
+- Console logging is maintained for behind-the-scenes confirmation.
+- Critical error alerts (`onPresetError`) remain intact to alert the user of file system issues.
