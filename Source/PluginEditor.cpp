@@ -99,7 +99,7 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
   juce::Logger::writeToLog("Loaded theme from storage: " + currentTheme);
 
   setResizable(true, true);
-  setSize(1200, 600);
+  setSize(1200, 760);
 
   // Instantiate preset manager
   presetMgr = std::make_unique<PresetManager>(audioProcessor.treeState);
@@ -441,5 +441,7 @@ void MushinAudioProcessorEditor::timerCallback() {
         "scMeter", (double)audioProcessor.scMeterLevel.load());
     webComponent->emitEventIfBrowserIsVisible(
         "scPeak", (double)audioProcessor.scInputPeak.load());
+    webComponent->emitEventIfBrowserIsVisible(
+        "tgStep", (double)audioProcessor.getTranceGateCurrentStep());
   }
 }

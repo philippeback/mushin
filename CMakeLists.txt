@@ -42,6 +42,7 @@ target_sources(Mushin
         Source/PresetManager.cpp
         Source/PresetManager.h
         Source/dsp_waveshaper/Waveshaper.h
+        Source/dsp/TranceGateProcessor.h
 )
 
 target_compile_definitions(Mushin

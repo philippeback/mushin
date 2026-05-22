@@ -27,7 +27,7 @@
 
         .main-panel {
             position: relative;
-            width: 100%; height: 100vh; max-width: 1200px; max-height: 600px;
+            width: 100%; height: 100%; max-width: 100%; max-height: 100%;
             background: var(--bg-hardware);
             border: none;
             border-radius: 0;
@@ -120,6 +120,48 @@
             font-size: 1.0rem; text-align: center; color: var(--secondary);
             border-bottom: 1px solid var(--marking); margin-bottom: 3px;
             letter-spacing: 0.1em; text-transform: uppercase;
+        }
+
+        /* Trance Gate Grid & LEDs */
+        .tg-step-grid {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 2.5px;
+            margin-bottom: 4px;
+            padding: 3px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--marking);
+            border-radius: 3px;
+        }
+
+        .tg-step-led {
+            height: 9px;
+            background: #0f0f0f;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.5px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+            transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            position: relative;
+        }
+
+        /* Step active (filled step in the pattern mask) */
+        .tg-step-led.step-filled {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Step illuminated by the C++ playhead when the step is filled */
+        .tg-step-led.step-filled.active-playhead {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 6px var(--primary), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        /* Step illuminated by the C++ playhead when the step is empty */
+        .tg-step-led.active-playhead {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            box-shadow: 0 0 5px var(--secondary), inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-main); opacity: 0.85; }
@@ -1166,6 +1208,7 @@
                         <div class="mod-slider-container"><input type="range" id="mod_lfo2_target1" min="0" max="1" step="0.001"></div>
                         <div class="mod-slider-container"><input type="range" id="mod_lfo2_target2" min="0" max="1" step="0.001"></div>
                         <div class="mod-slider-container"><input type="range" id="mod_lfo2_target4" min="0" max="1" step="0.001"></div>
+                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target5" min="0" max="1" step="0.001"></div>
                     </div>
                 </div>
                 <!-- OSCILLOSCOPE (BOTTOM CENTER) -->
@@ -1412,6 +1455,159 @@
                         </div>
                     </div>
                 </div>
+
+            </div>
+        </div>
+
+        <!-- TRANCE GATE FULL-WIDTH STRIP -->
+        <div class="sub-panel" style="margin-top: 6px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px; padding: 6px 16px; min-height: 75px; height: 75px; box-sizing: border-box; flex: 0 0 auto;">
+            <!-- Left Side: Controls -->
+            <div style="display: flex; align-items: center; gap: 10px; flex: 0 0 auto;">
+                <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.9rem; text-align: left; margin-right: 6px;">TRANCE GATE</div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <input type="checkbox" id="tg_active">
+                    <div class="label" style="font-size: 0.65rem;">Active</div>
+                </div>
+                <select id="tg_pattern" style="width: 120px; font-size: 0.6rem; padding: 2px;">
+                    <option value="0">Straight 16th</option>
+                    <option value="1">Offbeat 16th</option>
+                    <option value="2">Classic 1</option>
+                    <option value="3">Classic 2</option>
+                    <option value="4">Four-On-Floor</option>
+                    <option value="5">Galop</option>
+                    <option value="6">Space Gate</option>
+                    <option value="7">Euclidean 5</option>
+                </select>
+                <select id="tg_rate" style="width: 55px; font-size: 0.6rem; padding: 2px;">
+                    <option value="0">1/16</option>
+                    <option value="1">1/8</option>
+                    <option value="2">1/4</option>
+                </select>
+            </div>
+
+            <!-- Middle: 16-step LED indicators -->
+            <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+                <div class="tg-step-grid" id="tg_grid_container" style="width: 320px; margin-bottom: 0; padding: 3px;">
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                    <div class="tg-step-led"></div>
+                </div>
+            </div>
+
+            <!-- Right Side: 5 Knobs -->
+            <div style="display: flex; gap: 8px; flex: 0 0 auto; align-items: center;">
+                <!-- MIX KNOB -->
+                <div style="text-align: center; width: 44px;">
+                    <div class="label" style="font-size: 0.5rem; margin-bottom: 1px;">Mix</div>
+                    <div class="mushin-knob mushin-knob-small" id="knob-tg_mix" data-param="tg_mix" data-default="1.0" tabindex="0">
+                        <svg viewBox="0 0 100 100" class="knob-svg">
+                            <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                            <path class="knob-value-arc" d="" />
+                            <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                            <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                            <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                            <g class="knob-pointer-group">
+                                <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                            </g>
+                        </svg>
+                        <input type="range" id="tg_mix" min="0" max="1" step="0.001" style="display: none;">
+                    </div>
+                    <div class="value" id="tg_mix-val" style="font-size: 0.5rem; margin-top: 1px;">100%</div>
+                </div>
+
+                <!-- DEPTH KNOB -->
+                <div style="text-align: center; width: 44px;">
+                    <div class="label" style="font-size: 0.5rem; margin-bottom: 1px;">Depth</div>
+                    <div class="mushin-knob mushin-knob-small" id="knob-tg_depth" data-param="tg_depth" data-default="1.0" tabindex="0">
+                        <svg viewBox="0 0 100 100" class="knob-svg">
+                            <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                            <path class="knob-value-arc" d="" />
+                            <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                            <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                            <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                            <g class="knob-pointer-group">
+                                <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                            </g>
+                        </svg>
+                        <input type="range" id="tg_depth" min="0" max="1" step="0.001" style="display: none;">
+                    </div>
+                    <div class="value" id="tg_depth-val" style="font-size: 0.5rem; margin-top: 1px;">100%</div>
+                </div>
+
+                <!-- START (ATTACK) KNOB -->
+                <div style="text-align: center; width: 44px;">
+                    <div class="label" style="font-size: 0.5rem; margin-bottom: 1px;">Atk</div>
+                    <div class="mushin-knob mushin-knob-small" id="knob-tg_start" data-param="tg_start" data-default="0.05" tabindex="0">
+                        <svg viewBox="0 0 100 100" class="knob-svg">
+                            <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                            <path class="knob-value-arc" d="" />
+                            <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                            <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                            <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                            <g class="knob-pointer-group">
+                                <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                            </g>
+                        </svg>
+                        <input type="range" id="tg_start" min="0" max="1" step="0.001" style="display: none;">
+                    </div>
+                    <div class="value" id="tg_start-val" style="font-size: 0.5rem; margin-top: 1px;">5.0ms</div>
+                </div>
+
+                <!-- HOLD KNOB -->
+                <div style="text-align: center; width: 44px;">
+                    <div class="label" style="font-size: 0.5rem; margin-bottom: 1px;">Hold</div>
+                    <div class="mushin-knob mushin-knob-small" id="knob-tg_hold" data-param="tg_hold" data-default="0.444" tabindex="0">
+                        <svg viewBox="0 0 100 100" class="knob-svg">
+                            <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                            <path class="knob-value-arc" d="" />
+                            <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                            <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                            <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                            <g class="knob-pointer-group">
+                                <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                            </g>
+                        </svg>
+                        <input type="range" id="tg_hold" min="0" max="1" step="0.001" style="display: none;">
+                    </div>
+                    <div class="value" id="tg_hold-val" style="font-size: 0.5rem; margin-top: 1px;">50%</div>
+                </div>
+
+                <!-- END (DECAY) KNOB -->
+                <div style="text-align: center; width: 44px;">
+                    <div class="label" style="font-size: 0.5rem; margin-bottom: 1px;">Dec</div>
+                    <div class="mushin-knob mushin-knob-small" id="knob-tg_end" data-param="tg_end" data-default="0.05" tabindex="0">
+                        <svg viewBox="0 0 100 100" class="knob-svg">
+                            <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                            <path class="knob-value-arc" d="" />
+                            <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                            <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                            <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                            <g class="knob-pointer-group">
+                                <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                            </g>
+                        </svg>
+                        <input type="range" id="tg_end" min="0" max="1" step="0.001" style="display: none;">
+                    </div>
+                    <div class="value" id="tg_end-val" style="font-size: 0.5rem; margin-top: 1px;">10.0ms</div>
+                </div>
             </div>
         </div>
         <div id="debug-log" style="display: none;"></div>
@@ -1426,6 +1622,48 @@
         const scMeterBarText = document.getElementById('sc-meter-bar-text');
         const scMeterInText = document.getElementById('sc-meter-in-text');
         let audioData = new Float32Array(256);
+
+        const tgPatternMasks = [
+            0xAAAA, // Straight 16th
+            0x5555, // Offbeat 16th
+            0xEEEE, // Classic 1
+            0x9999, // Classic 2
+            0xF0F0, // Four-On-Floor
+            0xD7D7, // Galop
+            0x8888, // Space Gate
+            0x8912  // Euclidean 5
+        ];
+
+        function updatePatternVisualGrid(patternIdx) {
+            const mask = tgPatternMasks[patternIdx] || 0;
+            const grid = document.getElementById('tg_grid_container');
+            if (!grid) return;
+            const leds = grid.querySelectorAll('.tg-step-led');
+            for (let i = 0; i < 16; i++) {
+                if (i >= leds.length) break;
+                const isStepFilled = (mask & (1 << i)) !== 0;
+                if (isStepFilled) {
+                    leds[i].classList.add('step-filled');
+                } else {
+                    leds[i].classList.remove('step-filled');
+                }
+            }
+        }
+
+        let lastActiveStep = -1;
+        function updatePlayheadPosition(step) {
+            if (step === lastActiveStep) return;
+            const grid = document.getElementById('tg_grid_container');
+            if (!grid) return;
+            const leds = grid.querySelectorAll('.tg-step-led');
+            if (lastActiveStep >= 0 && lastActiveStep < leds.length) {
+                leds[lastActiveStep].classList.remove('active-playhead');
+            }
+            if (step >= 0 && step < leds.length) {
+                leds[step].classList.add('active-playhead');
+            }
+            lastActiveStep = step;
+        }
 
         // Debug Logging
         function log(msg) {
@@ -1522,6 +1760,9 @@
                                 scMeterIn.style.width = width + "%";
                                 if (scMeterInText) scMeterInText.textContent = Math.round(width) + "%";
                             });
+                            backend.addEventListener('tgStep', step => {
+                                updatePlayheadPosition(Math.round(step));
+                            });
                         }
                         requestPresetList();
                     }
@@ -1567,7 +1808,15 @@
             noise_freq: { min: 20, max: 20000, skew: 0.3, display: v => Math.round(v) + "Hz" },
             noise_level: { min: 0, max: 100, display: v => Math.round(v) + "%" },
             noise_routing: { type: 'choice', display: v => ["Pre-Dist", "Pre-Filter", "Post-Filter"][v] },
-            noise_fm_mod: { min: 0, max: 100, display: v => Math.round(v) + "%" }
+            noise_fm_mod: { min: 0, max: 100, display: v => Math.round(v) + "%" },
+            tg_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            tg_mix: { min: 0, max: 100, display: v => Math.round(v) + "%" },
+            tg_pattern: { type: 'choice', display: v => ["Straight 16th", "Offbeat 16th", "Classic 1", "Classic 2", "Four-On-Floor", "Galop", "Space Gate", "Euclidean 5"][v] },
+            tg_rate: { type: 'choice', display: v => ["1/16", "1/8", "1/4"][v] },
+            tg_start: { min: 0, max: 100, display: v => v.toFixed(1) + "ms" },
+            tg_hold: { min: 10, max: 100, display: v => Math.round(v) + "%" },
+            tg_end: { min: 0, max: 200, display: v => v.toFixed(1) + "ms" },
+            tg_depth: { min: 0, max: 100, display: v => Math.round(v) + "%" }
         };
 
         for(let l=1; l<=2; l++) {
@@ -1634,6 +1883,11 @@
             // Sync wave selector buttons if applicable
             if (id === 'lfo1_wave' || id === 'lfo2_wave') {
                 syncWaveSelectorUI(id, normVal);
+            }
+
+            // Sync trance gate pattern visual grid if applicable
+            if (id === 'tg_pattern') {
+                updatePatternVisualGrid(realVal);
             }
 
             if (!skipNative) {
@@ -2250,14 +2504,10 @@
 
         window.onPresetSaved = () => { 
             log("Preset Saved Successfully"); 
-            alert("Preset Saved"); 
             requestPresetList(); 
         };
         window.onPresetLoaded = () => { 
             log("Preset Loaded Successfully"); 
-            if (!suppressPresetAlert) {
-                alert("Preset Loaded"); 
-            }
             suppressPresetAlert = false; 
         };
         window.onPresetDeleted = () => { 
