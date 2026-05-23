@@ -748,6 +748,112 @@
             box-shadow: 0 0 6px rgba(0, 210, 255, 0.2), inset 0 0 4px rgba(0, 210, 255, 0.1);
             filter: drop-shadow(0 0 2px var(--primary));
         }
+
+        /* Custom Glow Switch Indicator */
+        .glow-switch-label {
+            display: block;
+            width: 22px;
+            height: 12px;
+            background: #0c0c0c;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+            transition: all 0.2s ease;
+        }
+
+        .glow-switch-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #444;
+            border-radius: 50%;
+            top: 1px;
+            left: 1px;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: inset 0 0.5px 1px rgba(255,255,255,0.4);
+        }
+
+        /* Checked state transitions */
+        #qe_active:checked + .glow-switch-label {
+            border-color: var(--primary);
+            background: rgba(0, 210, 255, 0.05);
+        }
+
+        #qe_active:checked + .glow-switch-label .glow-switch-dot {
+            left: 11px;
+            background: var(--primary);
+            box-shadow: 0 0 6px var(--primary), inset 0 1px 1px rgba(255,255,255,0.8);
+        }
+
+        /* System Resolution LED panel styling */
+        .bit-readout-container {
+            background: radial-gradient(circle at center, #110202 0%, #050000 100%);
+            border: 1px solid #3a0e0e;
+            border-radius: 4px;
+            padding: 4px 10px;
+            margin-top: 6px;
+            text-align: center;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.95);
+            transition: all 0.3s ease;
+        }
+
+        .bit-readout-label {
+            font-family: inherit;
+            font-size: 0.45rem;
+            color: #8f3434;
+            letter-spacing: 2px;
+        }
+
+        .bit-readout-value {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ff3333;
+            text-shadow: 0 0 8px rgba(255, 51, 51, 0.8), 0 0 20px rgba(255, 51, 51, 0.4);
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        /* High Fidelity mode (when active but resolution is full) */
+        .sub-panel:has(#qe_active:not(:checked)) .bit-readout-container {
+            background: radial-gradient(circle at center, #02110b 0%, #000502 100%);
+            border-color: #0e3a1f;
+        }
+
+        .sub-panel:has(#qe_active:not(:checked)) .bit-readout-label {
+            color: #348f58;
+        }
+
+        .sub-panel:has(#qe_active:not(:checked)) .bit-readout-value {
+            color: #33ff77;
+            text-shadow: 0 0 8px rgba(51, 255, 119, 0.8);
+        }
+
+        @keyframes qe-glitch {
+            0%   { clip-path: inset(40% 0 61% 0); transform: skew(-3deg); }
+            10%  { clip-path: inset(92% 0 1% 0);  transform: skew(1deg); }
+            20%  { clip-path: inset(25% 0 58% 0); transform: skew(4deg); }
+            30%  { clip-path: inset(76% 0 5% 0);  transform: skew(-2deg); }
+            40%  { clip-path: inset(5% 0 85% 0);  transform: skew(3deg); }
+            50%  { clip-path: inset(55% 0 35% 0); transform: skew(-1deg); }
+            100% { clip-path: inset(80% 0 10% 0); transform: skew(0deg); }
+        }
+
+        /* Applied when bit depth is low */
+        .glitching-panel {
+            position: relative;
+        }
+
+        .glitching-panel::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 0, 85, 0.05);
+            pointer-events: none;
+            animation: qe-glitch 0.3s infinite linear alternate-reverse;
+        }
     </style>
 </head>
 <body>
@@ -1127,6 +1233,89 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- NOISE / GENERATOR (Squeezed to fit in Column 1) -->
+                <div class="sub-panel" style="margin-top: 3px; padding: 4px; flex: 0 0 auto;">
+                    <div class="sub-panel-title" style="font-size: 0.85rem; margin-bottom: 2px;">NOISE / GENERATOR</div>
+                    
+                    <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 3px; gap: 4px;">
+                        <div style="display:flex; gap:3px; align-items:center;">
+                            <input type="checkbox" id="noise_active">
+                            <div class="label" style="font-size: 0.55rem;">Active</div>
+                        </div>
+                        <select id="noise_routing" style="width:65px; font-size: 0.55rem; padding: 1px;">
+                            <option value="0">Pre-Dist</option>
+                            <option value="1">Pre-Filter</option>
+                            <option value="2">Post-Filter</option>
+                        </select>
+                        <select id="noise_type" style="width:75px; font-size: 0.55rem; padding: 1px;">
+                            <option value="0">White</option>
+                            <option value="1">Pink</option>
+                            <option value="2">Sine</option>
+                            <option value="3">Triangle</option>
+                            <option value="4">Sawtooth</option>
+                            <option value="5">Square</option>
+                        </select>
+                    </div>
+
+                    <!-- NOISE PARAMETERS IN 3-COLUMN GRID -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 2px;">
+                        <div style="text-align: center;">
+                            <div class="label" style="font-size: 0.55rem;">Freq</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-noise_freq" data-param="noise_freq" data-default="0.25" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="noise_freq" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="noise_freq-val" style="font-size: 0.55rem;">440Hz</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="label" style="font-size: 0.55rem;">Level</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-noise_level" data-param="noise_level" data-default="0.1" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="noise_level" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="noise_level-val" style="font-size: 0.55rem;">-20dB</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="label" style="font-size: 0.55rem;">FM Mod</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-noise_fm_mod" data-param="noise_fm_mod" data-default="0.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="noise_fm_mod" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="noise_fm_mod-val" style="font-size: 0.55rem;">0%</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- COLUMN 2: Modulators -->
@@ -1220,6 +1409,82 @@
 
             <!-- COLUMN 3: Sidechain & Noise Generator -->
             <div class="col">
+                <!-- INFO DECAY (QUANTIZATION ERROR) PANEL -->
+                <div class="sub-panel" id="panel-info-decay">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 1.0rem; letter-spacing: 0.1em; color: var(--primary);">INFO DECAY</div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <input type="checkbox" id="qe_active" style="display: none;">
+                            <label class="glow-switch-label" for="qe_active" id="qe_active_indicator" title="Toggle Info Decay">
+                                <span class="glow-switch-dot"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Bit Depth LED Resolution Readout -->
+                    <div class="bit-readout-container">
+                        <div class="bit-readout-label">SYSTEM RESOLUTION</div>
+                        <div class="bit-readout-value" id="bit-readout-val">24.0 BIT</div>
+                    </div>
+
+                    <!-- Knobs & Grid Controls Row -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; text-align: center; align-items: center;">
+                        
+                        <!-- Resolution Knob -->
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="label" title="Amplitude Quantization (Bits)">Resolution</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-qe_depth" data-param="qe_depth" data-default="1.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="qe_depth" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="qe_depth-val">24.0 Bits</div>
+                        </div>
+
+                        <!-- Downsampling Knob -->
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="label" title="Temporal Downsampling (Rate decimation)">Downsample</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-qe_downsample" data-param="qe_downsample" data-default="0.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" fill-opacity="1" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="qe_downsample" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="qe_downsample-val">1x (Clean)</div>
+                        </div>
+                    </div>
+
+                    <!-- Extra Settings Strip (Mix & Exhaustion Link) -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid var(--marking);">
+                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="checkbox" id="qe_link">
+                            <span class="label" style="font-size: 0.55rem;" title="Link bit depth directly to global exhaustion switch">Link Exhaust</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div class="label" style="font-size: 0.55rem;">Mix</div>
+                            <input type="range" id="qe_mix" min="0" max="1" step="0.001" style="width: 55px; height: 3px; background: #000; outline: none; border-radius: 2px;">
+                            <span class="value" id="qe_mix-val" style="font-size: 0.55rem; width: 25px; text-align: right;">100%</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="sub-panel">
                     <div class="sub-panel-title">SIDECHAIN</div>
                     
@@ -1365,93 +1630,6 @@
                                 <input type="range" id="sc_lp_freq" min="0" max="1" step="0.001" style="display: none;">
                             </div>
                             <div class="value" id="sc_lp_freq-val">20k</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- NOISE / GENERATOR -->
-                <div class="sub-panel" style="margin-top: 6px;">
-                    <div class="sub-panel-title">NOISE / GENERATOR</div>
-                    
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 2px;">
-                        <div style="display:flex; gap:4px; align-items:center;">
-                            <input type="checkbox" id="noise_active">
-                            <div class="label">Active</div>
-                        </div>
-                        <select id="noise_routing" style="width:75px;">
-                            <option value="0">Pre-Dist</option>
-                            <option value="1">Pre-Filter</option>
-                            <option value="2">Post-Filter</option>
-                        </select>
-                    </div>
-
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 4px;">
-                        <div class="label" style="flex:1;">Type</div>
-                        <select id="noise_type" style="width:110px;">
-                            <option value="0">White Noise</option>
-                            <option value="1">Pink Noise</option>
-                            <option value="2">Sine Tone</option>
-                            <option value="3">Triangle Wave</option>
-                            <option value="4">Sawtooth Wave</option>
-                            <option value="5">Square Wave</option>
-                        </select>
-                    </div>
-
-                    <!-- NOISE PARAMETERS IN 3-COLUMN GRID -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 2px;">
-                        <div style="text-align: center;">
-                            <div class="label">Freq</div>
-                            <div class="mushin-knob mushin-knob-small" id="knob-noise_freq" data-param="noise_freq" data-default="0.25" tabindex="0">
-                                <svg viewBox="0 0 100 100" class="knob-svg">
-                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                                    <path class="knob-value-arc" d="" />
-                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                                    <g class="knob-pointer-group">
-                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                                    </g>
-                                </svg>
-                                <input type="range" id="noise_freq" min="0" max="1" step="0.001" style="display: none;">
-                            </div>
-                            <div class="value" id="noise_freq-val">440Hz</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div class="label">Level</div>
-                            <div class="mushin-knob mushin-knob-small" id="knob-noise_level" data-param="noise_level" data-default="0.1" tabindex="0">
-                                <svg viewBox="0 0 100 100" class="knob-svg">
-                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                                    <path class="knob-value-arc" d="" />
-                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                                    <g class="knob-pointer-group">
-                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                                    </g>
-                                </svg>
-                                <input type="range" id="noise_level" min="0" max="1" step="0.001" style="display: none;">
-                            </div>
-                            <div class="value" id="noise_level-val">-20dB</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div class="label">FM Mod</div>
-                            <div class="mushin-knob mushin-knob-small" id="knob-noise_fm_mod" data-param="noise_fm_mod" data-default="0.0" tabindex="0">
-                                <svg viewBox="0 0 100 100" class="knob-svg">
-                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                                    <path class="knob-value-arc" d="" />
-                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                                    <g class="knob-pointer-group">
-                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                                    </g>
-                                </svg>
-                                <input type="range" id="noise_fm_mod" min="0" max="1" step="0.001" style="display: none;">
-                            </div>
-                            <div class="value" id="noise_fm_mod-val">0%</div>
                         </div>
                     </div>
                 </div>
@@ -1709,13 +1887,26 @@
                 ctx.shadowBlur = 0;
             }
 
+            const qeActive = document.getElementById('qe_active') && document.getElementById('qe_active').checked;
+            const qeDepthVal = parseFloat(document.getElementById('qe_depth')?.value || '1.0');
+            const bits = qeDepthVal * 22.0 + 2.0;
+
             const sliceWidth = canvas.width / (audioData.length - 1);
             let x = 0;
+            let lastY = 0;
             for (let i = 0; i < audioData.length; i++) {
                 // Add high frequency analog thermal noise when hardware is running hot
                 const noise = isExhausted ? (Math.random() - 0.5) * 0.03 : 0;
                 const y = ((audioData[i] + noise) * 0.4 + 0.5) * canvas.height;
-                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    if (qeActive && bits < 10.0) {
+                        ctx.lineTo(x, lastY);
+                    }
+                    ctx.lineTo(x, y);
+                }
+                lastY = y;
                 x += sliceWidth;
             }
             ctx.stroke();
@@ -1776,6 +1967,42 @@
         }
 
         const params = {
+            qe_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            qe_depth: {
+                min: 2,
+                max: 24,
+                display: (v) => {
+                    const bits = v.toFixed(1);
+                    document.getElementById('bit-readout-val').innerText = `${bits} BIT`;
+                    
+                    const readout = document.getElementById('bit-readout-val');
+                    const panel = document.getElementById('panel-info-decay');
+                    if (v < 8.0) {
+                        readout.style.color = '#ff0055';
+                        readout.style.textShadow = '0 0 12px #ff0055, 0 0 25px #ff0055';
+                        panel.classList.add('glitching-panel');
+                    } else if (v < 16.0) {
+                        readout.style.color = '#ff9900';
+                        readout.style.textShadow = '0 0 8px #ff9900';
+                        panel.classList.remove('glitching-panel');
+                    } else {
+                        readout.style.color = '#33ff77';
+                        readout.style.textShadow = '0 0 8px #33ff77';
+                        panel.classList.remove('glitching-panel');
+                    }
+                    return `${bits} Bits`;
+                }
+            },
+            qe_downsample: {
+                min: 1,
+                max: 32,
+                display: (v) => {
+                    const val = Math.round(v);
+                    return val > 1 ? `${val}x Decimation` : '1x (Clean)';
+                }
+            },
+            qe_mix: { min: 0, max: 100, display: v => Math.round(v) + "%" },
+            qe_link: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
             gain: { min: 0, max: 2, display: v => v.toFixed(2) },
             drive: { min: 1, max: 20, display: v => v.toFixed(1) },
             threshold: { min: 0, max: 1, display: v => v.toFixed(2) },
@@ -2343,6 +2570,19 @@
             const knob = new MushinKnob(el);
             window.knobs[knob.paramId] = knob;
         });
+
+        // Ensure qe_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const qeActiveIndicator = document.getElementById('qe_active_indicator');
+        if (qeActiveIndicator) {
+            qeActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('qe_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
 
         // Initialize dynamic slider track fills on startup
         document.querySelectorAll('input[type=range]').forEach(el => {

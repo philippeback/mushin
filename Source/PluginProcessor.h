@@ -6,6 +6,7 @@
 #include "dsp_sidechain/SidechainProcessor.h"
 #include "dsp/NoiseOscillator.h"
 #include "dsp/TranceGateProcessor.h"
+#include "dsp/QuantizationErrorProcessor.h"
 
 class MushinAudioProcessor : public juce::AudioProcessor {
 public:
@@ -128,6 +129,17 @@ private:
   std::atomic<float>* tgHoldParam = nullptr;
   std::atomic<float>* tgEndParam = nullptr;
   std::atomic<float>* tgDepthParam = nullptr;
+
+  // Quantization Error
+  mushin::QuantizationErrorProcessor quantizationError;
+  juce::LinearSmoothedValue<float> smoothedQeDepth;
+  juce::LinearSmoothedValue<float> smoothedQeMix;
+
+  std::atomic<float>* qeActiveParam = nullptr;
+  std::atomic<float>* qeDepthParam = nullptr;
+  std::atomic<float>* qeDownsampleParam = nullptr;
+  std::atomic<float>* qeMixParam = nullptr;
+  std::atomic<float>* qeLinkParam = nullptr;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };
