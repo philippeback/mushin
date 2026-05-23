@@ -776,12 +776,14 @@
         }
 
         /* Checked state transitions */
-        #qe_active:checked + .glow-switch-label {
+        #qe_active:checked + .glow-switch-label,
+        #delay_active:checked + .glow-switch-label {
             border-color: var(--primary);
             background: rgba(0, 210, 255, 0.05);
         }
 
-        #qe_active:checked + .glow-switch-label .glow-switch-dot {
+        #qe_active:checked + .glow-switch-label .glow-switch-dot,
+        #delay_active:checked + .glow-switch-label .glow-switch-dot {
             left: 11px;
             background: var(--primary);
             box-shadow: 0 0 6px var(--primary), inset 0 1px 1px rgba(255,255,255,0.8);
@@ -1037,6 +1039,99 @@
                     <input type="range" id="gain" min="0" max="1" step="0.001" style="display: none;">
                 </div>
                 <div class="value" id="gain-val">1.00</div>
+            </div>
+
+            <!-- DELAY PANEL -->
+            <div class="sub-panel" id="panel-delay" style="flex: 1.5; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.85rem; color: var(--primary); letter-spacing: 0.05em;">DELAY</div>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <input type="checkbox" id="delay_active" style="display: none;">
+                        <label class="glow-switch-label" for="delay_active" id="delay_active_indicator" title="Toggle Delay">
+                            <span class="glow-switch-dot"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; text-align: center; align-items: center;">
+                    <!-- Delay Time -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="label" style="font-size: 0.50rem;" title="Delay Time (ms or Division)">Time</div>
+                        <div class="mushin-knob mushin-knob-small" id="knob-delay_time" data-param="delay_time" data-default="0.3" tabindex="0">
+                            <svg viewBox="0 0 100 100" class="knob-svg">
+                                <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                <path class="knob-value-arc" d="" />
+                                <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                <g class="knob-pointer-group">
+                                    <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                    <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                </g>
+                            </svg>
+                            <input type="range" id="delay_time" min="0" max="1" step="0.001" style="display: none;">
+                        </div>
+                        <div class="value" id="delay_time-val" style="font-size: 0.50rem;">300ms</div>
+                    </div>
+
+                    <!-- Delay Feedback -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="label" style="font-size: 0.50rem;" title="Delay Feedback">Feedback</div>
+                        <div class="mushin-knob mushin-knob-small" id="knob-delay_feedback" data-param="delay_feedback" data-default="0.3" tabindex="0">
+                            <svg viewBox="0 0 100 100" class="knob-svg">
+                                <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                <path class="knob-value-arc" d="" />
+                                <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                <g class="knob-pointer-group">
+                                    <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                    <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                </g>
+                            </svg>
+                            <input type="range" id="delay_feedback" min="0" max="1" step="0.001" style="display: none;">
+                        </div>
+                        <div class="value" id="delay_feedback-val" style="font-size: 0.50rem;">30%</div>
+                    </div>
+
+                    <!-- Delay Mix -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="label" style="font-size: 0.50rem;" title="Delay Mix">Mix</div>
+                        <div class="mushin-knob mushin-knob-small" id="knob-delay_mix" data-param="delay_mix" data-default="0.3" tabindex="0">
+                            <svg viewBox="0 0 100 100" class="knob-svg">
+                                <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                <path class="knob-value-arc" d="" />
+                                <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                <g class="knob-pointer-group">
+                                    <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                    <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                </g>
+                            </svg>
+                            <input type="range" id="delay_mix" min="0" max="1" step="0.001" style="display: none;">
+                        </div>
+                        <div class="value" id="delay_mix-val" style="font-size: 0.50rem;">30%</div>
+                    </div>
+                </div>
+
+                <!-- Toggles Strip (PingPong & Sync & Tempo) -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; background: rgba(0,0,0,0.2); border-radius: 3px; border: 1px solid var(--marking); font-size: 0.50rem;">
+                    <label style="display: flex; align-items: center; gap: 2px; cursor: pointer;">
+                        <input type="checkbox" id="delay_pingpong">
+                        <span class="label" style="font-size: 0.50rem; text-transform: uppercase;">P-Pong</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 2px; cursor: pointer;">
+                        <input type="checkbox" id="delay_sync">
+                        <span class="label" style="font-size: 0.50rem; text-transform: uppercase;">Sync</span>
+                    </label>
+                    <select id="delay_tempo" style="width: 45px; font-size: 0.50rem; padding: 0;">
+                        <option value="0">1/16</option>
+                        <option value="1">1/8</option>
+                        <option value="2">1/4</option>
+                        <option value="3">1/2</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -2003,6 +2098,43 @@
             },
             qe_mix: { min: 0, max: 100, display: v => Math.round(v) + "%" },
             qe_link: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            delay_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            delay_time: {
+                min: 1,
+                max: 2000,
+                display: (v) => {
+                    const isSync = document.getElementById('delay_sync') && document.getElementById('delay_sync').checked;
+                    if (isSync) {
+                        const tempoIdx = parseInt(document.getElementById('delay_tempo').value, 10);
+                        return ["1/16", "1/8", "1/4", "1/2"][tempoIdx] || "1/4";
+                    }
+                    return Math.round(v) + "ms";
+                }
+            },
+            delay_feedback: { min: 0, max: 95, display: v => Math.round(v) + "%" },
+            delay_mix: { min: 0, max: 100, display: v => Math.round(v) + "%" },
+            delay_pingpong: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            delay_sync: {
+                type: 'bool',
+                display: (v) => {
+                    const isSync = v > 0.5;
+                    const knobTime = window.knobs['delay_time'];
+                    if (knobTime) {
+                        knobTime.setValue(knobTime.value, true);
+                    }
+                    return isSync ? 'ON' : 'OFF';
+                }
+            },
+            delay_tempo: {
+                type: 'choice',
+                display: (v) => {
+                    const knobTime = window.knobs['delay_time'];
+                    if (knobTime) {
+                        knobTime.setValue(knobTime.value, true);
+                    }
+                    return ["1/16", "1/8", "1/4", "1/2"][v];
+                }
+            },
             gain: { min: 0, max: 2, display: v => v.toFixed(2) },
             drive: { min: 1, max: 20, display: v => v.toFixed(1) },
             threshold: { min: 0, max: 1, display: v => v.toFixed(2) },
@@ -2576,6 +2708,19 @@
         if (qeActiveIndicator) {
             qeActiveIndicator.addEventListener('click', (e) => {
                 const cb = document.getElementById('qe_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
+
+        // Ensure delay_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const delayActiveIndicator = document.getElementById('delay_active_indicator');
+        if (delayActiveIndicator) {
+            delayActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('delay_active');
                 if (cb) {
                     cb.checked = !cb.checked;
                     cb.dispatchEvent(new Event('change'));

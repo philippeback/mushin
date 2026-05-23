@@ -77,7 +77,15 @@ MushinAudioProcessor::MushinAudioProcessor()
     qeDepthParam      = treeState.getRawParameterValue ("qe_depth");
     qeDownsampleParam = treeState.getRawParameterValue ("qe_downsample");
     qeMixParam        = treeState.getRawParameterValue ("qe_mix");
-    qeLinkParam       = treeState.getRawParameterValue ("qe_link");
+    qeLinkParam        = treeState.getRawParameterValue ("qe_link");
+
+    delayActiveParam   = treeState.getRawParameterValue ("delay_active");
+    delayTimeParam     = treeState.getRawParameterValue ("delay_time");
+    delayFeedbackParam = treeState.getRawParameterValue ("delay_feedback");
+    delayMixParam      = treeState.getRawParameterValue ("delay_mix");
+    delayPingPongParam = treeState.getRawParameterValue ("delay_pingpong");
+    delaySyncParam     = treeState.getRawParameterValue ("delay_sync");
+    delayTempoParam    = treeState.getRawParameterValue ("delay_tempo");
 }
 
 MushinAudioProcessor::~MushinAudioProcessor() {}
@@ -118,6 +126,15 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     smoothedQeDepth.reset(sampleRate, 0.05);
     smoothedQeMix.reset(sampleRate, 0.05);
 
+    juce::dsp::ProcessSpec delaySpec;
+    delaySpec.sampleRate = sampleRate;
+    delaySpec.maximumBlockSize = (juce::uint32) samplesPerBlock;
+    delaySpec.numChannels = (juce::uint32) getTotalNumOutputChannels();
+    delayProcessor.prepare(delaySpec);
+    smoothedDelayTime.reset(sampleRate, 0.05);
+    smoothedDelayFeedback.reset(sampleRate, 0.05);
+    smoothedDelayMix.reset(sampleRate, 0.05);
+
     reset();
 }
 
@@ -131,6 +148,7 @@ void MushinAudioProcessor::reset()
     noiseOscillator.reset();
     tranceGate.reset();
     quantizationError.reset();
+    delayProcessor.reset();
 }
 
 bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -223,6 +241,15 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     smoothedQeMix.setTargetValue(qeMixParam->load());
     int downsampleFactor = static_cast<int>(qeDownsampleParam->load());
 
+    // Update Delay targets
+    bool delayActive = (delayActiveParam->load() > 0.5f);
+    smoothedDelayTime.setTargetValue (delayTimeParam->load());
+    smoothedDelayFeedback.setTargetValue (delayFeedbackParam->load());
+    smoothedDelayMix.setTargetValue (delayMixParam->load());
+    bool delayPingPong = (delayPingPongParam->load() > 0.5f);
+    bool delaySync = (delaySyncParam->load() > 0.5f);
+    int delayTempoVal = static_cast<int>(delayTempoParam->load());
+
     // 1.5. Calculate Trance Gate block parameters
     double bpm = 120.0;
     double playheadSamples = 0.0;
@@ -307,6 +334,10 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
 
         float currentQeDepth = smoothedQeDepth.getNextValue();
         float currentQeMix = smoothedQeMix.getNextValue();
+
+        float currentDelayTime = smoothedDelayTime.getNextValue();
+        float currentDelayFeedback = smoothedDelayFeedback.getNextValue();
+        float currentDelayMix = smoothedDelayMix.getNextValue();
 
         // Calculate Noise Generator sample and FM modulation offset for this sample
         float genSample = 0.0f;
@@ -425,7 +456,31 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             }
 
             buffer.setSample(ch, s, finalSample);
-            if (ch == 0) pushNextSampleIntoFifo (finalSample);
+        }
+
+        // --- STAGE D.8: Stereo Delay (outside channel loop, inside sample loop) ---
+        if (delayActive && totalNumOutputChannels >= 2)
+        {
+            float leftSample = buffer.getSample(0, s);
+            float rightSample = buffer.getSample(1, s);
+
+            delayProcessor.processSample (leftSample, rightSample, currentDelayTime, currentDelayFeedback, currentDelayMix, delayPingPong, delaySync, (float)bpm, delayTempoVal);
+
+            // NaN safety guard on delay output
+            if (std::isnan(leftSample) || std::isinf(leftSample) || std::isnan(rightSample) || std::isinf(rightSample)) {
+                leftSample = 0.0f;
+                rightSample = 0.0f;
+                reset();
+            }
+
+            buffer.setSample(0, s, leftSample);
+            buffer.setSample(1, s, rightSample);
+            
+            pushNextSampleIntoFifo (leftSample);
+        }
+        else
+        {
+            pushNextSampleIntoFifo (buffer.getSample(0, s));
         }
 
         if (s == numSamples - 1) {
@@ -617,6 +672,22 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
         juce::ParameterID { "qe_mix", 1 }, "Decay Mix", 0.0f, 1.0f, 1.0f));
     params.push_back (std::make_unique<juce::AudioParameterBool> (
         juce::ParameterID { "qe_link", 1 }, "Exhaustion Link", false));
+
+    // Delay parameters
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "delay_active", 1 }, "Delay Active", false));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "delay_time", 1 }, "Delay Time", 1.0f, 2000.0f, 300.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "delay_feedback", 1 }, "Delay Feedback", 0.0f, 0.95f, 0.3f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "delay_mix", 1 }, "Delay Mix", 0.0f, 1.0f, 0.3f));
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "delay_pingpong", 1 }, "Ping-Pong", false));
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "delay_sync", 1 }, "Delay Sync", false));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "delay_tempo", 1 }, "Delay Tempo Sync", juce::StringArray {"1/16", "1/8", "1/4", "1/2"}, 2));
 
     return { params.begin(), params.end() };
 }
