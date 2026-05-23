@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 $issScript = "scripts\packaging\mushin_installer.iss"
 $compiledInstaller = "build2\installer\Mushin_Windows_Installer_v1.0.0.exe"
 $siteDownloadsDir = "site\downloads"
-$siteInstallerDest = Join-Path $siteDownloadsDir "Mushin_Windows_Installer_v1.0.0.exe"
+$siteInstallerDest = Join-Path $siteDownloadsDir "Mushin_Windows_Installer_v1.0.0.zip"
 
 Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host "             MUSHIN INSTALLER COMPILATION & SITE STAGING" -ForegroundColor Cyan
@@ -45,18 +45,30 @@ if (-not (Test-Path $compiledInstaller)) {
 $installerSize = (Get-Item $compiledInstaller).Length
 Write-Host "Successfully compiled installer: $compiledInstaller ($($installerSize / 1MB -as [int]) MB)" -ForegroundColor Green
 
-# 4. Stage to Website Downloads Folder
-Write-Host "`n2/3 Staging installer to public website downloads..." -ForegroundColor Blue
+# 4. Stage to Website Downloads Folder (Compress to ZIP to comply with Firebase Spark plan limits)
+Write-Host "`n2/3 Staging installer as ZIP to public website downloads..." -ForegroundColor Blue
 if (-not (Test-Path $siteDownloadsDir)) {
     Write-Host "Creating downloads directory: $siteDownloadsDir" -ForegroundColor DarkGray
     New-Item -ItemType Directory -Path $siteDownloadsDir -Force | Out-Null
 }
 
+# Clean up raw .exe in the downloads folder if it exists (Spark plan throws 400 errors for EXEs)
+$siteExeFile = Join-Path $siteDownloadsDir "Mushin_Windows_Installer_v1.0.0.exe"
+if (Test-Path $siteExeFile) {
+    Remove-Item -Path $siteExeFile -Force
+}
+
 try {
-    Copy-Item -Path $compiledInstaller -Destination $siteInstallerDest -Force
-    Write-Host "Copied to: $siteInstallerDest" -ForegroundColor Green
+    # Clean up old ZIP if it exists
+    if (Test-Path $siteInstallerDest) {
+        Remove-Item -Path $siteInstallerDest -Force
+    }
+    # Compress the exe directly to a zip inside site/downloads/
+    Compress-Archive -Path $compiledInstaller -DestinationPath $siteInstallerDest -Force
+    $zipSize = (Get-Item $siteInstallerDest).Length
+    Write-Host "Successfully compressed and staged ZIP archive to: $siteInstallerDest ($($zipSize / 1MB -as [int]) MB)" -ForegroundColor Green
 } catch {
-    Write-Error "Failed to copy installer to website downloads. Error: $($_.Exception.Message)"
+    Write-Error "Failed to compress/copy installer to website downloads. Error: $($_.Exception.Message)"
     exit 1
 }
 
