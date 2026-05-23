@@ -7,6 +7,7 @@
 #include "dsp/NoiseOscillator.h"
 #include "dsp/TranceGateProcessor.h"
 #include "dsp/QuantizationErrorProcessor.h"
+#include "dsp/DelayProcessor.h"
 
 class MushinAudioProcessor : public juce::AudioProcessor {
 public:
@@ -140,6 +141,20 @@ private:
   std::atomic<float>* qeDownsampleParam = nullptr;
   std::atomic<float>* qeMixParam = nullptr;
   std::atomic<float>* qeLinkParam = nullptr;
+
+  // Delay Feature
+  mushin::DelayProcessor delayProcessor;
+  juce::LinearSmoothedValue<float> smoothedDelayTime;
+  juce::LinearSmoothedValue<float> smoothedDelayFeedback;
+  juce::LinearSmoothedValue<float> smoothedDelayMix;
+
+  std::atomic<float>* delayActiveParam = nullptr;
+  std::atomic<float>* delayTimeParam = nullptr;
+  std::atomic<float>* delayFeedbackParam = nullptr;
+  std::atomic<float>* delayMixParam = nullptr;
+  std::atomic<float>* delayPingPongParam = nullptr;
+  std::atomic<float>* delaySyncParam = nullptr;
+  std::atomic<float>* delayTempoParam = nullptr;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };
