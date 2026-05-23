@@ -47,3 +47,7 @@ Thumbs.db
 .firebaserc
 debug_log.txt
 firebase-debug.log
+
+# Website Staged Installers & Firebase CLI caches
+site/downloads/
+.firebase/
