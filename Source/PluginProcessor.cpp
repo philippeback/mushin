@@ -72,6 +72,12 @@ MushinAudioProcessor::MushinAudioProcessor()
     tgHoldParam    = treeState.getRawParameterValue ("tg_hold");
     tgEndParam     = treeState.getRawParameterValue ("tg_end");
     tgDepthParam   = treeState.getRawParameterValue ("tg_depth");
+
+    qeActiveParam     = treeState.getRawParameterValue ("qe_active");
+    qeDepthParam      = treeState.getRawParameterValue ("qe_depth");
+    qeDownsampleParam = treeState.getRawParameterValue ("qe_downsample");
+    qeMixParam        = treeState.getRawParameterValue ("qe_mix");
+    qeLinkParam       = treeState.getRawParameterValue ("qe_link");
 }
 
 MushinAudioProcessor::~MushinAudioProcessor() {}
@@ -108,6 +114,10 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 
     tranceGate.prepare (sampleRate);
 
+    quantizationError.prepare(sampleRate);
+    smoothedQeDepth.reset(sampleRate, 0.05);
+    smoothedQeMix.reset(sampleRate, 0.05);
+
     reset();
 }
 
@@ -120,6 +130,7 @@ void MushinAudioProcessor::reset()
     sidechainProcessor.reset();
     noiseOscillator.reset();
     tranceGate.reset();
+    quantizationError.reset();
 }
 
 bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -201,6 +212,16 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
 
     smoothedGain.setTargetValue (gainParam->load());
     smoothedMix.setTargetValue (mixParam->load());
+
+    // Update Quantization Error targets
+    bool qeActive = (qeActiveParam->load() > 0.5f);
+    float targetQeDepth = qeDepthParam->load();
+    if (qeLinkParam->load() > 0.5f && exhaustionParam->load() > 0.5f) {
+        targetQeDepth = 4.0f;
+    }
+    smoothedQeDepth.setTargetValue(targetQeDepth);
+    smoothedQeMix.setTargetValue(qeMixParam->load());
+    int downsampleFactor = static_cast<int>(qeDownsampleParam->load());
 
     // 1.5. Calculate Trance Gate block parameters
     double bpm = 120.0;
@@ -284,6 +305,9 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         float mixVal = smoothedMix.getNextValue();
         float gainVal = smoothedGain.getNextValue();
 
+        float currentQeDepth = smoothedQeDepth.getNextValue();
+        float currentQeMix = smoothedQeMix.getNextValue();
+
         // Calculate Noise Generator sample and FM modulation offset for this sample
         float genSample = 0.0f;
         bool noiseActive = (noiseActiveParam != nullptr && noiseActiveParam->load() > 0.5f);
@@ -352,6 +376,11 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             }
             waveshaper.setDrive(std::clamp(currentDrive, 1.0f, 50.0f));
             wetSample = waveshaper.processSample(ch, wetSample);
+
+            // STAGE A.5: Quantization Error (Information Decay)
+            if (qeActive) {
+                wetSample = quantizationError.processSample(ch, wetSample, currentQeDepth, downsampleFactor, currentQeMix);
+            }
 
             // STAGE B: Dual Filtering & LFO Matrix (Pre-Filter Injection)
             if (noiseActive && (int)noiseRoutingParam->load() == 1) {
@@ -576,6 +605,18 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
         juce::ParameterID { "tg_end", 1 }, "Gate End", 0.0f, 200.0f, 10.0f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "tg_depth", 1 }, "Gate Depth", 0.0f, 100.0f, 100.0f));
+
+    // Quantization Error parameters
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "qe_active", 1 }, "Info Decay Active", false));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "qe_depth", 1 }, "Decayed Resolution", 2.0f, 24.0f, 24.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "qe_downsample", 1 }, "Time Resolution", 1.0f, 32.0f, 1.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "qe_mix", 1 }, "Decay Mix", 0.0f, 1.0f, 1.0f));
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "qe_link", 1 }, "Exhaustion Link", false));
 
     return { params.begin(), params.end() };
 }
