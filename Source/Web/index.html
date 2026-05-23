@@ -1233,6 +1233,89 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- NOISE / GENERATOR (Squeezed to fit in Column 1) -->
+                <div class="sub-panel" style="margin-top: 3px; padding: 4px; flex: 0 0 auto;">
+                    <div class="sub-panel-title" style="font-size: 0.85rem; margin-bottom: 2px;">NOISE / GENERATOR</div>
+                    
+                    <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 3px; gap: 4px;">
+                        <div style="display:flex; gap:3px; align-items:center;">
+                            <input type="checkbox" id="noise_active">
+                            <div class="label" style="font-size: 0.55rem;">Active</div>
+                        </div>
+                        <select id="noise_routing" style="width:65px; font-size: 0.55rem; padding: 1px;">
+                            <option value="0">Pre-Dist</option>
+                            <option value="1">Pre-Filter</option>
+                            <option value="2">Post-Filter</option>
+                        </select>
+                        <select id="noise_type" style="width:75px; font-size: 0.55rem; padding: 1px;">
+                            <option value="0">White</option>
+                            <option value="1">Pink</option>
+                            <option value="2">Sine</option>
+                            <option value="3">Triangle</option>
+                            <option value="4">Sawtooth</option>
+                            <option value="5">Square</option>
+                        </select>
+                    </div>
+
+                    <!-- NOISE PARAMETERS IN 3-COLUMN GRID -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 2px;">
+                        <div style="text-align: center;">
+                            <div class="label" style="font-size: 0.55rem;">Freq</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-noise_freq" data-param="noise_freq" data-default="0.25" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="noise_freq" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="noise_freq-val" style="font-size: 0.55rem;">440Hz</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="label" style="font-size: 0.55rem;">Level</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-noise_level" data-param="noise_level" data-default="0.1" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="noise_level" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="noise_level-val" style="font-size: 0.55rem;">-20dB</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="label" style="font-size: 0.55rem;">FM Mod</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-noise_fm_mod" data-param="noise_fm_mod" data-default="0.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="noise_fm_mod" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="noise_fm_mod-val" style="font-size: 0.55rem;">0%</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- COLUMN 2: Modulators -->
@@ -1547,93 +1630,6 @@
                                 <input type="range" id="sc_lp_freq" min="0" max="1" step="0.001" style="display: none;">
                             </div>
                             <div class="value" id="sc_lp_freq-val">20k</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- NOISE / GENERATOR -->
-                <div class="sub-panel" style="margin-top: 6px;">
-                    <div class="sub-panel-title">NOISE / GENERATOR</div>
-                    
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 2px;">
-                        <div style="display:flex; gap:4px; align-items:center;">
-                            <input type="checkbox" id="noise_active">
-                            <div class="label">Active</div>
-                        </div>
-                        <select id="noise_routing" style="width:75px;">
-                            <option value="0">Pre-Dist</option>
-                            <option value="1">Pre-Filter</option>
-                            <option value="2">Post-Filter</option>
-                        </select>
-                    </div>
-
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 4px;">
-                        <div class="label" style="flex:1;">Type</div>
-                        <select id="noise_type" style="width:110px;">
-                            <option value="0">White Noise</option>
-                            <option value="1">Pink Noise</option>
-                            <option value="2">Sine Tone</option>
-                            <option value="3">Triangle Wave</option>
-                            <option value="4">Sawtooth Wave</option>
-                            <option value="5">Square Wave</option>
-                        </select>
-                    </div>
-
-                    <!-- NOISE PARAMETERS IN 3-COLUMN GRID -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 2px;">
-                        <div style="text-align: center;">
-                            <div class="label">Freq</div>
-                            <div class="mushin-knob mushin-knob-small" id="knob-noise_freq" data-param="noise_freq" data-default="0.25" tabindex="0">
-                                <svg viewBox="0 0 100 100" class="knob-svg">
-                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                                    <path class="knob-value-arc" d="" />
-                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                                    <g class="knob-pointer-group">
-                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                                    </g>
-                                </svg>
-                                <input type="range" id="noise_freq" min="0" max="1" step="0.001" style="display: none;">
-                            </div>
-                            <div class="value" id="noise_freq-val">440Hz</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div class="label">Level</div>
-                            <div class="mushin-knob mushin-knob-small" id="knob-noise_level" data-param="noise_level" data-default="0.1" tabindex="0">
-                                <svg viewBox="0 0 100 100" class="knob-svg">
-                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                                    <path class="knob-value-arc" d="" />
-                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                                    <g class="knob-pointer-group">
-                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                                    </g>
-                                </svg>
-                                <input type="range" id="noise_level" min="0" max="1" step="0.001" style="display: none;">
-                            </div>
-                            <div class="value" id="noise_level-val">-20dB</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div class="label">FM Mod</div>
-                            <div class="mushin-knob mushin-knob-small" id="knob-noise_fm_mod" data-param="noise_fm_mod" data-default="0.0" tabindex="0">
-                                <svg viewBox="0 0 100 100" class="knob-svg">
-                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                                    <path class="knob-value-arc" d="" />
-                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                                    <g class="knob-pointer-group">
-                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                                    </g>
-                                </svg>
-                                <input type="range" id="noise_fm_mod" min="0" max="1" step="0.001" style="display: none;">
-                            </div>
-                            <div class="value" id="noise_fm_mod-val">0%</div>
                         </div>
                     </div>
                 </div>
