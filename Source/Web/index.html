@@ -1473,10 +1473,10 @@
 
                     <!-- Extra Settings Strip (Mix & Exhaustion Link) -->
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid var(--marking);">
-                        <div style="display: flex; align-items: center; gap: 4px;">
+                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
                             <input type="checkbox" id="qe_link">
-                            <div class="label" style="font-size: 0.55rem;" title="Link bit depth directly to global exhaustion switch">Link Exhaust</div>
-                        </div>
+                            <span class="label" style="font-size: 0.55rem;" title="Link bit depth directly to global exhaustion switch">Link Exhaust</span>
+                        </label>
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <div class="label" style="font-size: 0.55rem;">Mix</div>
                             <input type="range" id="qe_mix" min="0" max="1" step="0.001" style="width: 55px; height: 3px; background: #000; outline: none; border-radius: 2px;">
@@ -2570,6 +2570,19 @@
             const knob = new MushinKnob(el);
             window.knobs[knob.paramId] = knob;
         });
+
+        // Ensure qe_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const qeActiveIndicator = document.getElementById('qe_active_indicator');
+        if (qeActiveIndicator) {
+            qeActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('qe_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
 
         // Initialize dynamic slider track fills on startup
         document.querySelectorAll('input[type=range]').forEach(el => {
