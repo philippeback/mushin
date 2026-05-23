@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mushin — No Mind. Pure Signal. // Audio Corruptor Plugin</title>
+  <meta name="description" content="An opinionated signal corruptor plugin for producers. Designed to eliminate decision fatigue with high-performance C++ DSP and immersive reactive visualizers.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="nav">
+    <div class="nav-logo">MUSHIN</div>
+    <ul class="nav-links">
+      <li><a href="#concept">Concept</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#signal-path">Signal Path</a></li>
+      <li><a href="#download">Download</a></li>
+    </ul>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="hero-bg-grid"></div>
+    <canvas id="hero-canvas"></canvas>
+    
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Windows VST3 / Standalone v1.0.0
+    </div>
+    
+    <h1 class="hero-title">
+      MUSHIN
+      <span class="hero-kana">無心</span>
+    </h1>
+    
+    <p class="hero-sub">
+      A surgical signal corruptor built for producers who are done tweaking. <em>Stop overthinking. Start shaping.</em>
+    </p>
+    
+    <div class="hero-ctas">
+      <a href="#download" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Get Mushin Free
+      </a>
+      <a href="#concept" class="btn btn-secondary">Learn More</a>
+    </div>
+
+    <div class="hero-scroll-hint">
+      <span>Scroll to explore</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- Concept Section -->
+  <section class="concept reveal" id="concept">
+    <div class="concept-inner">
+      <span class="section-tag">Philosophy</span>
+      <h2 class="section-title">The "No-Mind" Ethos</h2>
+      <div class="concept-prose">
+        <p>
+          <strong>Mushin (無心)</strong> is the Japanese Zen concept of "no-mind"—the state of peak flow where actions occur seamlessly without hesitation, doubt, or overthinking. In modern music production, infinite possibilities breed ultimate hesitation. 
+        </p>
+        <p style="margin-top: 1rem;">
+          Mushin strips away the tedious micro-tuning. Every parameter is curated, highly expressive, and deliberate. Built on the <strong>Shokunin artisan ethos</strong>, Mushin has opinions so you don't need them. Make bold creative choices in seconds.
+        </p>
+      </div>
+
+      <div class="concept-grid">
+        <div class="concept-card reveal reveal-delay-1">
+          <div class="card-icon">🧠</div>
+          <h3 class="card-title">Zero Decision Fatigue</h3>
+          <p class="card-body">No submenus. No endless matrix modulation configurations. One surface designed to keep you in the flow zone.</p>
+        </div>
+        <div class="concept-card reveal reveal-delay-2">
+          <div class="card-icon">🔩</div>
+          <h3 class="card-title">Artisan Engineering</h3>
+          <p class="card-body">High-fidelity State-Variable Filters, zero-delay feedback algorithms, and surgical waveshaping combined for pure character.</p>
+        </div>
+        <div class="concept-card reveal reveal-delay-3">
+          <div class="card-icon">📉</div>
+          <h3 class="card-title">Musical Destruction</h3>
+          <p class="card-body">Information decay (bitcrushing) and transient exhaustion models shape signals, turning noise into a vibrant performance dynamic.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="features-inner">
+      <div class="features-header reveal">
+        <span class="section-tag">Specifications</span>
+        <h2 class="section-title">Expressive Power</h2>
+        <p class="section-lead">An optimized workflow built with pristine high-performance DSP engines.</p>
+      </div>
+
+      <div class="features-layout">
+        <!-- Feature List -->
+        <div class="features-list">
+          <div class="feature-item reveal reveal-delay-1" data-preview="ui">
+            <span class="feature-icon">🌊</span>
+            <div>
+              <h4 class="feature-name">S-Curve Waveshaper</h4>
+              <p class="feature-desc">Dynamic soft-saturation blending into a harsh odd-order Hard Clip Exhaustion mode when pushed over the threshold limits.</p>
+            </div>
+          </div>
+
+          <div class="feature-item reveal reveal-delay-2" data-preview="ui">
+            <span class="feature-icon">🎛️</span>
+            <div>
+              <h4 class="feature-name">Dual Filter &amp; LFO Matrix</h4>
+              <p class="feature-desc">Configure dual state-variable filters in parallel or serial. Tweak standard LFO frequencies and route depths instantly.</p>
+            </div>
+          </div>
+
+          <div class="feature-item reveal reveal-delay-3" data-preview="ui">
+            <span class="feature-icon">👾</span>
+            <div>
+              <h4 class="feature-name">Info Decay (Quantization Error)</h4>
+              <p class="feature-desc">Dynamically scale signal fidelity down to 2-bit. Generates crisp, musical digital artifacts that cut through complex mixes.</p>
+            </div>
+          </div>
+
+          <div class="feature-item reveal reveal-delay-4" data-preview="trancegate">
+            <span class="feature-icon">🚪</span>
+            <div>
+              <h4 class="feature-name">Trance Gate</h4>
+              <p class="feature-desc">Tempo-synced gating matrix with precise attack, hold, and decay controls to carve complex rhythmic shapes.</p>
+            </div>
+          </div>
+
+          <div class="feature-item reveal reveal-delay-1" data-preview="ui">
+            <span class="feature-icon">⚡</span>
+            <div>
+              <h4 class="feature-name">Sidechain Routing</h4>
+              <p class="feature-desc">Duck drive levels, cutoffs, or output amplitudes dynamically using highly-configurable sidechain tracking curves.</p>
+            </div>
+          </div>
+
+          <div class="feature-item reveal reveal-delay-2" data-preview="ui">
+            <span class="feature-icon">🛰️</span>
+            <div>
+              <h4 class="feature-name">WebView2 Glassmorphism</h4>
+              <p class="feature-desc">Stunning responsive layout built with HTML/CSS/JS, driven directly by JUCE's high-speed C++ engine at 30Hz.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Preview Frame -->
+        <div class="plugin-preview reveal">
+          <div class="plugin-frame">
+            <img id="preview-image" src="assets/plugin-ui.png" alt="Mushin Plugin Interface">
+            <div class="plugin-frame-label">Live Interface Render</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signal Path Section -->
+  <section class="signal-path reveal" id="signal-path">
+    <div class="signal-inner">
+      <span class="section-tag">Signal Architecture</span>
+      <h2 class="section-title">The Path of Corruption</h2>
+      
+      <div class="signal-prose">
+        <p>
+          "The signal enters as raw input. The S-Curve waveshaper applies trend-exhaustion saturation. The dual filters execute structural choke. Information decays under quantization step-reduction. What emerges is the clean truth of the sound—stripped of generic noise, heavy with character."
+        </p>
+      </div>
+
+      <div class="signal-chain reveal">
+        <div class="chain-node">
+          <div class="chain-box">INPUT</div>
+          <span class="chain-label">Raw Signal</span>
+        </div>
+        <div class="chain-arrow">→</div>
+        
+        <div class="chain-node">
+          <div class="chain-box">S-Curve</div>
+          <span class="chain-label">Exhaustion Drive</span>
+        </div>
+        <div class="chain-arrow">→</div>
+        
+        <div class="chain-node">
+          <div class="chain-box">Filters A &amp; B</div>
+          <span class="chain-label">Kinetic Choke</span>
+        </div>
+        <div class="chain-arrow">→</div>
+        
+        <div class="chain-node">
+          <div class="chain-box">Info Decay</div>
+          <span class="chain-label">Quantizer</span>
+        </div>
+        <div class="chain-arrow">→</div>
+        
+        <div class="chain-node">
+          <div class="chain-box">Mix / Gate</div>
+          <span class="chain-label">Temporal Space</span>
+        </div>
+        <div class="chain-arrow">→</div>
+        
+        <div class="chain-node">
+          <div class="chain-box">OUTPUT</div>
+          <span class="chain-label">Curated Timbre</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download & Install Section -->
+  <section class="download reveal" id="download">
+    <div class="download-inner">
+      <div class="download-card">
+        <div>
+          <h3 class="download-title">Bring No-Mind to your DAW</h3>
+          <p class="download-desc">Start experimenting with physical signal exhaustion physics today. Free VST3 and Standalone formats are compiled for immediate deployment.</p>
+          
+          <ul class="requirements">
+            <li><span class="req-dot"></span> Windows 10 / 11</li>
+            <li><span class="req-dot"></span> 64-bit VST3 Host / Standalone</li>
+            <li><span class="req-dot"></span> Microsoft Edge WebView2 runtime</li>
+          </ul>
+
+          <div class="install-steps">
+            <h4>Installation Steps</h4>
+            <ul class="steps-list">
+              <li>
+                <div class="step-num">1</div>
+                <div>Download the standalone installer archive.</div>
+              </li>
+              <li>
+                <div class="step-num">2</div>
+                <div>Extract and execute the installer bundle to copy VST3 binaries.</div>
+              </li>
+              <li>
+                <div class="step-num">3</div>
+                <div>Initiate a plugin folder scan inside your preferred DAW.</div>
+              </li>
+              <li>
+                <div class="step-num">4</div>
+                <div>Instantiate Mushin on any tracking node or master bus.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="download-cta">
+          <a href="downloads/Mushin_Windows_Installer_v1.0.0.exe" download class="btn btn-primary" style="padding: 1.1rem 2.5rem; font-size: 1.1rem; width: 100%; justify-content: center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download v1.0.0
+          </a>
+          <span class="platform-badge">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.45H0V3.449zM0 12.45h9.75v9.45L0 20.551v-8.1zM10.8 1.95L24 0v11.55H10.8V1.95zM10.8 12.45H24v11.55l-13.2-1.95v-9.6z"/></svg>
+            Windows (VST3, x64 Standalone)
+          </span>
+          <div class="macos-note">
+            🍎 macOS build pending release
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">MUSHIN</div>
+        <p class="footer-tagline">Built with JUCE 8. Driven by flow.</p>
+      </div>
+      
+      <ul class="footer-links">
+        <li><a href="https://github.com/philippeback/mushin" target="_blank">GitHub Repository</a></li>
+        <li><a href="#">License Agreement</a></li>
+        <li><a href="https://github.com/philippeback/mushin/issues" target="_blank">Report Issues</a></li>
+      </ul>
+
+      <div class="footer-copy">
+        &copy; 2026 Mushin Audio. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Background animation and user interactions -->
+  <script>
+    // Navigation visual update on scroll
+    const nav = document.querySelector('.nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+
+    // Feature preview image swapping based on hover
+    const featureItems = document.querySelectorAll('.feature-item');
+    const previewImage = document.getElementById('preview-image');
+
+    featureItems.forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        const previewType = item.getAttribute('data-preview');
+        if (previewType === 'trancegate') {
+          previewImage.src = 'assets/plugin-trancegate.png';
+        } else {
+          previewImage.src = 'assets/plugin-ui.png';
+        }
+      });
+    });
+
+    // Reveal elements on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const revealOnScroll = () => {
+      reveals.forEach(reveal => {
+        const windowHeight = window.innerHeight;
+        const revealTop = reveal.getBoundingClientRect().top;
+        const revealPoint = 100;
+
+        if (revealTop < windowHeight - revealPoint) {
+          reveal.classList.add('visible');
+        }
+      });
+    };
+    window.addEventListener('scroll', revealOnScroll);
+    // Initial call to catch elements immediately visible
+    revealOnScroll();
+
+    // ─── BACKGROUND SHADER CANVAS ANIMATION ────────────────────────────
+    const canvas = document.getElementById('hero-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Sizing system - completely decoupled from frame-by-frame draw loops
+    let width = 0;
+    let height = 0;
+
+    function resizeCanvas() {
+      width = canvas.width = Math.floor(window.innerWidth || document.documentElement.clientWidth || 800);
+      height = canvas.height = Math.floor(window.innerHeight || document.documentElement.clientHeight || 600);
+      
+      // Seed initial positions safely
+      if (!mouse || isNaN(mouse.x) || mouse.x === 0) {
+        mouse = { x: width / 2, y: height / 2, speed: 0 };
+        targetMouse = { x: width / 2, y: height / 2 };
+        lastMouse = { x: width / 2, y: height / 2 };
+      }
+    }
+
+    // Coordinates and interactive states
+    let mouse = { x: 0, y: 0, speed: 0 };
+    let targetMouse = { x: 0, y: 0 };
+    let lastMouse = { x: 0, y: 0 };
+
+    // Initial resize to establish sizes
+    resizeCanvas();
+
+    // Listen to resize and orientation events cleanly
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', resizeCanvas);
+
+    // Track mouse movement
+    window.addEventListener('mousemove', (e) => {
+      targetMouse.x = e.clientX;
+      targetMouse.y = e.clientY;
+    });
+
+    // Touch support for tablets/mobiles
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        targetMouse.x = e.touches[0].clientX;
+        targetMouse.y = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    // Initial touch touchstart to instantly move glow under finger
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches.length > 0) {
+        targetMouse.x = e.touches[0].clientX;
+        targetMouse.y = e.touches[0].clientY;
+        // Instant teleport to avoid initial velocity lag
+        mouse.x = targetMouse.x;
+        mouse.y = targetMouse.y;
+        lastMouse.x = targetMouse.x;
+        lastMouse.y = targetMouse.y;
+      }
+    }, { passive: true });
+
+    // Wave parameters simulating DSP Waveshaping, Choke and Decay
+    let time = 0;
+    
+    // Waveshaper emulation
+    function softClip(x, drive) {
+      return Math.tanh(x * drive);
+    }
+
+    // Info Decay step-quantizer emulation
+    function quantize(x, steps) {
+      return Math.round(x * steps) / steps;
+    }
+
+    function animate() {
+      // Emergency dimensions recovery (handles weird progressive load delays)
+      if (width <= 0 || height <= 0) {
+        resizeCanvas();
+        requestAnimationFrame(animate);
+        return;
+      }
+
+      // Sanity check: safeguard against NaN state breaks
+      if (isNaN(mouse.x) || isNaN(mouse.y) || isNaN(mouse.speed)) {
+        mouse = { x: width / 2, y: height / 2, speed: 0 };
+        targetMouse = { x: width / 2, y: height / 2 };
+        lastMouse = { x: width / 2, y: height / 2 };
+      }
+
+      // Smooth mouse tracking
+      mouse.x += (targetMouse.x - mouse.x) * 0.08;
+      mouse.y += (targetMouse.y - mouse.y) * 0.08;
+
+      // Mouse speed tracking for "dynamic jitter/rot" effect
+      const dx = mouse.x - lastMouse.x;
+      const dy = mouse.y - lastMouse.y;
+      const curSpeed = Math.sqrt(dx * dx + dy * dy);
+      mouse.speed += (curSpeed - mouse.speed) * 0.1;
+      
+      lastMouse.x = mouse.x;
+      lastMouse.y = mouse.y;
+
+      time += 0.003 + (mouse.speed * 0.0005);
+
+      // Create a gorgeous dynamic radial gradient (degradé background) centered on the interactive mouse position!
+      const gradient = ctx.createRadialGradient(
+        mouse.x, mouse.y, 10,
+        mouse.x, mouse.y, Math.max(width, height) * 0.8
+      );
+      gradient.addColorStop(0, '#131326');   // Subtle glowing center
+      gradient.addColorStop(0.5, '#090912'); // Smooth mid-transition
+      gradient.addColorStop(1, '#07070d');   // Theme background at edges
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      // Render 3 complex overlapping paths reflecting signal paths
+      const lineCount = 3;
+      for (let i = 0; i < lineCount; i++) {
+        ctx.beginPath();
+        
+        const offset = i * (Math.PI / 3);
+        const colorRatio = (i + 1) / lineCount;
+        
+        // Dynamic colors - Cyan mixing with subtle purples
+        const r = Math.round(0 + (123 * colorRatio * (mouse.speed * 0.05)));
+        const g = Math.round(229 - (100 * colorRatio));
+        const b = 255;
+        const alpha = 0.12 - (i * 0.03);
+        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        ctx.lineWidth = 1.5 + (i * 0.5);
+
+        // Draw horizontal wave across the viewport
+        for (let x = 0; x < width; x += 3) {
+          // Normalize position
+          const normX = x / width;
+          
+          // Primary wave equation with complex harmonics
+          let wave = Math.sin(normX * 6 + time + offset) * 150;
+          wave += Math.sin(normX * 12 - time * 1.5 + offset * 2) * 50;
+          wave += Math.cos(normX * 24 + time * 3) * 15;
+
+          // Mouse proximity influence (Kinetic Choke)
+          const mouseDistX = Math.abs(x - mouse.x);
+          if (mouseDistX < 350) {
+            const proximityFactor = (1 - (mouseDistX / 350));
+            wave += Math.sin(time * 25 + normX * 80) * 12 * proximityFactor * (mouse.speed * 0.2 + 0.5);
+          }
+
+          // Normalize amplitude range to [-1, 1]
+          let signal = wave / 215;
+
+          // DSP Module 1: S-Curve Waveshaping
+          const driveValue = 1.0 + (mouse.speed * 0.08);
+          signal = softClip(signal, driveValue);
+
+          // DSP Module 2: Info Decay / Quantization Error
+          if (mouseDistX < 200) {
+            const proximityFactor = (1 - (mouseDistX / 200));
+            const activeSteps = Math.max(3, Math.round(16 - (13 * proximityFactor)));
+            signal = quantize(signal, activeSteps);
+          } else {
+            signal = quantize(signal, 128);
+          }
+
+          // Restore amplitude
+          wave = signal * 180;
+
+          // Add dynamic noise based on mouse speed
+          if (mouse.speed > 5) {
+            wave += (Math.random() - 0.5) * (mouse.speed * 0.8);
+          }
+
+          const y = (height / 2) + wave;
+
+          if (x === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.stroke();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

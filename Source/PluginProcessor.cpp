@@ -124,7 +124,9 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 
     quantizationError.prepare(sampleRate);
     smoothedQeDepth.reset(sampleRate, 0.05);
+    smoothedQeDepth.setCurrentAndTargetValue(qeDepthParam ? qeDepthParam->load() : 24.0f);
     smoothedQeMix.reset(sampleRate, 0.05);
+    smoothedQeMix.setCurrentAndTargetValue(qeMixParam ? qeMixParam->load() : 1.0f);
 
     juce::dsp::ProcessSpec delaySpec;
     delaySpec.sampleRate = sampleRate;
@@ -234,6 +236,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     // Update Quantization Error targets
     bool qeActive = (qeActiveParam->load() > 0.5f);
     float targetQeDepth = qeDepthParam->load();
+
     if (qeLinkParam->load() > 0.5f && exhaustionParam->load() > 0.5f) {
         targetQeDepth = 4.0f;
     }
@@ -354,6 +357,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         float fmAmount = (noiseFmModParam != nullptr) ? noiseFmModParam->load() : 0.0f;
         float currentFmMod = genSample * fmAmount;
 
+
         // Calculate Sidechain modulation value for this sample
         float scMod = 0.0f;
         if (sidechainProcessor.isActive()) {
@@ -408,10 +412,6 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             waveshaper.setDrive(std::clamp(currentDrive, 1.0f, 50.0f));
             wetSample = waveshaper.processSample(ch, wetSample);
 
-            // STAGE A.5: Quantization Error (Information Decay)
-            if (qeActive) {
-                wetSample = quantizationError.processSample(ch, wetSample, currentQeDepth, downsampleFactor, currentQeMix);
-            }
 
             // STAGE B: Dual Filtering & LFO Matrix (Pre-Filter Injection)
             if (noiseActive && (int)noiseRoutingParam->load() == 1) {
@@ -428,6 +428,13 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             }
             
             wetSample = dualFilterSystem.processSample(ch, wetSample, currentFmMod);
+
+            // STAGE B.5: Quantization Error (Information Decay) - Post-Filtering
+            if (qeActive) {
+                // Clamp channel to [0,1]: the QE processor holds fixed-size arrays of 2.
+                const int qeCh = std::min(ch, 1);
+                wetSample = quantizationError.processSample(qeCh, wetSample, currentQeDepth, downsampleFactor, currentQeMix);
+            }
 
             // STAGE C: Post-Filter Injection
             if (noiseActive && (int)noiseRoutingParam->load() == 2) {
@@ -665,7 +672,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
     params.push_back (std::make_unique<juce::AudioParameterBool> (
         juce::ParameterID { "qe_active", 1 }, "Info Decay Active", false));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "qe_depth", 1 }, "Decayed Resolution", 2.0f, 24.0f, 24.0f));
+        juce::ParameterID { "qe_depth", 1 }, "Decayed Resolution",
+        // Range 2-16 bits: the entire sweep is audibly meaningful.
+        // skew 0.5 → knob centre ≈ 5.5 bits (clear crunch sweet spot).
+        juce::NormalisableRange<float> (2.0f, 16.0f, 0.0f, 0.5f),
+        16.0f));
+
+
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "qe_downsample", 1 }, "Time Resolution", 1.0f, 32.0f, 1.0f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
@@ -677,7 +690,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
     params.push_back (std::make_unique<juce::AudioParameterBool> (
         juce::ParameterID { "delay_active", 1 }, "Delay Active", false));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "delay_time", 1 }, "Delay Time", 1.0f, 2000.0f, 300.0f));
+        juce::ParameterID { "delay_time", 1 }, "Delay Time",
+        // Skew 0.25: knob centre ≈ 125ms; first 30% of travel covers 1-17ms.
+        // Enables precise 1-20ms comb/Karplus-Strong territory at low end.
+        juce::NormalisableRange<float> (1.0f, 2000.0f, 0.0f, 0.25f),
+        300.0f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "delay_feedback", 1 }, "Delay Feedback", 0.0f, 0.95f, 0.3f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (

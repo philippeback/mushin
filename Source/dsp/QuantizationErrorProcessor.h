@@ -58,7 +58,7 @@ public:
         }
 
         // --- 2. Amplitude-Domain Resolution Decay (Quantization) ---
-        if (bitDepth < 23.9f)
+        if (bitDepth < 15.5f)
         {
             // Calculate step scale based on the continuous bit depth
             // We use std::max to enforce a safe minimum of 2.0 bits (prevents division by zero)

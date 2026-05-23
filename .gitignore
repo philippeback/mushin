@@ -44,3 +44,6 @@ Thumbs.db
 .aider*
 .env
 .cache
+.firebaserc
+debug_log.txt
+firebase-debug.log
