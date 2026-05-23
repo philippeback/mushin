@@ -2090,6 +2090,7 @@
             delay_time: {
                 min: 1,
                 max: 2000,
+                skew: 0.25,
                 display: (v) => {
                     const isSync = document.getElementById('delay_sync') && document.getElementById('delay_sync').checked;
                     if (isSync) {

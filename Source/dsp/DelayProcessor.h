@@ -30,9 +30,10 @@ public:
         feedbackFilterL.setType (juce::dsp::StateVariableTPTFilterType::lowpass);
         feedbackFilterR.setType (juce::dsp::StateVariableTPTFilterType::lowpass);
         
-        // Damp higher frequencies in the feedback loop around 2.5kHz for vintage tape vibe
-        feedbackFilterL.setCutoffFrequency (2500.0f);
-        feedbackFilterR.setCutoffFrequency (2500.0f);
+        // Damp higher frequencies in the feedback loop. 8kHz preserves brightness for short-delay
+        // harmonic synthesis (Karplus-Strong, comb filtering) while still damping raw digital spikes.
+        feedbackFilterL.setCutoffFrequency (8000.0f);
+        feedbackFilterR.setCutoffFrequency (8000.0f);
 
         reset();
     }

@@ -357,6 +357,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         float fmAmount = (noiseFmModParam != nullptr) ? noiseFmModParam->load() : 0.0f;
         float currentFmMod = genSample * fmAmount;
 
+
         // Calculate Sidechain modulation value for this sample
         float scMod = 0.0f;
         if (sidechainProcessor.isActive()) {
@@ -689,7 +690,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
     params.push_back (std::make_unique<juce::AudioParameterBool> (
         juce::ParameterID { "delay_active", 1 }, "Delay Active", false));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "delay_time", 1 }, "Delay Time", 1.0f, 2000.0f, 300.0f));
+        juce::ParameterID { "delay_time", 1 }, "Delay Time",
+        // Skew 0.25: knob centre ≈ 125ms; first 30% of travel covers 1-17ms.
+        // Enables precise 1-20ms comb/Karplus-Strong territory at low end.
+        juce::NormalisableRange<float> (1.0f, 2000.0f, 0.0f, 0.25f),
+        300.0f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "delay_feedback", 1 }, "Delay Feedback", 0.0f, 0.95f, 0.3f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
