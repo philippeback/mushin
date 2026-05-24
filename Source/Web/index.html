@@ -777,13 +777,15 @@
 
         /* Checked state transitions */
         #qe_active:checked + .glow-switch-label,
-        #delay_active:checked + .glow-switch-label {
+        #delay_active:checked + .glow-switch-label,
+        #limiter_active:checked + .glow-switch-label {
             border-color: var(--primary);
             background: rgba(0, 210, 255, 0.05);
         }
 
         #qe_active:checked + .glow-switch-label .glow-switch-dot,
-        #delay_active:checked + .glow-switch-label .glow-switch-dot {
+        #delay_active:checked + .glow-switch-label .glow-switch-dot,
+        #limiter_active:checked + .glow-switch-label .glow-switch-dot {
             left: 11px;
             background: var(--primary);
             box-shadow: 0 0 6px var(--primary), inset 0 1px 1px rgba(255,255,255,0.8);
@@ -1130,6 +1132,131 @@
                         <option value="1">1/8</option>
                         <option value="2">1/4</option>
                         <option value="3">1/2</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- LIMITER PANEL -->
+            <div class="sub-panel" id="panel-limiter" style="flex: 1.5; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.85rem; color: var(--primary); letter-spacing: 0.05em;">LIMITER</div>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <input type="checkbox" id="limiter_active" style="display: none;">
+                        <label class="glow-switch-label" for="limiter_active" id="limiter_active_indicator" title="Toggle Limiter">
+                            <span class="glow-switch-dot"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; flex: 1; align-items: stretch;">
+                    <!-- Knobs Grid (Left/Center) -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 6px; flex: 1; text-align: center; align-items: center;">
+                        <!-- Drive -->
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="label" style="font-size: 0.50rem;" title="Input Drive">Drive</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-limiter_drive" data-param="limiter_drive" data-default="0.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="limiter_drive" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="limiter_drive-val" style="font-size: 0.50rem;">0.0 dB</div>
+                        </div>
+
+                        <!-- Ceiling -->
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="label" style="font-size: 0.50rem;" title="Output Ceiling">Ceiling</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-limiter_ceiling" data-param="limiter_ceiling" data-default="0.9917" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="limiter_ceiling" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="limiter_ceiling-val" style="font-size: 0.50rem;">-0.1 dB</div>
+                        </div>
+
+                        <!-- Release -->
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="label" style="font-size: 0.50rem;" title="Release Time">Release</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-limiter_release" data-param="limiter_release" data-default="0.0909" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="limiter_release" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="limiter_release-val" style="font-size: 0.50rem;">100 ms</div>
+                        </div>
+
+                        <!-- Mix -->
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="label" style="font-size: 0.50rem;" title="Dry/Wet Mix">Mix</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-limiter_mix" data-param="limiter_mix" data-default="1.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="limiter_mix" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="limiter_mix-val" style="font-size: 0.50rem;">100%</div>
+                        </div>
+                    </div>
+
+                    <!-- Gain Reduction LED Ladder Meter -->
+                    <div style="width: 26px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; border-left: 1px solid var(--marking); padding-left: 4px; box-sizing: border-box;">
+                        <div class="label" style="font-size: 0.40rem; line-height: 1; text-align: center; margin-bottom: 2px;">GR dB</div>
+                        <div class="limiter-gr-ladder" style="flex: 1; width: 10px; display: flex; flex-direction: column-reverse; gap: 1px; background: rgba(0,0,0,0.4); border: 1px solid var(--marking); border-radius: 2px; padding: 2px 1px; box-sizing: border-box;">
+                            <div class="gr-led" data-db="1" data-active-color="rgba(0, 240, 255, 0.9)" data-glow="0 0 4px rgba(0, 240, 255, 0.6)" style="flex: 1; background: rgba(0, 240, 255, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                            <div class="gr-led" data-db="2" data-active-color="rgba(0, 240, 255, 0.9)" data-glow="0 0 4px rgba(0, 240, 255, 0.6)" style="flex: 1; background: rgba(0, 240, 255, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                            <div class="gr-led" data-db="3" data-active-color="rgba(0, 240, 255, 0.9)" data-glow="0 0 4px rgba(0, 240, 255, 0.6)" style="flex: 1; background: rgba(0, 240, 255, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                            <div class="gr-led" data-db="4" data-active-color="rgba(0, 240, 255, 0.9)" data-glow="0 0 4px rgba(0, 240, 255, 0.6)" style="flex: 1; background: rgba(0, 240, 255, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                            <div class="gr-led" data-db="6" data-active-color="rgba(255, 170, 0, 0.9)" data-glow="0 0 4px rgba(255, 170, 0, 0.6)" style="flex: 1; background: rgba(255, 170, 0, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                            <div class="gr-led" data-db="9" data-active-color="rgba(255, 170, 0, 0.9)" data-glow="0 0 4px rgba(255, 170, 0, 0.6)" style="flex: 1; background: rgba(255, 170, 0, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                            <div class="gr-led" data-db="12" data-active-color="rgba(255, 170, 0, 0.9)" data-glow="0 0 4px rgba(255, 170, 0, 0.6)" style="flex: 1; background: rgba(255, 170, 0, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                            <div class="gr-led" data-db="15" data-active-color="rgba(255, 80, 80, 0.9)" data-glow="0 0 4px rgba(255, 80, 80, 0.6)" style="flex: 1; background: rgba(255, 80, 80, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                            <div class="gr-led" data-db="18" data-active-color="rgba(255, 80, 80, 0.9)" data-glow="0 0 4px rgba(255, 80, 80, 0.6)" style="flex: 1; background: rgba(255, 80, 80, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                            <div class="gr-led" data-db="24" data-active-color="rgba(255, 80, 80, 0.9)" data-glow="0 0 4px rgba(255, 80, 80, 0.6)" style="flex: 1; background: rgba(255, 80, 80, 0.05); border-radius: 1px; transition: background 0.1s ease, box-shadow 0.1s ease;"></div>
+                        </div>
+                        <div id="gr-text-val" style="font-size: 0.45rem; margin-top: 2px; color: var(--primary); font-family: monospace; font-weight: bold; width: 100%; text-align: center;">0.0</div>
+                    </div>
+                </div>
+
+                <!-- Mode Select Strip -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; background: rgba(0,0,0,0.2); border-radius: 3px; border: 1px solid var(--marking); font-size: 0.50rem;">
+                    <span class="label" style="font-size: 0.50rem; text-transform: uppercase;">Mode</span>
+                    <select id="limiter_mode" style="width: 55px; font-size: 0.50rem; padding: 0; height: 14px; border: none; background: transparent; color: var(--primary); text-transform: uppercase; font-weight: bold; cursor: pointer; text-align-last: right;">
+                        <option value="0">Clean</option>
+                        <option value="1">LMC</option>
                     </select>
                 </div>
             </div>
@@ -1924,6 +2051,31 @@
             lastActiveStep = step;
         }
 
+        function updateLimiterGRMeter(gr) {
+            let grDb = 0.0;
+            if (gr < 0.999 && gr > 0.0) {
+                grDb = -20 * Math.log10(gr);
+            }
+            grDb = Math.max(0.0, grDb);
+
+            const textVal = document.getElementById('gr-text-val');
+            if (textVal) {
+                textVal.textContent = grDb.toFixed(1);
+            }
+
+            const leds = document.querySelectorAll('.limiter-gr-ladder .gr-led');
+            leds.forEach(led => {
+                const thresholdDb = parseFloat(led.getAttribute('data-db'));
+                if (grDb >= thresholdDb) {
+                    led.style.background = led.getAttribute('data-active-color') || 'rgba(0, 240, 255, 0.9)';
+                    led.style.boxShadow = led.getAttribute('data-glow') || '0 0 4px rgba(0, 240, 255, 0.6)';
+                } else {
+                    led.style.background = '';
+                    led.style.boxShadow = '';
+                }
+            });
+        }
+
         // Debug Logging
         function log(msg) {
             const el = document.getElementById('debug-log');
@@ -2035,6 +2187,9 @@
                             backend.addEventListener('tgStep', step => {
                                 updatePlayheadPosition(Math.round(step));
                             });
+                            backend.addEventListener('limiterGR', gr => {
+                                updateLimiterGRMeter(gr);
+                            });
                         }
                         requestPresetList();
                     }
@@ -2124,6 +2279,12 @@
                     return ["1/16", "1/8", "1/4", "1/2"][v];
                 }
             },
+            limiter_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            limiter_mode: { type: 'choice', display: v => v == 0 ? 'CLEAN' : 'LMC' },
+            limiter_drive: { min: 0.0, max: 24.0, display: v => v.toFixed(1) + " dB" },
+            limiter_ceiling: { min: -12.0, max: 0.0, display: v => v.toFixed(1) + " dB" },
+            limiter_release: { min: 10.0, max: 1000.0, display: v => Math.round(v) + " ms" },
+            limiter_mix: { min: 0, max: 100, display: v => Math.round(v) + "%" },
             gain: { min: 0, max: 2, display: v => v.toFixed(2) },
             drive: { min: 1, max: 20, display: v => v.toFixed(1) },
             threshold: { min: 0, max: 1, display: v => v.toFixed(2) },
@@ -2710,6 +2871,19 @@
         if (delayActiveIndicator) {
             delayActiveIndicator.addEventListener('click', (e) => {
                 const cb = document.getElementById('delay_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
+
+        // Ensure limiter_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const limiterActiveIndicator = document.getElementById('limiter_active_indicator');
+        if (limiterActiveIndicator) {
+            limiterActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('limiter_active');
                 if (cb) {
                     cb.checked = !cb.checked;
                     cb.dispatchEvent(new Event('change'));

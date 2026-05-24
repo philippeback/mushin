@@ -1,0 +1,430 @@
+% manual/mushin_manual.tex
+% =====================================================================
+% MUSHIN AUDIO SYNTHESIZER & SOUND PROCESSOR - USER MANUAL
+% Publication-grade LaTeX Specification
+% =====================================================================
+
+\documentclass[11pt,a4paper,oneside]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{charter}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{amsmath}
+
+% Custom Colors matching Mushin's Industrial Theme
+\definecolor{mushin_blue}{RGB}{0, 191, 255}    % Electric Blue
+\definecolor{mushin_orange}{RGB}{255, 159, 0}  % Accent Orange
+\definecolor{dark_bg}{RGB}{17, 17, 17}         % Industrial Dark
+\definecolor{code_bg}{RGB}{245, 245, 245}
+
+% Code Block Styling for Sound Design Recipes
+\lstset{
+    backgroundcolor=\color{code_bg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    commentstyle=\color{gray},
+    keywordstyle=\color{mushin_blue},
+    stringstyle=\color{mushin_orange},
+    frame=single,
+    rulecolor=\color{gray!30},
+    captionpos=b
+}
+
+% Heading Styles
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{mushin_blue}}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{mushin_blue}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{mushin_orange}}{\thesubsection}{1em}{}
+
+% Header/Footer Configuration
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textbf{MUSHIN} | User Manual}
+\fancyhead[R]{MOD-02 Dual Filter LFO Matrix}
+\fancyfoot[C]{\thepage}
+
+\begin{document}
+
+% ---------------------------------------------------------------------
+% TITLE PAGE
+% ---------------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\Huge \textbf{MUSHIN} \par}
+    \vspace{0.6cm}
+    {\Large \textbf{Dual Filter LFO Matrix Synthesizer \& Sound Processor} \par}
+    \vspace{1.5cm}
+    \begin{tcolorbox}[colback=dark_bg,colframe=mushin_blue,center,width=12cm,halign=center]
+        \color{white}
+        \textbf{Model: MOD-02} \\
+        \small Version 1.0.0 \\
+        \footnotesize C++/Web Hybrid DSP Core
+    \end{tcolorbox}
+    \vspace{3cm}
+    {\large \textit{Translating Market Physics Directly into Digital Signal Processing} \par}
+    \vspace{4cm}
+    {\large \textbf{Mushin Audio} \par}
+    {\small May 2026}
+\end{titlepage}
+
+\tableofcontents
+
+% ---------------------------------------------------------------------
+% CHAPTER 1: THE CORE PHILOSOPHY
+% ---------------------------------------------------------------------
+\chapter{Introduction \& Core Philosophy}
+
+Welcome to \textbf{Mushin}, a state-of-the-art hybrid C++/Web sound processor that bridges the volatile mathematics of financial markets with high-performance digital signal processing (DSP). 
+
+In standard synthesizers, parameters are modulated using isolated LFOs or standard envelope generators. In contrast, \textbf{Mushin maps market physics and trading concepts directly to signal processing mathematics}. The audio waveform fed into the plugin represents the market's data stream, and the processing modules act as momentum constraints, kinetic chokes, and liquidity decays.
+
+\section{The Market-to-DSP Conceptual Map}
+
+Mushin's core architecture is built upon four direct translations of market concepts to signal processing:
+
+\begin{description}
+    \item[Information Saturation (S-Curve Saturation)] \hfill \\
+    As a market trend extends, information saturates, buying or selling pressure plateaus, and volume flattens out. In DSP, this is represented by a soft-clipping waveshaper using a hyperbolic tangent ($\tanh$) transfer function:
+    \begin{equation*}
+        y = \tanh(x \cdot \text{Drive})
+    \end{equation*}
+    As simulated trend momentum extends, the \texttt{Drive} increases, rounding off the peaks of your audio waveform and narrowing its dynamic range.
+    
+    \item[Trend Exhaustion (Hard Clipping)] \hfill \\
+    When statistical exhaustion is triggered (representing the absolute end of buying capacity), all remaining dynamic range instantly evaporates. The S-Curve waveshaper bypasses the soft-clipping $\tanh$ transfer function and switches to a hard-clip threshold:
+    \begin{equation*}
+        y = \begin{cases} 
+            \text{Threshold} & \text{if } x > \text{Threshold} \\
+            -\text{Threshold} & \text{if } x < -\text{Threshold} \\
+            x & \text{otherwise}
+        \end{cases}
+    \end{equation*}
+    This squares off the waveform, generating harsh odd-order harmonics. It represents the mathematical state of ``zero remaining liquidity.''
+    
+    \item[Kinetic Choke (State-Variable Filter Modulation)] \hfill \\
+    Tracking the relationship between Potential Energy and Kinetic Energy, the dual filters act as dynamic chokes. As momentum slows down, the filter's cutoff frequency drops, choking off high-frequency energy. During trend exhaustion, resonance ($Q$) is multiplied exponentially to create a resonant ``scream'' before the frequency is clamped down.
+    
+    \item[Information Decay (Quantization Error / Bitcrusher)] \hfill \\
+    When statistical confidence drains, the resolution of information decays. This is modeled by real-time quantization noise and downsampling. At the peak of exhaustion, audio quality disintegrates under its own weight as bit-depth drops dynamically.
+\end{description}
+
+% ---------------------------------------------------------------------
+% CHAPTER 2: TECHNICAL ARCHITECTURE
+% ---------------------------------------------------------------------
+\chapter{Technical Architecture \& Specifications}
+
+Mushin is engineered with an advanced hybrid framework combining high-performance audio processing with a highly interactive, responsive web frontend.
+
+\section{Core System Features}
+\begin{itemize}
+    \item \textbf{DSP Engine:} Written in highly optimized C++ utilizing the \textbf{JUCE 8.0.4} framework and native JUCE DSP modules.
+    \item \textbf{User Interface:} A premium web UI built with modern HTML5, CSS3, and ES6 JavaScript, rendered via Microsoft Edge/WebView2 on Windows.
+    \item \textbf{Asset Management:} All web assets (HTML, CSS, JS) are bundled via CMake's \texttt{juce\_add\_binary\_data} into the plugin binary, ensuring zero-latency asset loading.
+    \item \textbf{Event Bridge \& Visualizer:} Pushes real-time 30Hz high-frequency waveform updates from C++ directly to the WebView canvas via the \texttt{emitEventIfBrowserIsVisible} event bridge, which auto-throttles when the UI is closed to save CPU.
+    \item \textbf{Build Environment:} Structured for CMake with the MSBuild (Visual Studio) generator. The active development binary and installer output is compiled in the \texttt{build2} directory.
+\end{itemize}
+
+% ---------------------------------------------------------------------
+% CHAPTER 3: MODULE & PARAMETER GUIDE
+% ---------------------------------------------------------------------
+\chapter{Module \& Parameter Guide}
+
+Mushin features 8 high-performance DSP modules, fully automatable and exposed to the host DAW via the JUCE \texttt{AudioProcessorValueTreeState} (APVTS).
+
+\section{Module A: S-Curve Waveshaper (Saturation)}
+The primary saturation stage, implementing information saturation.
+
+\begin{table}[h]
+    \centering
+    \caption{S-Curve Waveshaper Parameters}
+    \begin{tabular}{lllll}
+        \toprule
+        \textbf{ID} & \textbf{Name} & \textbf{Range} & \textbf{Default} & \textbf{Description} \\
+        \midrule
+        \texttt{gain} & Gain & 0.0 to 2.0 & 1.0 & Post-waveshaper output make-up gain. \\
+        \texttt{drive} & Drive & 1.0 to 20.0 & 1.0 & Amplifies input signal into waveshaper. \\
+        \texttt{exhaustion} & Exhaustion & OFF, ON & OFF & Bypasses soft $\tanh$ for hard clipping. \\
+        \texttt{threshold} & Threshold & 0.0 to 1.0 & 1.0 & Amplitude ceiling for hard-clipping. \\
+        \texttt{mix} & Dry/Wet Mix & 0.0 to 1.0 & 1.0 & Blends processed and dry signals. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Module B: Dual Filter System}
+Two independent filters (A \& B) routed in Series or Parallel.
+\begin{itemize}
+    \item \textbf{Serial:} Audio $\rightarrow$ Saturation $\rightarrow$ Filter A $\rightarrow$ Filter B $\rightarrow$ Outputs.
+    \item \textbf{Parallel:} Audio splits equally to Filter A and Filter B. Outputs are summed ($0.5 \times A + 0.5 \times B$).
+\end{itemize}
+
+\subsection{Filter Models}
+\begin{enumerate}
+    \item \textbf{Clean (TPT):} Topology Preserving Transform filter. Ultra-transparent.
+    \item \textbf{Vintage (Ladder):} Classic 4-pole transistor ladder model. Warm and driven.
+    \item \textbf{Acid (Diode):} 3-pole diode ladder filter with squelchy, raw resonance behavior.
+    \item \textbf{Digital (State Variable):} Crisp, versatile filter for high-precision cuts.
+\end{enumerate}
+
+\begin{table}[h]
+    \centering
+    \caption{Filter Parameters (Identical for A and B)}
+    \begin{tabular}{lllll}
+        \toprule
+        \textbf{ID (Filter A / B)} & \textbf{Name} & \textbf{Range} & \textbf{Default} & \textbf{Description} \\
+        \midrule
+        \texttt{filter\_[a/b]\_cutoff} & Cutoff Freq & 20Hz - 20kHz & 20,000Hz & Logarithmic frequency cutoff. \\
+        \texttt{filter\_[a/b]\_resonance} & Resonance & 0.0 to 1.0 & 0.1 & Cutoff frequency resonance boost. \\
+        \texttt{filter\_[a/b]\_drive} & Filter Drive & 1.0 to 10.0 & 1.0 & Pre-filter input saturation. \\
+        \texttt{filter\_[a/b]\_grit} & Filter Grit & 0.0 to 1.0 & 0.0 & Post-filter clipping fuzz. \\
+        \texttt{filter\_[a/b]\_type} & Filter Type & Choice & Clean & Filter algorithm selection. \\
+        \texttt{filter\_[a/b]\_mode} & Filter Mode & Choice & Lowpass & LP, HP, BP, or Notch slopes. \\
+        \texttt{routing} & Routing & Choice & Serial & Serial or Parallel configuration. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Module C: LFO \& Modulation Matrix}
+Two sample-accurate LFOs (0.1Hz - 20Hz) offering Sine, Triangle, Saw, Square, and Random (Sample \& Hold) waveforms modulate six key filter targets.
+
+\begin{table}[h]
+    \centering
+    \caption{Modulation Targets (Bipolar range: -1.0 to +1.0)}
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Target ID} & \textbf{Target Parameter} & \textbf{Modulation Depth / Range} \\
+        \midrule
+        Target 1 & Filter A Cutoff & Modulates frequency by up to \textbf{+/- 5 octaves}. \\
+        Target 2 & Filter A Resonance & Modulates resonance by up to \textbf{+/- 1.0}. \\
+        Target 3 & Filter A Grit & Modulates post-filter grit by up to \textbf{+/- 1.0}. \\
+        Target 4 & Filter B Cutoff & Modulates frequency by up to \textbf{+/- 5 octaves}. \\
+        Target 5 & Filter B Resonance & Modulates resonance by up to \textbf{+/- 1.0}. \\
+        Target 6 & Filter B Grit & Modulates post-filter grit by up to \textbf{+/- 1.0}. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Module D: Sidechain Processor (Envelope Follower)}
+Tracks the amplitude envelope of an incoming source to dynamically duck or pump Mushin parameters.
+
+\begin{table}[h]
+    \centering
+    \caption{Sidechain Parameters}
+    \begin{tabular}{lllll}
+        \toprule
+        \textbf{ID} & \textbf{Name} & \textbf{Range} & \textbf{Default} & \textbf{Description} \\
+        \midrule
+        \texttt{sc\_active} & SC Active & OFF, ON & OFF & Bypasses or enables sidechain. \\
+        \texttt{sc\_source} & SC Source & Choice & Internal & Main feed, DAW Aux, or test tone. \\
+        \texttt{sc\_threshold} & SC Threshold & -60dB to 0dB & -24dB & Amplitude envelope action threshold. \\
+        \texttt{sc\_attack} & SC Attack & 0.1ms - 500ms & 10.0ms & Envelope detector attack speed. \\
+        \texttt{sc\_release} & SC Release & 1ms - 2000ms & 100.0ms & Envelope detector release speed. \\
+        \texttt{sc\_amount} & SC Amount & -100\% to 100\% & 0.0\% & Ducking (-) or pumping (+) depth. \\
+        \texttt{sc\_target} & SC Target & Choice & Gain & Target parameter: Drive, Cutoff, or Gain. \\
+        \texttt{sc\_hp\_freq} & SC HPF & 20Hz - 2kHz & 20Hz & Detector high-pass rumble filter. \\
+        \texttt{sc\_lp\_freq} & SC LPF & 500Hz - 20kHz & 20kHz & Detector low-pass kick isolator. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Module E: Noise Generator / Auxiliary Oscillator}
+Injects synthetic noise textures or pure synth tones.
+
+\begin{table}[h]
+    \centering
+    \caption{Noise Generator Parameters}
+    \begin{tabular}{lllll}
+        \toprule
+        \textbf{ID} & \textbf{Name} & \textbf{Range} & \textbf{Default} & \textbf{Description} \\
+        \midrule
+        \texttt{noise\_active} & Active & OFF, ON & OFF & Bypasses or enables generator. \\
+        \texttt{noise\_type} & Type & Choice & White Noise & White, Pink, Sine, Tri, Saw, Square. \\
+        \texttt{noise\_freq} & Freq & 20Hz - 20kHz & 440Hz & Tone frequency for standard oscillators. \\
+        \texttt{noise\_level} & Level & 0.0 to 1.0 & 0.1 & Output level. \\
+        \texttt{noise\_routing} & Routing & Choice & Pre-Dist & Inject Pre-Dist, Pre-Filter, Post-Filter. \\
+        \texttt{noise\_fm\_mod} & Filter FM Mod & 0.0 to 1.0 & 0.0 & Modulate Cutoffs directly using generator. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Module F: Trance Gate}
+Chops the output amplitude based on host tempo and 8 selectable rhythmic step sequences (Straight 16th, Offbeat 16th, Classic 1, Classic 2, Four-On-Floor, Galop, Space Gate, Euclidean 5).
+
+\begin{table}[h]
+    \centering
+    \caption{Trance Gate Parameters}
+    \begin{tabular}{lllll}
+        \toprule
+        \textbf{ID} & \textbf{Name} & \textbf{Range} & \textbf{Default} & \textbf{Description} \\
+        \midrule
+        \texttt{tg\_active} & Active & OFF, ON & OFF & Bypasses or enables Trance Gate. \\
+        \texttt{tg\_mix} & Mix & 0.0 to 1.0 & 1.0 & Dry/Wet ratio. \\
+        \texttt{tg\_rate} & Rate & 1/16, 1/8, 1/4 & 1/16 & Step speed relative to host tempo. \\
+        \texttt{tg\_start} & Start & 0\% to 100\% & 5\% & Attack fade-in ramp per active step. \\
+        \texttt{tg\_hold} & Hold & 10\% to 100\% & 50\% & Open gate duration per step. \\
+        \texttt{tg\_end} & End & 0\% to 200\% & 10\% & Release fade-out ramp per step. \\
+        \texttt{tg\_depth} & Depth & 0\% to 100\% & 100\% & Closed-step attenuation amount. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Module G: Info Decay (Quantization Error)}
+Simulates information decay by executing dynamic bit-crushing and sample-rate reduction.
+
+\begin{table}[h]
+    \centering
+    \caption{Info Decay Parameters}
+    \begin{tabular}{lllll}
+        \toprule
+        \textbf{ID} & \textbf{Name} & \textbf{Range} & \textbf{Default} & \textbf{Description} \\
+        \midrule
+        \texttt{qe\_active} & Active & OFF, ON & OFF & Bypasses or enables Info Decay. \\
+        \texttt{qe\_depth} & Resolution & 2.0 - 16.0 Bits & 16.0 Bits & Continuous amplitude bit-depth reducer. \\
+        \texttt{qe\_downsample} & Time Res & 1.0 to 32.0 & 1.0 & Sample-rate divider (Downsampler). \\
+        \texttt{qe\_mix} & Mix & 0.0 to 1.0 & 1.0 & Dry/Wet ratio. \\
+        \texttt{qe\_link} & Exhaustion Link & OFF, ON & OFF & Plunges bit depth to 4.0 during exhaustion. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Module H: Delay Processor (Stereo / Ping-Pong)}
+High-quality stereo delay line optimized for rhythmic echoes and physical-modeling comb filtering.
+
+\begin{table}[h]
+    \centering
+    \caption{Delay Parameters}
+    \begin{tabular}{lllll}
+        \toprule
+        \textbf{ID} & \textbf{Name} & \textbf{Range} & \textbf{Default} & \textbf{Description} \\
+        \midrule
+        \texttt{delay\_active} & Active & OFF, ON & OFF & Bypasses or enables Delay. \\
+        \texttt{delay\_time} & Delay Time & 1ms - 2000ms & 300ms & Delay time (skewed first 30\% covers 1-17ms). \\
+        \texttt{delay\_feedback} & Feedback & 0.0 to 0.95 & 0.3 & Feedback amount. \\
+        \texttt{delay\_mix} & Mix & 0.0 to 1.0 & 0.3 & Dry/Wet ratio. \\
+        \texttt{delay\_pingpong} & Ping-Pong & OFF, ON & OFF & Bounces delay left/right in stereo. \\
+        \texttt{delay\_sync} & Sync & OFF, ON & OFF & Synchronizes delay time to host tempo. \\
+        \texttt{delay\_tempo} & Tempo Sync & Choice & 1/4 & 1/16, 1/8, 1/4, 1/2 note subdivisions. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ---------------------------------------------------------------------
+% CHAPTER 4: UI OPERATION & THEMES
+% ---------------------------------------------------------------------
+\chapter{UI Operation, Presets \& Aesthetics}
+
+Mushin's interface is structured around state-of-the-art aesthetics and intuitive parameter tracking.
+
+\section{The Dynamic Theme System}
+Visual themes are served dynamically by the C++ engine to the web frontend via a virtual \texttt{skin.css} sheet. Theme configurations are persisted in \texttt{settings.ini} inside your AppData application directory. 
+\begin{enumerate}
+    \item \textbf{Industrial (Default):} Electric Blue (\texttt{\#00bfff}), Brushed Metal, Orange accents.
+    \item \textbf{Synthwave:} Hot Pink (\texttt{\#ff00aa}), Neon Cyan (\texttt{\#00ffff}), Dark Violet background.
+    \item \textbf{Acid:} Poison Green (\texttt{\#bfff00}), Lime-glow (\texttt{\#39ff14}), Toxic Dark background.
+    \item \textbf{Firepits:} Lava Red-Orange (\texttt{\#ff3c00}), Ember Gold (\texttt{\#ff6600}), Obsidian background.
+    \item \textbf{Ocean Deep:} Deep Blue (\texttt{\#060b1a}), Tropical Cyan (\texttt{\#00f3ff}) accents.
+    \item \textbf{Ice World:} Frosted Grey-Blue (\texttt{\#0f151c}), Glowing Ice Blue (\texttt{\#66e0ff}).
+    \item \textbf{Dark Hellish:} absolute Black (\texttt{\#0e0606}), Blood Crimson (\texttt{\#ff2200}).
+\end{enumerate}
+
+\section{Preset Browser \& Search}
+The header panel manages XML presets loaded directly from disk:
+\begin{itemize}
+    \item \textbf{Windows Path:} \texttt{\%AppData\%\textbackslash{}Mushin\textbackslash{}Presets\textbackslash{}}
+    \item \textbf{macOS Path:} \texttt{\textasciitilde{}/Library/Application Support/Mushin/Presets/}
+    \item \textbf{Controls:} Use the dropdown or search field to filter presets instantly. Pressing \texttt{Enter} triggers loading.
+\end{itemize}
+
+% ---------------------------------------------------------------------
+% CHAPTER 5: SOUND DESIGN RECIPES
+% ---------------------------------------------------------------------
+\chapter{Sound Design Recipes}
+
+Here are some creative setups to jump-start sound processing inside Mushin.
+
+\section{Recipe 1: The Acid Flashback}
+\textbf{Goal:} Resonant squelching acid filter sweeps.
+\begin{lstlisting}[language=bash]
+# S-Curve Waveshaper
+drive = 8.0
+exhaustion = OFF
+mix = 0.7
+
+# Dual Filters (Serial)
+Filter A: LP, Acid, Cutoff = 400Hz, Res = 0.85, Drive = 3.0, Grit = 0.4
+Filter B: LP, Clean, Cutoff = 1.2kHz, Res = 0.2
+
+# LFO 1
+waveform = Saw
+frequency = 2.5Hz
+Mod Matrix LFO 1 -> Target 1 (Filter A Cutoff) = +0.7
+\end{lstlisting}
+
+\section{Recipe 2: The Vocaloid A-O}
+\textbf{Goal:} Dual sweeping vowel formants mimicking human speech.
+\begin{lstlisting}[language=bash]
+# S-Curve Waveshaper
+drive = 2.0
+mix = 0.3
+
+# Dual Filters (Parallel)
+Filter A: BP, Vintage, Cutoff = 800Hz, Res = 0.9
+Filter B: BP, Vintage, Cutoff = 1800Hz, Res = 0.9
+
+# Modulation Matrix
+LFO 1: Sine, 0.4Hz
+LFO 1 -> Target 1 (Filter A Cutoff) = +0.5
+LFO 1 -> Target 4 (Filter B Cutoff) = -0.5
+\end{lstlisting}
+
+\section{Recipe 3: Warm Tape Saturation}
+\textbf{Goal:} Adds analogue-like warm glue.
+\begin{lstlisting}[language=bash]
+# S-Curve Waveshaper
+drive = 3.5
+exhaustion = OFF
+mix = 0.4
+
+# Dual Filters (Serial)
+Filter A: LP, Clean, Cutoff = 8.5kHz (roll-off high harshness), Res = 0.0
+Filter B: Bypassed (Cutoff = 20kHz, Res = 0.0)
+
+# Sidechain Envelope Ducking
+sc_active = ON
+sc_target = Gain
+sc_source = Internal
+sc_amount = -15%
+sc_attack = 20ms
+sc_release = 150ms
+\end{lstlisting}
+
+% ---------------------------------------------------------------------
+% CHAPTER 6: ROADMAP
+% ---------------------------------------------------------------------
+\chapter{Future Roadmap}
+
+Mushin's ongoing feature pipeline includes:
+
+\subsection{Air Gap Suspension (Granular Looper)}
+Implements an existential pause. When trend exhaustion triggers, the write pointer of a circular buffer freezes while the read pointer loops continuously with an applied Hanning window to prevent clicks, creating an ambient frozen stutter.
+
+\subsection{Final Stage Limiter / LMC}
+A dedicated safety brickwall peak limiter / character compressor. Features a \texttt{Clean} transparent safety mode (utilizing a 2.0ms lookahead circular buffer) and an aggressive, highly colored \texttt{LMC} (Listen Mic Compressor) feedback mode for vintage NYC parallel smashing.
+
+\subsection{LFO Phase Invert}
+Adds an invert toggle to the LFO blocks to reverse the sweep polarity ($\phi = -\phi$), enabling mirror-image modulations using a single shared LFO.
+
+\subsection{Vocal Tract Formant Filters}
+Physical acoustic formant filter models added directly to the filter type selection, enabling single-control sweeping vowel morphing.
+
+\end{document}
