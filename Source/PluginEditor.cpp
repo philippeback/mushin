@@ -435,7 +435,7 @@ void MushinAudioProcessorEditor::timerCallback() {
       webComponent->emitEventIfBrowserIsVisible("waveform", waveformData);
   }
 
-  // Sidechain meter visualization
+  // Sidechain and Limiter meter visualization
   if (webComponent) {
     webComponent->emitEventIfBrowserIsVisible(
         "scMeter", (double)audioProcessor.scMeterLevel.load());
@@ -443,5 +443,7 @@ void MushinAudioProcessorEditor::timerCallback() {
         "scPeak", (double)audioProcessor.scInputPeak.load());
     webComponent->emitEventIfBrowserIsVisible(
         "tgStep", (double)audioProcessor.getTranceGateCurrentStep());
+    webComponent->emitEventIfBrowserIsVisible(
+        "limiterGR", (double)audioProcessor.limiterGainReduction.load());
   }
 }

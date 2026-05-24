@@ -8,6 +8,7 @@
 #include "dsp/TranceGateProcessor.h"
 #include "dsp/QuantizationErrorProcessor.h"
 #include "dsp/DelayProcessor.h"
+#include "dsp/LimiterProcessor.h"
 
 class MushinAudioProcessor : public juce::AudioProcessor {
 public:
@@ -48,6 +49,7 @@ public:
   // Real-time meters
   std::atomic<float> scMeterLevel { 0.0f };
   std::atomic<float> scInputPeak { 0.0f };
+  std::atomic<float> limiterGainReduction { 1.0f };
 
   // Bridge Diagnostics
   std::atomic<bool> bridgeWorked { false };
@@ -155,6 +157,20 @@ private:
   std::atomic<float>* delayPingPongParam = nullptr;
   std::atomic<float>* delaySyncParam = nullptr;
   std::atomic<float>* delayTempoParam = nullptr;
+
+  // Limiter Feature
+  mushin::LimiterProcessor limiterProcessor;
+  juce::LinearSmoothedValue<float> smoothedLimiterDrive;
+  juce::LinearSmoothedValue<float> smoothedLimiterCeiling;
+  juce::LinearSmoothedValue<float> smoothedLimiterRelease;
+  juce::LinearSmoothedValue<float> smoothedLimiterMix;
+
+  std::atomic<float>* limiterActiveParam = nullptr;
+  std::atomic<float>* limiterModeParam = nullptr;
+  std::atomic<float>* limiterDriveParam = nullptr;
+  std::atomic<float>* limiterCeilingParam = nullptr;
+  std::atomic<float>* limiterReleaseParam = nullptr;
+  std::atomic<float>* limiterMixParam = nullptr;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MushinAudioProcessor)
 };

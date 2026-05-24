@@ -86,6 +86,13 @@ MushinAudioProcessor::MushinAudioProcessor()
     delayPingPongParam = treeState.getRawParameterValue ("delay_pingpong");
     delaySyncParam     = treeState.getRawParameterValue ("delay_sync");
     delayTempoParam    = treeState.getRawParameterValue ("delay_tempo");
+
+    limiterActiveParam  = treeState.getRawParameterValue ("limiter_active");
+    limiterModeParam    = treeState.getRawParameterValue ("limiter_mode");
+    limiterDriveParam   = treeState.getRawParameterValue ("limiter_drive");
+    limiterCeilingParam = treeState.getRawParameterValue ("limiter_ceiling");
+    limiterReleaseParam = treeState.getRawParameterValue ("limiter_release");
+    limiterMixParam     = treeState.getRawParameterValue ("limiter_mix");
 }
 
 MushinAudioProcessor::~MushinAudioProcessor() {}
@@ -137,6 +144,21 @@ void MushinAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
     smoothedDelayFeedback.reset(sampleRate, 0.05);
     smoothedDelayMix.reset(sampleRate, 0.05);
 
+    juce::dsp::ProcessSpec limiterSpec;
+    limiterSpec.sampleRate = sampleRate;
+    limiterSpec.maximumBlockSize = (juce::uint32) samplesPerBlock;
+    limiterSpec.numChannels = (juce::uint32) getTotalNumOutputChannels();
+    limiterProcessor.prepare(limiterSpec);
+
+    smoothedLimiterDrive.reset(sampleRate, 0.05);
+    smoothedLimiterDrive.setCurrentAndTargetValue(limiterDriveParam ? limiterDriveParam->load() : 0.0f);
+    smoothedLimiterCeiling.reset(sampleRate, 0.05);
+    smoothedLimiterCeiling.setCurrentAndTargetValue(limiterCeilingParam ? limiterCeilingParam->load() : -0.1f);
+    smoothedLimiterRelease.reset(sampleRate, 0.05);
+    smoothedLimiterRelease.setCurrentAndTargetValue(limiterReleaseParam ? limiterReleaseParam->load() : 100.0f);
+    smoothedLimiterMix.reset(sampleRate, 0.05);
+    smoothedLimiterMix.setCurrentAndTargetValue(limiterMixParam ? limiterMixParam->load() : 1.0f);
+
     reset();
 }
 
@@ -151,6 +173,7 @@ void MushinAudioProcessor::reset()
     tranceGate.reset();
     quantizationError.reset();
     delayProcessor.reset();
+    limiterProcessor.reset();
 }
 
 bool MushinAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -253,6 +276,14 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     bool delaySync = (delaySyncParam->load() > 0.5f);
     int delayTempoVal = static_cast<int>(delayTempoParam->load());
 
+    // Update Limiter targets
+    bool limiterActive = (limiterActiveParam != nullptr && limiterActiveParam->load() > 0.5f);
+    int limiterModeVal = (limiterModeParam != nullptr) ? static_cast<int>(limiterModeParam->load()) : 0;
+    if (limiterDriveParam != nullptr)   smoothedLimiterDrive.setTargetValue(limiterDriveParam->load());
+    if (limiterCeilingParam != nullptr) smoothedLimiterCeiling.setTargetValue(limiterCeilingParam->load());
+    if (limiterReleaseParam != nullptr) smoothedLimiterRelease.setTargetValue(limiterReleaseParam->load());
+    if (limiterMixParam != nullptr)     smoothedLimiterMix.setTargetValue(limiterMixParam->load());
+
     // 1.5. Calculate Trance Gate block parameters
     double bpm = 120.0;
     double playheadSamples = 0.0;
@@ -341,6 +372,11 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         float currentDelayTime = smoothedDelayTime.getNextValue();
         float currentDelayFeedback = smoothedDelayFeedback.getNextValue();
         float currentDelayMix = smoothedDelayMix.getNextValue();
+
+        float currentLimiterDrive = (limiterDriveParam != nullptr) ? smoothedLimiterDrive.getNextValue() : 0.0f;
+        float currentLimiterCeiling = (limiterCeilingParam != nullptr) ? smoothedLimiterCeiling.getNextValue() : -0.1f;
+        float currentLimiterRelease = (limiterReleaseParam != nullptr) ? smoothedLimiterRelease.getNextValue() : 100.0f;
+        float currentLimiterMix = (limiterMixParam != nullptr) ? smoothedLimiterMix.getNextValue() : 1.0f;
 
         // Calculate Noise Generator sample and FM modulation offset for this sample
         float genSample = 0.0f;
@@ -482,17 +518,41 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
 
             buffer.setSample(0, s, leftSample);
             buffer.setSample(1, s, rightSample);
-            
-            pushNextSampleIntoFifo (leftSample);
         }
-        else
+
+        // --- STAGE F: Final Limiter (outside channel loop, inside sample loop, post-delay) ---
+        if (limiterActive && totalNumOutputChannels >= 2)
         {
-            pushNextSampleIntoFifo (buffer.getSample(0, s));
+            float leftSample = buffer.getSample(0, s);
+            float rightSample = buffer.getSample(1, s);
+
+            limiterProcessor.processSample (leftSample, rightSample, currentLimiterDrive, currentLimiterCeiling, currentLimiterRelease, currentLimiterMix, limiterModeVal);
+
+            // NaN safety guard on limiter output
+            if (std::isnan(leftSample) || std::isinf(leftSample) || std::isnan(rightSample) || std::isinf(rightSample)) {
+                leftSample = 0.0f;
+                rightSample = 0.0f;
+                reset();
+            }
+
+            buffer.setSample(0, s, leftSample);
+            buffer.setSample(1, s, rightSample);
         }
+
+        pushNextSampleIntoFifo (buffer.getSample(0, s));
 
         if (s == numSamples - 1) {
             scMeterLevel.store(scMod);
             scInputPeak.store(blockMaxScInput);
+            
+            // Store peak gain reduction for sidechain telemetry
+            if (limiterActive && totalNumOutputChannels >= 2) {
+                float grL = limiterProcessor.getGainReduction(0);
+                float grR = limiterProcessor.getGainReduction(1);
+                limiterGainReduction.store (std::min(grL, grR));
+            } else {
+                limiterGainReduction.store (1.0f);
+            }
         }
     }
 
@@ -705,6 +765,20 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
         juce::ParameterID { "delay_sync", 1 }, "Delay Sync", false));
     params.push_back (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { "delay_tempo", 1 }, "Delay Tempo Sync", juce::StringArray {"1/16", "1/8", "1/4", "1/2"}, 2));
+
+    // Limiter parameters
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "limiter_active", 1 }, "Limiter Active", false));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> (
+        juce::ParameterID { "limiter_mode", 1 }, "Limiter Mode", juce::StringArray {"Clean", "LMC"}, 0));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "limiter_drive", 1 }, "Limiter Drive", 0.0f, 24.0f, 0.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "limiter_ceiling", 1 }, "Limit Ceiling", -12.0f, 0.0f, -0.1f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "limiter_release", 1 }, "Limit Release", 10.0f, 1000.0f, 100.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { "limiter_mix", 1 }, "Limiter Mix", 0.0f, 1.0f, 1.0f));
 
     return { params.begin(), params.end() };
 }

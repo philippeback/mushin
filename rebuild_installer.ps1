@@ -21,7 +21,8 @@ if (-not (Get-Command "ISCC.exe" -ErrorAction SilentlyContinue)) {
     if (Test-Path $standardPath) {
         $isccPath = $standardPath
         Write-Host "Found Inno Setup Compiler at: $isccPath" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Error "Inno Setup Compiler (ISCC.exe) was not found in your system's PATH or at '$standardPath'."
         Write-Host "Please install Inno Setup 6 or add it to your PATH." -ForegroundColor Yellow
         exit 1
@@ -32,7 +33,8 @@ if (-not (Get-Command "ISCC.exe" -ErrorAction SilentlyContinue)) {
 Write-Host "`n1/3 Compiling Inno Setup script: $issScript..." -ForegroundColor Blue
 try {
     & $isccPath $issScript
-} catch {
+}
+catch {
     Write-Error "Failed to compile the Inno Setup installer. Error: $($_.Exception.Message)"
     exit 1
 }
@@ -55,9 +57,25 @@ if (-not (Test-Path $siteDownloadsDir)) {
 try {
     Copy-Item -Path $compiledInstaller -Destination $siteInstallerDest -Force
     Write-Host "Copied to: $siteInstallerDest" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Error "Failed to copy installer to website downloads. Error: $($_.Exception.Message)"
     exit 1
+}
+
+# 4a. Compile and Stage PDF User Manual
+Write-Host "`n2a/3 Compiling and staging PDF User Manual..." -ForegroundColor Blue
+if (-not (Get-Command "node" -ErrorAction SilentlyContinue)) {
+    Write-Warning "Node.js is not found in your system's PATH. Skipping PDF manual compilation."
+}
+else {
+    try {
+        # node scripts\compile_manual.js
+    }
+    catch {
+        Write-Error "Failed to compile the PDF User Manual. Error: $($_.Exception.Message)"
+        exit 1
+    }
 }
 
 # 5. Success Message and Next Steps
