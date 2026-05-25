@@ -766,6 +766,82 @@
             filter: drop-shadow(0 0 2px var(--primary));
         }
 
+        .routing-selector {
+            display: flex;
+            gap: 3px;
+            width: 54px;
+            align-items: center;
+        }
+        .routing-btn {
+            flex: 1;
+            height: 18px;
+            background: #0d0d0d;
+            border: 1px solid var(--panel-border);
+            border-radius: 2px;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .routing-btn svg {
+            width: 20px;
+            height: 10px;
+            display: block;
+            pointer-events: none;
+        }
+        .routing-btn:hover {
+            color: #aaa;
+            border-color: #555;
+            background: #141414;
+        }
+        .routing-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(0, 210, 255, 0.05);
+            box-shadow: 0 0 6px rgba(0, 210, 255, 0.2), inset 0 0 4px rgba(0, 210, 255, 0.1);
+            filter: drop-shadow(0 0 1.5px var(--primary));
+        }
+
+        .mushin-toggle-btn {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #0d0d0d;
+            border: 1px solid var(--panel-border);
+            border-radius: 2px;
+            color: #666;
+            font-size: 0.50rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .mushin-toggle-btn:hover {
+            color: #aaa;
+            border-color: #555;
+            background: #141414;
+        }
+        input[type="checkbox"]:checked + .mushin-toggle-btn {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(0, 210, 255, 0.05);
+            box-shadow: 0 0 6px rgba(0, 210, 255, 0.2), inset 0 0 4px rgba(0, 210, 255, 0.1);
+            filter: drop-shadow(0 0 1px var(--primary));
+        }
+
+        .visually-hidden {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+
         /* Custom Glow Switch Indicator */
         .glow-switch-label {
             display: block;
@@ -1131,16 +1207,16 @@
                 </div>
 
                 <!-- Toggles Strip (PingPong & Sync & Tempo) -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; background: rgba(0,0,0,0.2); border-radius: 3px; border: 1px solid var(--marking); font-size: 0.50rem;">
-                    <label style="display: flex; align-items: center; gap: 2px; cursor: pointer;">
-                        <input type="checkbox" id="delay_pingpong">
-                        <span class="label" style="font-size: 0.50rem; text-transform: uppercase;">P-Pong</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 2px; cursor: pointer;">
-                        <input type="checkbox" id="delay_sync">
-                        <span class="label" style="font-size: 0.50rem; text-transform: uppercase;">Sync</span>
-                    </label>
-                    <select id="delay_tempo" style="width: 45px; font-size: 0.50rem; padding: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; background: rgba(0,0,0,0.2); border-radius: 3px; border: 1px solid var(--marking); font-size: 0.50rem; gap: 6px;">
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" id="delay_pingpong" class="visually-hidden">
+                        <label class="mushin-toggle-btn" for="delay_pingpong" style="padding: 1px 6px;">P-Pong</label>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" id="delay_sync" class="visually-hidden">
+                        <label class="mushin-toggle-btn" for="delay_sync" style="padding: 1px 6px;">Sync</label>
+                    </div>
+                    <select id="delay_tempo" style="width: 45px; font-size: 0.50rem; padding: 0; height: 14px;">
                         <option value="0">1/16</option>
                         <option value="1">1/8</option>
                         <option value="2">1/4</option>
@@ -1286,10 +1362,30 @@
                         <div class="sub-panel-title">FILTERS</div>
                         <div style="display: flex; gap: 6px; align-items: center;">
                             <span class="label" style="font-size: 0.55rem;">Routing</span>
-                            <select id="routing" style="width: 75px; font-size: 0.55rem; padding: 1px; height: 16px;">
-                                <option value="0">Serial</option>
-                                <option value="1">Parallel</option>
-                            </select>
+                            <input type="hidden" id="routing" value="0">
+                            <div class="routing-selector" data-input-id="routing">
+                                <button class="routing-btn active" data-value="0" title="Serial (A -> B)">
+                                    <svg viewBox="0 0 20 10">
+                                        <rect x="2" y="3" width="4" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="6" y1="5" x2="14" y2="5" stroke="currentColor" stroke-width="1.2" stroke-dasharray="1 1"/>
+                                        <rect x="14" y="3" width="4" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                                    </svg>
+                                </button>
+                                <button class="routing-btn" data-value="1" title="Parallel (A + B)">
+                                    <svg viewBox="0 0 20 10">
+                                        <line x1="1" y1="5" x2="5" y2="5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="5" y1="2.5" x2="5" y2="7.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="5" y1="2.5" x2="8" y2="2.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="5" y1="7.5" x2="8" y2="7.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <rect x="8" y="1" width="4" height="3" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                                        <rect x="8" y="6" width="4" height="3" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="12" y1="2.5" x2="15" y2="2.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="12" y1="7.5" x2="15" y2="7.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="15" y1="2.5" x2="15" y2="7.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="15" y1="5" x2="19" y2="5" stroke="currentColor" stroke-width="1.2"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
@@ -1729,11 +1825,9 @@
                     </div>
 
                     <!-- Extra Settings Strip (Exhaustion Link) -->
-                    <div style="display: flex; justify-content: center; align-items: center; margin-top: 6px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid var(--marking);">
-                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                            <input type="checkbox" id="qe_link">
-                            <span class="label" style="font-size: 0.55rem;" title="Link bit depth directly to global exhaustion switch">Link Exhaust</span>
-                        </label>
+                    <div style="display: flex; justify-content: center; align-items: center; margin-top: 6px; width: 100%;">
+                        <input type="checkbox" id="qe_link" class="visually-hidden">
+                        <label class="mushin-toggle-btn" for="qe_link" style="width: 100%; padding: 2px 0;" title="Link bit depth directly to global exhaustion switch">Link Exhaust</label>
                     </div>
                 </div>
 
@@ -2411,6 +2505,29 @@
             }
         }
 
+        function syncRoutingSelectorUI(id, normVal) {
+            const selector = document.querySelector(`.routing-selector[data-input-id="${id}"]`);
+            if (!selector) return;
+            
+            const buttons = selector.querySelectorAll('.routing-btn');
+            const numChoices = buttons.length;
+            const choiceIndex = Math.round(normVal * (numChoices - 1));
+            
+            buttons.forEach(btn => {
+                const btnVal = parseInt(btn.getAttribute('data-value'), 10);
+                if (btnVal === choiceIndex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            const hiddenInput = document.getElementById(id);
+            if (hiddenInput) {
+                hiddenInput.value = choiceIndex;
+            }
+        }
+
         function updateParam(id, normVal, skipNative = false) {
             const config = params[id];
             if(!config) return;
@@ -2424,6 +2541,8 @@
                     numChoices = el.options.length;
                 } else if (id === 'lfo1_wave' || id === 'lfo2_wave') {
                     numChoices = 5;
+                } else if (id === 'routing') {
+                    numChoices = 2;
                 }
                 realVal = Math.round(normVal * (numChoices - 1));
             } else if (config.skew) {
@@ -2446,6 +2565,8 @@
             // Sync wave selector buttons if applicable
             if (id === 'lfo1_wave' || id === 'lfo2_wave') {
                 syncWaveSelectorUI(id, normVal);
+            } else if (id === 'routing') {
+                syncRoutingSelectorUI(id, normVal);
             }
 
             // Sync trance gate pattern visual grid if applicable
@@ -2493,6 +2614,8 @@
                     numChoices = el.options.length;
                 } else if (id === 'lfo1_wave' || id === 'lfo2_wave') {
                     numChoices = 5;
+                } else if (id === 'routing') {
+                    numChoices = 2;
                 }
                 const choiceIndex = Math.round(normVal * (numChoices - 1));
                 el.value = choiceIndex;
@@ -2804,6 +2927,31 @@
             const id = selector.getAttribute('data-input-id');
             const hiddenInput = document.getElementById(id);
             const buttons = selector.querySelectorAll('.wave-btn');
+            
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const choiceIndex = parseInt(btn.getAttribute('data-value'), 10);
+                    const normVal = choiceIndex / (buttons.length - 1);
+                    
+                    if (hiddenInput) {
+                        hiddenInput.value = choiceIndex;
+                    }
+                    
+                    // Set active visual state
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Notify Native / APVTS
+                    updateParam(id, normVal);
+                });
+            });
+        });
+
+        // Initialize Routing Selectors
+        document.querySelectorAll('.routing-selector').forEach(selector => {
+            const id = selector.getAttribute('data-input-id');
+            const hiddenInput = document.getElementById(id);
+            const buttons = selector.querySelectorAll('.routing-btn');
             
             buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
