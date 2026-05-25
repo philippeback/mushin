@@ -437,6 +437,63 @@
                 linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
             border: 1px solid rgba(255, 255, 255, 0.18);
         }
+
+        /* Premium Sleek LFO Sliders */
+        .lfo-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 12px !important;
+            background: transparent;
+            margin: 1px 0 !important;
+            outline: none;
+        }
+        .lfo-slider::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background-image: 
+                linear-gradient(to right, var(--primary) 0%, var(--primary) var(--track-fill, 0%), transparent var(--track-fill, 0%), transparent 100%),
+                linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 2px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.85);
+        }
+        .lfo-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 10px;
+            margin-top: -4px; /* Centering formula: (4px track - 12px thumb) / 2 = -4px */
+            border-radius: 1.5px;
+            background: linear-gradient(to bottom, #ffffff 0%, #aaaaaa 100%);
+            border: 1px solid #111111;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            cursor: pointer;
+        }
+        .lfo-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 1px 4px var(--primary), 0 0 2px var(--primary);
+        }
+        .lfo-slider::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 2px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.85);
+        }
+        .lfo-slider::-moz-range-thumb {
+            height: 12px;
+            width: 10px;
+            border-radius: 1.5px;
+            background: linear-gradient(to bottom, #ffffff 0%, #aaaaaa 100%);
+            border: 1px solid #111111;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            cursor: pointer;
+        }
+        .lfo-slider::-moz-range-progress {
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px 0 0 2px;
+        }
+
         .mod-matrix-grid input[type=range]::-webkit-slider-thumb {
             height: 16px;
             width: 12px;
@@ -693,6 +750,15 @@
                 linear-gradient(to bottom, #090909 0%, #1e1e1e 100%) !important;
             border-color: var(--primary) !important;
             box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.95), 0 0 4px var(--primary) !important;
+        }
+
+        .main-panel:has(#exhaustion:checked) .lfo-slider::-webkit-slider-runnable-track {
+            border-color: var(--primary) !important;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.85), 0 0 4px var(--primary) !important;
+        }
+
+        .main-panel:has(#exhaustion:checked) .lfo-slider::-webkit-slider-thumb {
+            box-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 5px var(--primary), inset 0 0.5px 0 rgba(255,255,255,0.9) !important;
         }
 
         .main-panel:has(#exhaustion:checked) input[type=range]::-webkit-slider-thumb {
@@ -1717,7 +1783,7 @@
                         <div style="flex: 1; padding: 4px 6px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--marking); border-radius: 3px; display: flex; flex-direction: column; gap: 2px;">
                             <div class="label" style="text-align: center; color: var(--primary); font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1px; margin-bottom: 3px; font-size: 0.65rem;">LFO 1</div>
                             <div class="label" style="font-size: 0.50rem;">Freq</div>
-                            <input type="range" id="lfo1_freq" min="0" max="1" step="0.001" style="height: 12px; margin: 1px 0;">
+                            <input type="range" id="lfo1_freq" class="lfo-slider" min="0" max="1" step="0.001">
                             <div class="value interactive" id="lfo1_freq-val" style="font-size: 0.50rem; text-align: center; margin-bottom: 2px;">1.00Hz</div>
                             <div class="label" style="font-size: 0.50rem; margin-top: 1px;">Wave</div>
                             <input type="hidden" id="lfo1_wave" value="0">
@@ -1744,7 +1810,7 @@
                         <div style="flex: 1; padding: 4px 6px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--marking); border-radius: 3px; display: flex; flex-direction: column; gap: 2px;">
                             <div class="label" style="text-align: center; color: var(--primary); font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1px; margin-bottom: 3px; font-size: 0.65rem;">LFO 2</div>
                             <div class="label" style="font-size: 0.50rem;">Freq</div>
-                            <input type="range" id="lfo2_freq" min="0" max="1" step="0.001" style="height: 12px; margin: 1px 0;">
+                            <input type="range" id="lfo2_freq" class="lfo-slider" min="0" max="1" step="0.001">
                             <div class="value interactive" id="lfo2_freq-val" style="font-size: 0.50rem; text-align: center; margin-bottom: 2px;">1.00Hz</div>
                             <div class="label" style="font-size: 0.50rem; margin-top: 1px;">Wave</div>
                             <input type="hidden" id="lfo2_wave" value="0">
@@ -2906,6 +2972,7 @@
             setValue(normVal, skipNative = false) {
                 const clampedVal = Math.min(1.0, Math.max(0.0, normVal));
                 this.element.value = clampedVal;
+                this.element.style.setProperty('--track-fill', (clampedVal * 100) + '%');
                 updateParam(this.paramId, clampedVal, skipNative);
             }
             
