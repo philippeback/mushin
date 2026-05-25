@@ -116,10 +116,27 @@
             flex: 1;
         }
 
+        .sub-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--marking);
+            margin-bottom: 6px;
+            padding-bottom: 2px;
+            min-height: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
         .sub-panel-title {
-            font-size: 1.0rem; text-align: center; color: var(--secondary);
-            border-bottom: 1px solid var(--marking); margin-bottom: 3px;
-            letter-spacing: 0.1em; text-transform: uppercase;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--primary);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin: 0;
+            border-bottom: none;
+            text-align: left;
         }
 
         /* Trance Gate Grid & LEDs */
@@ -778,14 +795,20 @@
         /* Checked state transitions */
         #qe_active:checked + .glow-switch-label,
         #delay_active:checked + .glow-switch-label,
-        #limiter_active:checked + .glow-switch-label {
+        #limiter_active:checked + .glow-switch-label,
+        #noise_active:checked + .glow-switch-label,
+        #tg_active:checked + .glow-switch-label,
+        #sc_active:checked + .glow-switch-label {
             border-color: var(--primary);
             background: rgba(0, 210, 255, 0.05);
         }
 
         #qe_active:checked + .glow-switch-label .glow-switch-dot,
         #delay_active:checked + .glow-switch-label .glow-switch-dot,
-        #limiter_active:checked + .glow-switch-label .glow-switch-dot {
+        #limiter_active:checked + .glow-switch-label .glow-switch-dot,
+        #noise_active:checked + .glow-switch-label .glow-switch-dot,
+        #tg_active:checked + .glow-switch-label .glow-switch-dot,
+        #sc_active:checked + .glow-switch-label .glow-switch-dot {
             left: 11px;
             background: var(--primary);
             box-shadow: 0 0 6px var(--primary), inset 0 1px 1px rgba(255,255,255,0.8);
@@ -895,7 +918,9 @@
         <div class="top-section">
             <!-- S-CURVE PANEL -->
             <div class="sub-panel" id="panel-scurve" style="flex: 2.0; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
-                <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 2px; font-size: 0.85rem; color: var(--primary); letter-spacing: 0.05em;">S-CURVE</div>
+                <div class="sub-panel-header">
+                    <div class="sub-panel-title">S-CURVE</div>
+                </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; text-align: center; align-items: center; flex: 1;">
                     <!-- Drive -->
@@ -1033,8 +1058,8 @@
 
             <!-- DELAY PANEL -->
             <div class="sub-panel" id="panel-delay" style="flex: 1.5; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                    <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.85rem; color: var(--primary); letter-spacing: 0.05em;">DELAY</div>
+                <div class="sub-panel-header">
+                    <div class="sub-panel-title">DELAY</div>
                     <div style="display: flex; gap: 4px; align-items: center;">
                         <input type="checkbox" id="delay_active" style="display: none;">
                         <label class="glow-switch-label" for="delay_active" id="delay_active_indicator" title="Toggle Delay">
@@ -1126,8 +1151,8 @@
 
             <!-- LIMITER PANEL -->
             <div class="sub-panel" id="panel-limiter" style="flex: 1.5; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                    <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.85rem; color: var(--primary); letter-spacing: 0.05em;">LIMITER</div>
+                <div class="sub-panel-header">
+                    <div class="sub-panel-title">LIMITER</div>
                     <div style="display: flex; gap: 4px; align-items: center;">
                         <input type="checkbox" id="limiter_active" style="display: none;">
                         <label class="glow-switch-label" for="limiter_active" id="limiter_active_indicator" title="Toggle Limiter">
@@ -1255,18 +1280,18 @@
             
             <!-- COLUMN 1: Filters -->
             <div class="col">
-                <div class="sub-panel" style="flex: 0 0 auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 1.0rem; letter-spacing: 0.1em;">ROUTING</div>
-                        <select id="routing" style="width: 100px;">
-                            <option value="0">Serial</option>
-                            <option value="1">Parallel</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- DUAL FILTERS -->
+                <!-- FILTERS PANEL -->
                 <div class="sub-panel" style="padding: 4px; flex: 1 1 auto; display: flex; flex-direction: column;">
-                    <div class="sub-panel-title" style="font-size: 0.85rem; margin-bottom: 2px;">DUAL FILTERS</div>
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">FILTERS</div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <span class="label" style="font-size: 0.55rem;">Routing</span>
+                            <select id="routing" style="width: 75px; font-size: 0.55rem; padding: 1px; height: 16px;">
+                                <option value="0">Serial</option>
+                                <option value="1">Parallel</option>
+                            </select>
+                        </div>
+                    </div>
                     
                     <div style="display: flex; gap: 8px; justify-content: space-between; flex: 1; align-items: stretch;">
                         <!-- FILTER A column -->
@@ -1431,14 +1456,18 @@
 
                 <!-- NOISE / GENERATOR (Squeezed to fit in Column 1) -->
                 <div class="sub-panel" style="margin-top: 3px; padding: 4px; flex: 0 0 auto;">
-                    <div class="sub-panel-title" style="font-size: 0.85rem; margin-bottom: 2px;">NOISE / GENERATOR</div>
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">NOISE / GENERATOR</div>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <input type="checkbox" id="noise_active" style="display: none;">
+                            <label class="glow-switch-label" for="noise_active" id="noise_active_indicator" title="Toggle Noise Generator">
+                                <span class="glow-switch-dot"></span>
+                            </label>
+                        </div>
+                    </div>
                     
                     <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 3px; gap: 4px;">
-                        <div style="display:flex; gap:3px; align-items:center;">
-                            <input type="checkbox" id="noise_active">
-                            <div class="label" style="font-size: 0.55rem;">Active</div>
-                        </div>
-                        <select id="noise_routing" style="width:65px; font-size: 0.55rem; padding: 1px;">
+                        <select id="noise_routing" style="width:75px; font-size: 0.55rem; padding: 1px;">
                             <option value="0">Pre-Dist</option>
                             <option value="1">Pre-Filter</option>
                             <option value="2">Post-Filter</option>
@@ -1517,7 +1546,9 @@
             <div class="col">
                 <!-- MODULATION PANEL (LFOs + MATRIX) -->
                 <div class="sub-panel" style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 5px;">
-                    <div class="sub-panel-title">MODULATION</div>
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">MODULATION</div>
+                    </div>
                     
                     <!-- LFOs Row -->
                     <div class="row" style="flex: 0 0 auto; gap: 6px;">
@@ -1605,8 +1636,10 @@
                 </div>
                 <!-- OSCILLOSCOPE (BOTTOM CENTER) -->
                 <div class="sub-panel" style="flex: 0 0 70px; height: 70px; min-height: 70px; padding: 4px; box-sizing: border-box; overflow: hidden; margin-top: 2px;">
-                    <div class="sub-panel-title" style="margin-bottom: 2px; font-size: 0.9rem;">OSCILLOSCOPE</div>
-                    <canvas id="waveformCanvas" width="380" height="50" style="display: block; width: 100%; height: calc(100% - 12px); background: #050505; border: 1px solid var(--marking); border-radius: 2px; box-sizing: border-box;"></canvas>
+                    <div class="sub-panel-header" style="margin-bottom: 4px; padding-bottom: 1px;">
+                        <div class="sub-panel-title">OSCILLOSCOPE</div>
+                    </div>
+                    <canvas id="waveformCanvas" width="380" height="50" style="display: block; width: 100%; height: calc(100% - 20px); background: #050505; border: 1px solid var(--marking); border-radius: 2px; box-sizing: border-box;"></canvas>
                 </div>
             </div>
 
@@ -1614,8 +1647,8 @@
             <div class="col">
                 <!-- INFO DECAY (QUANTIZATION ERROR) PANEL -->
                 <div class="sub-panel" id="panel-info-decay" style="flex: 0 0 auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.85rem; letter-spacing: 0.1em; color: var(--primary);">INFO DECAY</div>
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">INFO DECAY</div>
                         
                         <!-- Bit Depth LED Resolution Readout -->
                         <div class="bit-readout-container" style="margin-top: 0; padding: 2px 6px; display: inline-flex; align-items: center; justify-content: center; min-width: 60px;">
@@ -1705,7 +1738,15 @@
                 </div>
 
                 <div class="sub-panel">
-                    <div class="sub-panel-title">SIDECHAIN</div>
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">SIDECHAIN</div>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <input type="checkbox" id="sc_active" style="display: none;">
+                            <label class="glow-switch-label" for="sc_active" id="sc_active_indicator" title="Toggle Sidechain">
+                                <span class="glow-switch-dot"></span>
+                            </label>
+                        </div>
+                    </div>
                     
                     <!-- DIAGNOSTIC VISUALIZERS (HORIZONTAL LAYOUT) -->
                     <div class="sc-visualizer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 2px 4px; margin-bottom: 2px;">
@@ -1723,16 +1764,16 @@
                         </div>
                     </div>
 
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 2px;">
-                        <div style="display:flex; gap:4px; align-items:center;">
-                            <input type="checkbox" id="sc_active">
-                            <div class="label">Active</div>
-                        </div>
-                        <select id="sc_source" style="width:65px;">
-                            <option value="0">Int</option><option value="1">Ext</option><option value="2">Test</option>
+                    <div style="display:flex; gap:6px; align-items:center; margin-bottom: 2px; width: 100%;">
+                        <select id="sc_source" style="flex: 1; font-size: 0.55rem; padding: 1px; height: 16px;">
+                            <option value="0">Internal</option>
+                            <option value="1">External</option>
+                            <option value="2">Test OSC</option>
                         </select>
-                        <select id="sc_target" style="width:60px;">
-                            <option value="0">Drive</option><option value="1">Cutoff</option><option value="2">Gain</option>
+                        <select id="sc_target" style="flex: 1; font-size: 0.55rem; padding: 1px; height: 16px;">
+                            <option value="0">Drive</option>
+                            <option value="1">Cutoff</option>
+                            <option value="2">Gain</option>
                         </select>
                     </div>
 
@@ -1861,9 +1902,11 @@
             <!-- Left Side: Controls -->
             <div style="display: flex; align-items: center; gap: 10px; flex: 0 0 auto;">
                 <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.9rem; text-align: left; margin-right: 6px;">TRANCE GATE</div>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <input type="checkbox" id="tg_active">
-                    <div class="label" style="font-size: 0.65rem;">Active</div>
+                <div style="display: flex; gap: 4px; align-items: center; margin-right: 6px;">
+                    <input type="checkbox" id="tg_active" style="display: none;">
+                    <label class="glow-switch-label" for="tg_active" id="tg_active_indicator" title="Toggle Trance Gate">
+                        <span class="glow-switch-dot"></span>
+                    </label>
                 </div>
                 <select id="tg_pattern" style="width: 120px; font-size: 0.6rem; padding: 2px;">
                     <option value="0">Straight 16th</option>
@@ -2895,6 +2938,45 @@
         if (limiterActiveIndicator) {
             limiterActiveIndicator.addEventListener('click', (e) => {
                 const cb = document.getElementById('limiter_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
+
+        // Ensure noise_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const noiseActiveIndicator = document.getElementById('noise_active_indicator');
+        if (noiseActiveIndicator) {
+            noiseActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('noise_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
+
+        // Ensure tg_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const tgActiveIndicator = document.getElementById('tg_active_indicator');
+        if (tgActiveIndicator) {
+            tgActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('tg_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
+
+        // Ensure sc_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const scActiveIndicator = document.getElementById('sc_active_indicator');
+        if (scActiveIndicator) {
+            scActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('sc_active');
                 if (cb) {
                     cb.checked = !cb.checked;
                     cb.dispatchEvent(new Event('change'));
