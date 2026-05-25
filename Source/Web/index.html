@@ -116,10 +116,27 @@
             flex: 1;
         }
 
+        .sub-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--marking);
+            margin-bottom: 6px;
+            padding-bottom: 2px;
+            min-height: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
         .sub-panel-title {
-            font-size: 1.0rem; text-align: center; color: var(--secondary);
-            border-bottom: 1px solid var(--marking); margin-bottom: 3px;
-            letter-spacing: 0.1em; text-transform: uppercase;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--primary);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin: 0;
+            border-bottom: none;
+            text-align: left;
         }
 
         /* Trance Gate Grid & LEDs */
@@ -416,10 +433,67 @@
         .mod-matrix-grid input[type=range]::-webkit-slider-runnable-track {
             height: 5px;
             background-image: 
+                linear-gradient(to right, rgba(0, 210, 255, 0.3) 0%, rgba(0, 210, 255, 0.3) var(--track-fill, 0%), transparent var(--track-fill, 0%), transparent 100%),
+                linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        /* Premium Sleek LFO Sliders */
+        .lfo-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 12px !important;
+            background: transparent;
+            margin: 1px 0 !important;
+            outline: none;
+        }
+        .lfo-slider::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background-image: 
                 linear-gradient(to right, var(--primary) 0%, var(--primary) var(--track-fill, 0%), transparent var(--track-fill, 0%), transparent 100%),
                 linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 2px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.85);
         }
+        .lfo-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 10px;
+            margin-top: -4px; /* Centering formula: (4px track - 12px thumb) / 2 = -4px */
+            border-radius: 1.5px;
+            background: linear-gradient(to bottom, #ffffff 0%, #aaaaaa 100%);
+            border: 1px solid #111111;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            cursor: pointer;
+        }
+        .lfo-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 1px 4px var(--primary), 0 0 2px var(--primary);
+        }
+        .lfo-slider::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to bottom, #090909 0%, #1e1e1e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 2px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.85);
+        }
+        .lfo-slider::-moz-range-thumb {
+            height: 12px;
+            width: 10px;
+            border-radius: 1.5px;
+            background: linear-gradient(to bottom, #ffffff 0%, #aaaaaa 100%);
+            border: 1px solid #111111;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            cursor: pointer;
+        }
+        .lfo-slider::-moz-range-progress {
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px 0 0 2px;
+        }
+
         .mod-matrix-grid input[type=range]::-webkit-slider-thumb {
             height: 16px;
             width: 12px;
@@ -670,6 +744,23 @@
             box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.95), 0 0 4px var(--primary) !important;
         }
 
+        .main-panel:has(#exhaustion:checked) .mod-matrix-grid input[type=range]::-webkit-slider-runnable-track {
+            background-image: 
+                linear-gradient(to right, var(--primary) 0%, var(--primary) var(--track-fill, 0%), transparent var(--track-fill, 0%), transparent 100%),
+                linear-gradient(to bottom, #090909 0%, #1e1e1e 100%) !important;
+            border-color: var(--primary) !important;
+            box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.95), 0 0 4px var(--primary) !important;
+        }
+
+        .main-panel:has(#exhaustion:checked) .lfo-slider::-webkit-slider-runnable-track {
+            border-color: var(--primary) !important;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.85), 0 0 4px var(--primary) !important;
+        }
+
+        .main-panel:has(#exhaustion:checked) .lfo-slider::-webkit-slider-thumb {
+            box-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 5px var(--primary), inset 0 0.5px 0 rgba(255,255,255,0.9) !important;
+        }
+
         .main-panel:has(#exhaustion:checked) input[type=range]::-webkit-slider-thumb {
             box-shadow: 0 3px 8px rgba(0,0,0,0.9), 0 0 6px var(--primary), inset 0 1px 0 rgba(255,255,255,0.9) !important;
         }
@@ -749,6 +840,139 @@
             filter: drop-shadow(0 0 2px var(--primary));
         }
 
+        .routing-selector {
+            display: flex;
+            gap: 3px;
+            width: 54px;
+            align-items: center;
+        }
+        .routing-btn {
+            flex: 1;
+            height: 18px;
+            background: #0d0d0d;
+            border: 1px solid var(--panel-border);
+            border-radius: 2px;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .routing-btn svg {
+            width: 20px;
+            height: 10px;
+            display: block;
+            pointer-events: none;
+        }
+        .routing-btn:hover {
+            color: #aaa;
+            border-color: #555;
+            background: #141414;
+        }
+        .routing-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(0, 210, 255, 0.05);
+            box-shadow: 0 0 6px rgba(0, 210, 255, 0.2), inset 0 0 4px rgba(0, 210, 255, 0.1);
+            filter: drop-shadow(0 0 1.5px var(--primary));
+        }
+
+        /* Dynamic Filters Serial/Parallel Layouts */
+        .filters-layout-container {
+            display: flex;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+        .filters-layout-container.layout-serial {
+            flex-direction: row;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .filters-layout-container.layout-serial .filter-col-a {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 1px solid var(--marking);
+            border-bottom: none;
+            padding-right: 6px;
+            padding-bottom: 0;
+            transition: all 0.3s ease;
+        }
+        .filters-layout-container.layout-serial .filter-col-b {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-left: 6px;
+            padding-top: 0;
+            transition: all 0.3s ease;
+        }
+        .filters-layout-container.layout-parallel {
+            flex-direction: column;
+            gap: 6px;
+            align-items: stretch;
+        }
+        .filters-layout-container.layout-parallel .filter-col-a {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: none;
+            border-bottom: 1px solid var(--marking);
+            padding-right: 0;
+            padding-bottom: 6px;
+            transition: all 0.3s ease;
+        }
+        .filters-layout-container.layout-parallel .filter-col-b {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-left: 0;
+            padding-top: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .mushin-toggle-btn {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #0d0d0d;
+            border: 1px solid var(--panel-border);
+            border-radius: 2px;
+            color: #666;
+            font-size: 0.50rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .mushin-toggle-btn:hover {
+            color: #aaa;
+            border-color: #555;
+            background: #141414;
+        }
+        input[type="checkbox"]:checked + .mushin-toggle-btn {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(0, 210, 255, 0.05);
+            box-shadow: 0 0 6px rgba(0, 210, 255, 0.2), inset 0 0 4px rgba(0, 210, 255, 0.1);
+            filter: drop-shadow(0 0 1px var(--primary));
+        }
+
+        .visually-hidden {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+
         /* Custom Glow Switch Indicator */
         .glow-switch-label {
             display: block;
@@ -778,14 +1002,20 @@
         /* Checked state transitions */
         #qe_active:checked + .glow-switch-label,
         #delay_active:checked + .glow-switch-label,
-        #limiter_active:checked + .glow-switch-label {
+        #limiter_active:checked + .glow-switch-label,
+        #noise_active:checked + .glow-switch-label,
+        #tg_active:checked + .glow-switch-label,
+        #sc_active:checked + .glow-switch-label {
             border-color: var(--primary);
             background: rgba(0, 210, 255, 0.05);
         }
 
         #qe_active:checked + .glow-switch-label .glow-switch-dot,
         #delay_active:checked + .glow-switch-label .glow-switch-dot,
-        #limiter_active:checked + .glow-switch-label .glow-switch-dot {
+        #limiter_active:checked + .glow-switch-label .glow-switch-dot,
+        #noise_active:checked + .glow-switch-label .glow-switch-dot,
+        #tg_active:checked + .glow-switch-label .glow-switch-dot,
+        #sc_active:checked + .glow-switch-label .glow-switch-dot {
             left: 11px;
             background: var(--primary);
             box-shadow: 0 0 6px var(--primary), inset 0 1px 1px rgba(255,255,255,0.8);
@@ -893,128 +1123,118 @@
 
         <!-- CORE STRIP -->
         <div class="top-section">
-            <div class="control-group">
-                <div class="label">Drive</div>
-                <!-- Custom Moog Knob for Drive -->
-                <div class="mushin-knob" id="knob-drive" data-param="drive" data-default="0.0" tabindex="0">
-                    <svg viewBox="0 0 100 100" class="knob-svg">
-                        <defs>
-                            <radialGradient id="metallic-dome" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
-                                <stop offset="0%" stop-color="#fdfdfd" />
-                                <stop offset="30%" stop-color="#dcdcdc" />
-                                <stop offset="70%" stop-color="#8a8a8a" />
-                                <stop offset="100%" stop-color="#4a4a4a" />
-                            </radialGradient>
-                            <linearGradient id="brushed-reflection" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="rgba(255,255,255,0.15)" />
-                                <stop offset="45%" stop-color="rgba(0,0,0,0.3)" />
-                                <stop offset="50%" stop-color="rgba(255,255,255,0.4)" />
-                                <stop offset="55%" stop-color="rgba(0,0,0,0.3)" />
-                                <stop offset="100%" stop-color="rgba(255,255,255,0.15)" />
-                            </linearGradient>
-                        </defs>
-
-                        <!-- Outer Dynamic Value Track -->
-                        <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                        <path class="knob-value-arc" d="" />
-
-                        <!-- Outer Bezel (Fluted Ring) -->
-                        <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                        
-                        <!-- Metallic Cap Dome -->
-                        <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                        <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                        
-                        <!-- Rotating Pointer Skirt -->
-                        <g class="knob-pointer-group">
-                            <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                            <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                        </g>
-                    </svg>
-                    <!-- Hidden slider to preserve parameter bindings -->
-                    <input type="range" id="drive" min="0" max="1" step="0.001" style="display: none;">
+            <!-- S-CURVE PANEL -->
+            <div class="sub-panel" id="panel-scurve" style="flex: 2.0; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="sub-panel-header">
+                    <div class="sub-panel-title">S-CURVE</div>
                 </div>
-                <div class="value" id="drive-val">1.0</div>
-            </div>
-            <div class="control-group">
-                <div class="label">Thresh</div>
-                <!-- Custom Moog Knob for Threshold -->
-                <div class="mushin-knob" id="knob-threshold" data-param="threshold" data-default="1.0" tabindex="0">
-                    <svg viewBox="0 0 100 100" class="knob-svg">
-                        <!-- Outer Dynamic Value Track -->
-                        <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                        <path class="knob-value-arc" d="" />
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; text-align: center; align-items: center; flex: 1;">
+                    <!-- Drive -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="label" style="font-size: 0.50rem;">Drive</div>
+                        <div class="mushin-knob mushin-knob-small" id="knob-drive" data-param="drive" data-default="0.0" tabindex="0">
+                            <svg viewBox="0 0 100 100" class="knob-svg">
+                                <defs>
+                                    <radialGradient id="metallic-dome" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+                                        <stop offset="0%" stop-color="#fdfdfd" />
+                                        <stop offset="30%" stop-color="#dcdcdc" />
+                                        <stop offset="70%" stop-color="#8a8a8a" />
+                                        <stop offset="100%" stop-color="#4a4a4a" />
+                                    </radialGradient>
+                                    <linearGradient id="brushed-reflection" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="rgba(255,255,255,0.15)" />
+                                        <stop offset="45%" stop-color="rgba(0,0,0,0.3)" />
+                                        <stop offset="50%" stop-color="rgba(255,255,255,0.4)" />
+                                        <stop offset="55%" stop-color="rgba(0,0,0,0.3)" />
+                                        <stop offset="100%" stop-color="rgba(255,255,255,0.15)" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                <path class="knob-value-arc" d="" />
+                                <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                <g class="knob-pointer-group">
+                                    <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                    <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                </g>
+                            </svg>
+                            <input type="range" id="drive" min="0" max="1" step="0.001" style="display: none;">
+                        </div>
+                        <div class="value" id="drive-val" style="font-size: 0.50rem;">1.0</div>
+                    </div>
 
-                        <!-- Outer Bezel (Fluted Ring) -->
-                        <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                        
-                        <!-- Metallic Cap Dome (reusing global defs) -->
-                        <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                        <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                        
-                        <!-- Rotating Pointer Skirt -->
-                        <g class="knob-pointer-group">
-                            <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                            <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                        </g>
-                    </svg>
-                    <!-- Hidden slider to preserve parameter bindings -->
-                    <input type="range" id="threshold" min="0" max="1" step="0.001" style="display: none;">
-                </div>
-                <div class="value" id="threshold-val">1.00</div>
-            </div>
-            <div class="control-group" id="group-exhaustion">
-                <div class="label">Exhaust</div>
-                <div class="toggle-plate">
-                    <div class="plate-screw top-left"></div>
-                    <div class="plate-screw top-right"></div>
-                    <div class="plate-screw bottom-left"></div>
-                    <div class="plate-screw bottom-right"></div>
-                    
-                    <label class="mushin-lever-switch" for="exhaustion">
-                        <input type="checkbox" id="exhaustion" style="display: none;">
-                        <div class="switch-bezel">
-                            <div class="switch-slot">
-                                <div class="switch-lever">
-                                    <div class="lever-stem"></div>
-                                    <div class="lever-tip"></div>
+                    <!-- Thresh -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="label" style="font-size: 0.50rem;">Thresh</div>
+                        <div class="mushin-knob mushin-knob-small" id="knob-threshold" data-param="threshold" data-default="1.0" tabindex="0">
+                            <svg viewBox="0 0 100 100" class="knob-svg">
+                                <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                <path class="knob-value-arc" d="" />
+                                <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                <g class="knob-pointer-group">
+                                    <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                    <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                </g>
+                            </svg>
+                            <input type="range" id="threshold" min="0" max="1" step="0.001" style="display: none;">
+                        </div>
+                        <div class="value" id="threshold-val" style="font-size: 0.50rem;">1.00</div>
+                    </div>
+
+                    <!-- Mix -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="label" style="font-size: 0.50rem;">Mix</div>
+                        <div class="mushin-knob mushin-knob-small" id="knob-mix" data-param="mix" data-default="1.0" tabindex="0">
+                            <svg viewBox="0 0 100 100" class="knob-svg">
+                                <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                <path class="knob-value-arc" d="" />
+                                <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                <g class="knob-pointer-group">
+                                    <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                    <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                </g>
+                            </svg>
+                            <input type="range" id="mix" min="0" max="1" step="0.001" style="display: none;">
+                        </div>
+                        <div class="value" id="mix-val" style="font-size: 0.50rem;">100%</div>
+                    </div>
+
+                    <!-- Exhaustion -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="label" style="font-size: 0.50rem;">Exhaust</div>
+                        <div class="toggle-plate" style="transform: scale(0.8); margin: 2px 0;">
+                            <div class="plate-screw top-left"></div>
+                            <div class="plate-screw top-right"></div>
+                            <div class="plate-screw bottom-left"></div>
+                            <div class="plate-screw bottom-right"></div>
+                            
+                            <label class="mushin-lever-switch" for="exhaustion">
+                                <input type="checkbox" id="exhaustion" style="display: none;">
+                                <div class="switch-bezel">
+                                    <div class="switch-slot">
+                                        <div class="switch-lever">
+                                            <div class="lever-stem"></div>
+                                            <div class="lever-tip"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                                <div class="switch-status-lamp">
+                                    <div class="lamp-lens"></div>
+                                </div>
+                            </label>
                         </div>
-                        <div class="switch-status-lamp">
-                            <div class="lamp-lens"></div>
-                        </div>
-                    </label>
+                        <div class="value" id="exhaustion-val" style="font-size: 0.50rem;">OFF</div>
+                    </div>
                 </div>
-                <div class="value" id="exhaustion-val">OFF</div>
             </div>
-            <div class="control-group">
-                <div class="label">Mix</div>
-                <!-- Custom Moog Knob for Mix -->
-                <div class="mushin-knob" id="knob-mix" data-param="mix" data-default="1.0" tabindex="0">
-                    <svg viewBox="0 0 100 100" class="knob-svg">
-                        <!-- Outer Dynamic Value Track -->
-                        <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                        <path class="knob-value-arc" d="" />
 
-                        <!-- Outer Bezel (Fluted Ring) -->
-                        <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                        
-                        <!-- Metallic Cap Dome (reusing global defs) -->
-                        <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                        <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                        
-                        <!-- Rotating Pointer Skirt -->
-                        <g class="knob-pointer-group">
-                            <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                            <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                        </g>
-                    </svg>
-                    <!-- Hidden slider to preserve parameter bindings -->
-                    <input type="range" id="mix" min="0" max="1" step="0.001" style="display: none;">
-                </div>
-                <div class="value" id="mix-val">100%</div>
-            </div>
+            <!-- Gain -->
             <div class="control-group">
                 <div class="label">Gain</div>
                 <!-- Custom Moog Knob for Gain -->
@@ -1045,8 +1265,8 @@
 
             <!-- DELAY PANEL -->
             <div class="sub-panel" id="panel-delay" style="flex: 1.5; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                    <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.85rem; color: var(--primary); letter-spacing: 0.05em;">DELAY</div>
+                <div class="sub-panel-header">
+                    <div class="sub-panel-title">DELAY</div>
                     <div style="display: flex; gap: 4px; align-items: center;">
                         <input type="checkbox" id="delay_active" style="display: none;">
                         <label class="glow-switch-label" for="delay_active" id="delay_active_indicator" title="Toggle Delay">
@@ -1118,16 +1338,16 @@
                 </div>
 
                 <!-- Toggles Strip (PingPong & Sync & Tempo) -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; background: rgba(0,0,0,0.2); border-radius: 3px; border: 1px solid var(--marking); font-size: 0.50rem;">
-                    <label style="display: flex; align-items: center; gap: 2px; cursor: pointer;">
-                        <input type="checkbox" id="delay_pingpong">
-                        <span class="label" style="font-size: 0.50rem; text-transform: uppercase;">P-Pong</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 2px; cursor: pointer;">
-                        <input type="checkbox" id="delay_sync">
-                        <span class="label" style="font-size: 0.50rem; text-transform: uppercase;">Sync</span>
-                    </label>
-                    <select id="delay_tempo" style="width: 45px; font-size: 0.50rem; padding: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; background: rgba(0,0,0,0.2); border-radius: 3px; border: 1px solid var(--marking); font-size: 0.50rem; gap: 6px;">
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" id="delay_pingpong" class="visually-hidden">
+                        <label class="mushin-toggle-btn" for="delay_pingpong" style="padding: 1px 6px;">P-Pong</label>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" id="delay_sync" class="visually-hidden">
+                        <label class="mushin-toggle-btn" for="delay_sync" style="padding: 1px 6px;">Sync</label>
+                    </div>
+                    <select id="delay_tempo" style="width: 45px; font-size: 0.50rem; padding: 0; height: 14px;">
                         <option value="0">1/16</option>
                         <option value="1">1/8</option>
                         <option value="2">1/4</option>
@@ -1138,8 +1358,8 @@
 
             <!-- LIMITER PANEL -->
             <div class="sub-panel" id="panel-limiter" style="flex: 1.5; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                    <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.85rem; color: var(--primary); letter-spacing: 0.05em;">LIMITER</div>
+                <div class="sub-panel-header">
+                    <div class="sub-panel-title">LIMITER</div>
                     <div style="display: flex; gap: 4px; align-items: center;">
                         <input type="checkbox" id="limiter_active" style="display: none;">
                         <label class="glow-switch-label" for="limiter_active" id="limiter_active_indicator" title="Toggle Limiter">
@@ -1267,22 +1487,42 @@
             
             <!-- COLUMN 1: Filters -->
             <div class="col">
-                <div class="sub-panel" style="flex: 0 0 auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 1.0rem; letter-spacing: 0.1em;">ROUTING</div>
-                        <select id="routing" style="width: 100px;">
-                            <option value="0">Serial</option>
-                            <option value="1">Parallel</option>
-                        </select>
-                    </div>
-                </div>
-                <!-- DUAL FILTERS -->
+                <!-- FILTERS PANEL -->
                 <div class="sub-panel" style="padding: 4px; flex: 1 1 auto; display: flex; flex-direction: column;">
-                    <div class="sub-panel-title" style="font-size: 0.85rem; margin-bottom: 2px;">DUAL FILTERS</div>
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">FILTERS</div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <span class="label" style="font-size: 0.55rem;">Routing</span>
+                            <input type="hidden" id="routing" value="0">
+                            <div class="routing-selector" data-input-id="routing">
+                                <button class="routing-btn active" data-value="0" title="Serial (A -> B)">
+                                    <svg viewBox="0 0 20 10">
+                                        <rect x="2" y="3" width="4" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="6" y1="5" x2="14" y2="5" stroke="currentColor" stroke-width="1.2" stroke-dasharray="1 1"/>
+                                        <rect x="14" y="3" width="4" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                                    </svg>
+                                </button>
+                                <button class="routing-btn" data-value="1" title="Parallel (A + B)">
+                                    <svg viewBox="0 0 20 10">
+                                        <line x1="1" y1="5" x2="5" y2="5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="5" y1="2.5" x2="5" y2="7.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="5" y1="2.5" x2="8" y2="2.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="5" y1="7.5" x2="8" y2="7.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <rect x="8" y="1" width="4" height="3" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                                        <rect x="8" y="6" width="4" height="3" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="12" y1="2.5" x2="15" y2="2.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="12" y1="7.5" x2="15" y2="7.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="15" y1="2.5" x2="15" y2="7.5" stroke="currentColor" stroke-width="1.2"/>
+                                        <line x1="15" y1="5" x2="19" y2="5" stroke="currentColor" stroke-width="1.2"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <div style="display: flex; gap: 8px; justify-content: space-between; flex: 1; align-items: stretch;">
+                    <div id="filters-container" class="filters-layout-container layout-serial">
                         <!-- FILTER A column -->
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; border-right: 1px solid var(--marking); padding-right: 6px;">
+                        <div class="filter-col-a">
                             <div style="font-size: 0.65rem; font-weight: bold; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 2px;">FILTER A</div>
                             
                             <div style="display: flex; gap: 4px; justify-content: space-around; width: 100%; align-items: center; flex: 1;">
@@ -1362,7 +1602,7 @@
                         </div>
 
                         <!-- FILTER B column -->
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; padding-left: 6px;">
+                        <div class="filter-col-b">
                             <div style="font-size: 0.65rem; font-weight: bold; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 2px;">FILTER B</div>
                             
                             <div style="display: flex; gap: 4px; justify-content: space-around; width: 100%; align-items: center; flex: 1;">
@@ -1443,14 +1683,18 @@
 
                 <!-- NOISE / GENERATOR (Squeezed to fit in Column 1) -->
                 <div class="sub-panel" style="margin-top: 3px; padding: 4px; flex: 0 0 auto;">
-                    <div class="sub-panel-title" style="font-size: 0.85rem; margin-bottom: 2px;">NOISE / GENERATOR</div>
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">NOISE / GENERATOR</div>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <input type="checkbox" id="noise_active" style="display: none;">
+                            <label class="glow-switch-label" for="noise_active" id="noise_active_indicator" title="Toggle Noise Generator">
+                                <span class="glow-switch-dot"></span>
+                            </label>
+                        </div>
+                    </div>
                     
                     <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 3px; gap: 4px;">
-                        <div style="display:flex; gap:3px; align-items:center;">
-                            <input type="checkbox" id="noise_active">
-                            <div class="label" style="font-size: 0.55rem;">Active</div>
-                        </div>
-                        <select id="noise_routing" style="width:65px; font-size: 0.55rem; padding: 1px;">
+                        <select id="noise_routing" style="width:75px; font-size: 0.55rem; padding: 1px;">
                             <option value="0">Pre-Dist</option>
                             <option value="1">Pre-Filter</option>
                             <option value="2">Post-Filter</option>
@@ -1527,99 +1771,117 @@
 
             <!-- COLUMN 2: Modulators -->
             <div class="col">
-                <div class="row" style="flex: 0 0 auto;">
-                    <!-- LFO 1 -->
-                    <div class="sub-panel">
-                        <div class="sub-panel-title">LFO 1</div>
-                        <div class="label">Freq</div>
-                        <input type="range" id="lfo1_freq" min="0" max="1" step="0.001">
-                        <div class="value interactive" id="lfo1_freq-val">1.00Hz</div>
-                        <div class="label">Wave</div>
-                        <input type="hidden" id="lfo1_wave" value="0">
-                        <div class="wave-selector" data-input-id="lfo1_wave">
-                            <button class="wave-btn active" data-value="0" title="Sine">
-                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 Q 5 0.5 9 4.5 T 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                            </button>
-                            <button class="wave-btn" data-value="1" title="Triangle">
-                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 1.5 L 13 7.5 L 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
-                            <button class="wave-btn" data-value="2" title="Sawtooth">
-                                <svg viewBox="0 0 18 9"><path d="M 1 7.5 L 13 1.5 L 13 7.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
-                            <button class="wave-btn" data-value="3" title="Square">
-                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 1.5 L 13 1.5 L 13 7.5 L 17 7.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
-                            <button class="wave-btn" data-value="4" title="Random">
-                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 7.5 L 9 7.5 L 9 1.5 L 13 1.5 L 13 5.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
-                        </div>
+                <!-- MODULATION PANEL (LFOs + MATRIX) -->
+                <div class="sub-panel" style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 5px;">
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">MODULATION</div>
                     </div>
-                    <!-- LFO 2 -->
-                    <div class="sub-panel">
-                        <div class="sub-panel-title">LFO 2</div>
-                        <div class="label">Freq</div>
-                        <input type="range" id="lfo2_freq" min="0" max="1" step="0.001">
-                        <div class="value interactive" id="lfo2_freq-val">1.00Hz</div>
-                        <div class="label">Wave</div>
-                        <input type="hidden" id="lfo2_wave" value="0">
-                        <div class="wave-selector" data-input-id="lfo2_wave">
-                            <button class="wave-btn active" data-value="0" title="Sine">
-                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 Q 5 0.5 9 4.5 T 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                            </button>
-                            <button class="wave-btn" data-value="1" title="Triangle">
-                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 1.5 L 13 7.5 L 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
-                            <button class="wave-btn" data-value="2" title="Sawtooth">
-                                <svg viewBox="0 0 18 9"><path d="M 1 7.5 L 13 1.5 L 13 7.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
-                            <button class="wave-btn" data-value="3" title="Square">
-                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 1.5 L 13 1.5 L 13 7.5 L 17 7.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
-                            <button class="wave-btn" data-value="4" title="Random">
-                                <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 7.5 L 9 7.5 L 9 1.5 L 13 1.5 L 13 5.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
+                    
+                    <!-- LFOs Row -->
+                    <div class="row" style="flex: 0 0 auto; gap: 6px;">
+                        <!-- LFO 1 Section -->
+                        <div style="flex: 1; padding: 4px 6px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--marking); border-radius: 3px; display: flex; flex-direction: column; gap: 2px;">
+                            <div class="label" style="text-align: center; color: var(--primary); font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1px; margin-bottom: 3px; font-size: 0.65rem;">LFO 1</div>
+                            <div class="label" style="font-size: 0.50rem;">Freq</div>
+                            <input type="range" id="lfo1_freq" class="lfo-slider" min="0" max="1" step="0.001">
+                            <div class="value interactive" id="lfo1_freq-val" style="font-size: 0.50rem; text-align: center; margin-bottom: 2px;">1.00Hz</div>
+                            <div class="label" style="font-size: 0.50rem; margin-top: 1px;">Wave</div>
+                            <input type="hidden" id="lfo1_wave" value="0">
+                            <div class="wave-selector" data-input-id="lfo1_wave" style="margin-top: 2px;">
+                                <button class="wave-btn active" data-value="0" title="Sine">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 4.5 Q 5 0.5 9 4.5 T 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                </button>
+                                <button class="wave-btn" data-value="1" title="Triangle">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 1.5 L 13 7.5 L 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button class="wave-btn" data-value="2" title="Sawtooth">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 7.5 L 13 1.5 L 13 7.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button class="wave-btn" data-value="3" title="Square">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 1.5 L 13 1.5 L 13 7.5 L 17 7.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button class="wave-btn" data-value="4" title="Random">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 7.5 L 9 7.5 L 9 1.5 L 13 1.5 L 13 5.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <!-- Matrix -->
-                <div class="sub-panel" style="flex: 1;">
-                    <div class="sub-panel-title">MOD MATRIX (L1 / L2)</div>
-                    <div class="mod-matrix-grid">
-                        <!-- Headers -->
-                        <div></div>
-                        <div class="mod-matrix-header">A-Cut</div>
-                        <div class="mod-matrix-header">A-Res</div>
-                        <div class="mod-matrix-header">B-Cut</div>
-                        <div class="mod-matrix-header">B-Res</div>
-                        
-                        <!-- LFO 1 Row -->
-                        <div class="label" style="text-align: right; margin-right: 4px;">LFO 1</div>
-                        <div class="mod-slider-container"><input type="range" id="mod_lfo1_target1" min="0" max="1" step="0.001"></div>
-                        <div class="mod-slider-container"><input type="range" id="mod_lfo1_target2" min="0" max="1" step="0.001"></div>
-                        <div class="mod-slider-container"><input type="range" id="mod_lfo1_target4" min="0" max="1" step="0.001"></div>
-                        <div class="mod-slider-container"><input type="range" id="mod_lfo1_target5" min="0" max="1" step="0.001"></div>
 
-                        <!-- LFO 2 Row -->
-                        <div class="label" style="text-align: right; margin-right: 4px;">LFO 2</div>
-                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target1" min="0" max="1" step="0.001"></div>
-                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target2" min="0" max="1" step="0.001"></div>
-                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target4" min="0" max="1" step="0.001"></div>
-                        <div class="mod-slider-container"><input type="range" id="mod_lfo2_target5" min="0" max="1" step="0.001"></div>
+                        <!-- LFO 2 Section -->
+                        <div style="flex: 1; padding: 4px 6px; background: rgba(0, 0, 0, 0.15); border: 1px solid var(--marking); border-radius: 3px; display: flex; flex-direction: column; gap: 2px;">
+                            <div class="label" style="text-align: center; color: var(--primary); font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1px; margin-bottom: 3px; font-size: 0.65rem;">LFO 2</div>
+                            <div class="label" style="font-size: 0.50rem;">Freq</div>
+                            <input type="range" id="lfo2_freq" class="lfo-slider" min="0" max="1" step="0.001">
+                            <div class="value interactive" id="lfo2_freq-val" style="font-size: 0.50rem; text-align: center; margin-bottom: 2px;">1.00Hz</div>
+                            <div class="label" style="font-size: 0.50rem; margin-top: 1px;">Wave</div>
+                            <input type="hidden" id="lfo2_wave" value="0">
+                            <div class="wave-selector" data-input-id="lfo2_wave" style="margin-top: 2px;">
+                                <button class="wave-btn active" data-value="0" title="Sine">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 4.5 Q 5 0.5 9 4.5 T 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                </button>
+                                <button class="wave-btn" data-value="1" title="Triangle">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 1.5 L 13 7.5 L 17 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button class="wave-btn" data-value="2" title="Sawtooth">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 7.5 L 13 1.5 L 13 7.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button class="wave-btn" data-value="3" title="Square">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 1.5 L 13 1.5 L 13 7.5 L 17 7.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button class="wave-btn" data-value="4" title="Random">
+                                    <svg viewBox="0 0 18 9"><path d="M 1 4.5 L 5 4.5 L 5 7.5 L 9 7.5 L 9 1.5 L 13 1.5 L 13 5.5 L 17 5.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mod Matrix Section -->
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; border-top: 1px solid var(--marking); padding-top: 6px; margin-top: 2px;">
+                        <div class="label" style="text-align: center; font-weight: bold; color: var(--secondary); margin-bottom: 4px; font-size: 0.65rem; letter-spacing: 0.05em;">MOD MATRIX (L1 / L2)</div>
+                        <div class="mod-matrix-grid" style="flex: 1; align-content: space-around;">
+                            <!-- Headers -->
+                            <div></div>
+                            <div class="mod-matrix-header">A-Cut</div>
+                            <div class="mod-matrix-header">A-Res</div>
+                            <div class="mod-matrix-header">B-Cut</div>
+                            <div class="mod-matrix-header">B-Res</div>
+                            
+                            <!-- LFO 1 Row -->
+                            <div class="label" style="text-align: right; margin-right: 4px; font-size: 0.50rem;">L1</div>
+                            <div class="mod-slider-container"><input type="range" id="mod_lfo1_target1" min="0" max="1" step="0.001"></div>
+                            <div class="mod-slider-container"><input type="range" id="mod_lfo1_target2" min="0" max="1" step="0.001"></div>
+                            <div class="mod-slider-container"><input type="range" id="mod_lfo1_target4" min="0" max="1" step="0.001"></div>
+                            <div class="mod-slider-container"><input type="range" id="mod_lfo1_target5" min="0" max="1" step="0.001"></div>
+
+                            <!-- LFO 2 Row -->
+                            <div class="label" style="text-align: right; margin-right: 4px; font-size: 0.50rem;">L2</div>
+                            <div class="mod-slider-container"><input type="range" id="mod_lfo2_target1" min="0" max="1" step="0.001"></div>
+                            <div class="mod-slider-container"><input type="range" id="mod_lfo2_target2" min="0" max="1" step="0.001"></div>
+                            <div class="mod-slider-container"><input type="range" id="mod_lfo2_target4" min="0" max="1" step="0.001"></div>
+                            <div class="mod-slider-container"><input type="range" id="mod_lfo2_target5" min="0" max="1" step="0.001"></div>
+                        </div>
                     </div>
                 </div>
                 <!-- OSCILLOSCOPE (BOTTOM CENTER) -->
                 <div class="sub-panel" style="flex: 0 0 70px; height: 70px; min-height: 70px; padding: 4px; box-sizing: border-box; overflow: hidden; margin-top: 2px;">
-                    <div class="sub-panel-title" style="margin-bottom: 2px; font-size: 0.9rem;">OSCILLOSCOPE</div>
-                    <canvas id="waveformCanvas" width="380" height="50" style="display: block; width: 100%; height: calc(100% - 12px); background: #050505; border: 1px solid var(--marking); border-radius: 2px; box-sizing: border-box;"></canvas>
+                    <div class="sub-panel-header" style="margin-bottom: 4px; padding-bottom: 1px;">
+                        <div class="sub-panel-title">OSCILLOSCOPE</div>
+                    </div>
+                    <canvas id="waveformCanvas" width="380" height="50" style="display: block; width: 100%; height: calc(100% - 20px); background: #050505; border: 1px solid var(--marking); border-radius: 2px; box-sizing: border-box;"></canvas>
                 </div>
             </div>
 
             <!-- COLUMN 3: Sidechain & Noise Generator -->
             <div class="col">
                 <!-- INFO DECAY (QUANTIZATION ERROR) PANEL -->
-                <div class="sub-panel" id="panel-info-decay">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 1.0rem; letter-spacing: 0.1em; color: var(--primary);">INFO DECAY</div>
+                <div class="sub-panel" id="panel-info-decay" style="flex: 0 0 auto;">
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">INFO DECAY</div>
+                        
+                        <!-- Bit Depth LED Resolution Readout -->
+                        <div class="bit-readout-container" style="margin-top: 0; padding: 2px 6px; display: inline-flex; align-items: center; justify-content: center; min-width: 60px;">
+                            <span class="bit-readout-value" id="bit-readout-val" style="font-size: 0.75rem; letter-spacing: 0.5px; text-shadow: 0 0 5px currentColor;">24.0 BIT</span>
+                        </div>
+
                         <div style="display: flex; gap: 6px; align-items: center;">
                             <input type="checkbox" id="qe_active" style="display: none;">
                             <label class="glow-switch-label" for="qe_active" id="qe_active_indicator" title="Toggle Info Decay">
@@ -1628,14 +1890,8 @@
                         </div>
                     </div>
 
-                    <!-- Bit Depth LED Resolution Readout -->
-                    <div class="bit-readout-container">
-                        <div class="bit-readout-label">SYSTEM RESOLUTION</div>
-                        <div class="bit-readout-value" id="bit-readout-val">24.0 BIT</div>
-                    </div>
-
                     <!-- Knobs & Grid Controls Row -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; text-align: center; align-items: center;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 4px; text-align: center; align-items: center;">
                         
                         <!-- Resolution Knob -->
                         <div style="display: flex; flex-direction: column; align-items: center;">
@@ -1677,24 +1933,45 @@
                             </div>
                             <div class="value" id="qe_downsample-val">1x (Clean)</div>
                         </div>
+
+                        <!-- Mix Knob -->
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="label" title="Wet/Dry Mix">Mix</div>
+                            <div class="mushin-knob mushin-knob-small" id="knob-qe_mix" data-param="qe_mix" data-default="1.0" tabindex="0">
+                                <svg viewBox="0 0 100 100" class="knob-svg">
+                                    <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                    <path class="knob-value-arc" d="" />
+                                    <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                    <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                    <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                    <g class="knob-pointer-group">
+                                        <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                        <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                    </g>
+                                </svg>
+                                <input type="range" id="qe_mix" min="0" max="1" step="0.001" style="display: none;">
+                            </div>
+                            <div class="value" id="qe_mix-val">100%</div>
+                        </div>
                     </div>
 
-                    <!-- Extra Settings Strip (Mix & Exhaustion Link) -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; border: 1px solid var(--marking);">
-                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                            <input type="checkbox" id="qe_link">
-                            <span class="label" style="font-size: 0.55rem;" title="Link bit depth directly to global exhaustion switch">Link Exhaust</span>
-                        </label>
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <div class="label" style="font-size: 0.55rem;">Mix</div>
-                            <input type="range" id="qe_mix" min="0" max="1" step="0.001" style="width: 55px; height: 3px; background: #000; outline: none; border-radius: 2px;">
-                            <span class="value" id="qe_mix-val" style="font-size: 0.55rem; width: 25px; text-align: right;">100%</span>
-                        </div>
+                    <!-- Extra Settings Strip (Exhaustion Link) -->
+                    <div style="display: flex; justify-content: center; align-items: center; margin-top: 6px; width: 100%;">
+                        <input type="checkbox" id="qe_link" class="visually-hidden">
+                        <label class="mushin-toggle-btn" for="qe_link" style="width: 100%; padding: 2px 0;" title="Link bit depth directly to global exhaustion switch">Link Exhaust</label>
                     </div>
                 </div>
 
                 <div class="sub-panel">
-                    <div class="sub-panel-title">SIDECHAIN</div>
+                    <div class="sub-panel-header">
+                        <div class="sub-panel-title">SIDECHAIN</div>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <input type="checkbox" id="sc_active" style="display: none;">
+                            <label class="glow-switch-label" for="sc_active" id="sc_active_indicator" title="Toggle Sidechain">
+                                <span class="glow-switch-dot"></span>
+                            </label>
+                        </div>
+                    </div>
                     
                     <!-- DIAGNOSTIC VISUALIZERS (HORIZONTAL LAYOUT) -->
                     <div class="sc-visualizer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 2px 4px; margin-bottom: 2px;">
@@ -1712,16 +1989,16 @@
                         </div>
                     </div>
 
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom: 2px;">
-                        <div style="display:flex; gap:4px; align-items:center;">
-                            <input type="checkbox" id="sc_active">
-                            <div class="label">Active</div>
-                        </div>
-                        <select id="sc_source" style="width:65px;">
-                            <option value="0">Int</option><option value="1">Ext</option><option value="2">Test</option>
+                    <div style="display:flex; gap:6px; align-items:center; margin-bottom: 2px; width: 100%;">
+                        <select id="sc_source" style="flex: 1; font-size: 0.55rem; padding: 1px; height: 16px;">
+                            <option value="0">Internal</option>
+                            <option value="1">External</option>
+                            <option value="2">Test OSC</option>
                         </select>
-                        <select id="sc_target" style="width:60px;">
-                            <option value="0">Drive</option><option value="1">Cutoff</option><option value="2">Gain</option>
+                        <select id="sc_target" style="flex: 1; font-size: 0.55rem; padding: 1px; height: 16px;">
+                            <option value="0">Drive</option>
+                            <option value="1">Cutoff</option>
+                            <option value="2">Gain</option>
                         </select>
                     </div>
 
@@ -1850,9 +2127,11 @@
             <!-- Left Side: Controls -->
             <div style="display: flex; align-items: center; gap: 10px; flex: 0 0 auto;">
                 <div class="sub-panel-title" style="border-bottom: none; margin-bottom: 0; font-size: 0.9rem; text-align: left; margin-right: 6px;">TRANCE GATE</div>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <input type="checkbox" id="tg_active">
-                    <div class="label" style="font-size: 0.65rem;">Active</div>
+                <div style="display: flex; gap: 4px; align-items: center; margin-right: 6px;">
+                    <input type="checkbox" id="tg_active" style="display: none;">
+                    <label class="glow-switch-label" for="tg_active" id="tg_active_indicator" title="Toggle Trance Gate">
+                        <span class="glow-switch-dot"></span>
+                    </label>
                 </div>
                 <select id="tg_pattern" style="width: 120px; font-size: 0.6rem; padding: 2px;">
                     <option value="0">Straight 16th</option>
@@ -2357,6 +2636,29 @@
             }
         }
 
+        function syncRoutingSelectorUI(id, normVal) {
+            const selector = document.querySelector(`.routing-selector[data-input-id="${id}"]`);
+            if (!selector) return;
+            
+            const buttons = selector.querySelectorAll('.routing-btn');
+            const numChoices = buttons.length;
+            const choiceIndex = Math.round(normVal * (numChoices - 1));
+            
+            buttons.forEach(btn => {
+                const btnVal = parseInt(btn.getAttribute('data-value'), 10);
+                if (btnVal === choiceIndex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            const hiddenInput = document.getElementById(id);
+            if (hiddenInput) {
+                hiddenInput.value = choiceIndex;
+            }
+        }
+
         function updateParam(id, normVal, skipNative = false) {
             const config = params[id];
             if(!config) return;
@@ -2370,6 +2672,8 @@
                     numChoices = el.options.length;
                 } else if (id === 'lfo1_wave' || id === 'lfo2_wave') {
                     numChoices = 5;
+                } else if (id === 'routing') {
+                    numChoices = 2;
                 }
                 realVal = Math.round(normVal * (numChoices - 1));
             } else if (config.skew) {
@@ -2392,6 +2696,21 @@
             // Sync wave selector buttons if applicable
             if (id === 'lfo1_wave' || id === 'lfo2_wave') {
                 syncWaveSelectorUI(id, normVal);
+            } else if (id === 'routing') {
+                syncRoutingSelectorUI(id, normVal);
+                
+                // Toggle between row and column layouts for Serial/Parallel filters
+                const container = document.getElementById('filters-container');
+                if (container) {
+                    const choiceIndex = Math.round(normVal * 1);
+                    if (choiceIndex === 0) {
+                        container.classList.remove('layout-parallel');
+                        container.classList.add('layout-serial');
+                    } else {
+                        container.classList.remove('layout-serial');
+                        container.classList.add('layout-parallel');
+                    }
+                }
             }
 
             // Sync trance gate pattern visual grid if applicable
@@ -2439,6 +2758,8 @@
                     numChoices = el.options.length;
                 } else if (id === 'lfo1_wave' || id === 'lfo2_wave') {
                     numChoices = 5;
+                } else if (id === 'routing') {
+                    numChoices = 2;
                 }
                 const choiceIndex = Math.round(normVal * (numChoices - 1));
                 el.value = choiceIndex;
@@ -2651,6 +2972,7 @@
             setValue(normVal, skipNative = false) {
                 const clampedVal = Math.min(1.0, Math.max(0.0, normVal));
                 this.element.value = clampedVal;
+                this.element.style.setProperty('--track-fill', (clampedVal * 100) + '%');
                 updateParam(this.paramId, clampedVal, skipNative);
             }
             
@@ -2750,6 +3072,31 @@
             const id = selector.getAttribute('data-input-id');
             const hiddenInput = document.getElementById(id);
             const buttons = selector.querySelectorAll('.wave-btn');
+            
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const choiceIndex = parseInt(btn.getAttribute('data-value'), 10);
+                    const normVal = choiceIndex / (buttons.length - 1);
+                    
+                    if (hiddenInput) {
+                        hiddenInput.value = choiceIndex;
+                    }
+                    
+                    // Set active visual state
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Notify Native / APVTS
+                    updateParam(id, normVal);
+                });
+            });
+        });
+
+        // Initialize Routing Selectors
+        document.querySelectorAll('.routing-selector').forEach(selector => {
+            const id = selector.getAttribute('data-input-id');
+            const hiddenInput = document.getElementById(id);
+            const buttons = selector.querySelectorAll('.routing-btn');
             
             buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -2884,6 +3231,45 @@
         if (limiterActiveIndicator) {
             limiterActiveIndicator.addEventListener('click', (e) => {
                 const cb = document.getElementById('limiter_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
+
+        // Ensure noise_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const noiseActiveIndicator = document.getElementById('noise_active_indicator');
+        if (noiseActiveIndicator) {
+            noiseActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('noise_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
+
+        // Ensure tg_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const tgActiveIndicator = document.getElementById('tg_active_indicator');
+        if (tgActiveIndicator) {
+            tgActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('tg_active');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+                e.preventDefault();
+            });
+        }
+
+        // Ensure sc_active glow-switch-label reliably toggles the hidden checkbox in WebView2
+        const scActiveIndicator = document.getElementById('sc_active_indicator');
+        if (scActiveIndicator) {
+            scActiveIndicator.addEventListener('click', (e) => {
+                const cb = document.getElementById('sc_active');
                 if (cb) {
                     cb.checked = !cb.checked;
                     cb.dispatchEvent(new Event('change'));
