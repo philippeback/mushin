@@ -806,6 +806,63 @@
             filter: drop-shadow(0 0 1.5px var(--primary));
         }
 
+        /* Dynamic Filters Serial/Parallel Layouts */
+        .filters-layout-container {
+            display: flex;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+        .filters-layout-container.layout-serial {
+            flex-direction: row;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .filters-layout-container.layout-serial .filter-col-a {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 1px solid var(--marking);
+            border-bottom: none;
+            padding-right: 6px;
+            padding-bottom: 0;
+            transition: all 0.3s ease;
+        }
+        .filters-layout-container.layout-serial .filter-col-b {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-left: 6px;
+            padding-top: 0;
+            transition: all 0.3s ease;
+        }
+        .filters-layout-container.layout-parallel {
+            flex-direction: column;
+            gap: 6px;
+            align-items: stretch;
+        }
+        .filters-layout-container.layout-parallel .filter-col-a {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: none;
+            border-bottom: 1px solid var(--marking);
+            padding-right: 0;
+            padding-bottom: 6px;
+            transition: all 0.3s ease;
+        }
+        .filters-layout-container.layout-parallel .filter-col-b {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-left: 0;
+            padding-top: 6px;
+            transition: all 0.3s ease;
+        }
+
         .mushin-toggle-btn {
             display: inline-block;
             padding: 2px 6px;
@@ -1389,9 +1446,9 @@
                         </div>
                     </div>
                     
-                    <div style="display: flex; gap: 8px; justify-content: space-between; flex: 1; align-items: stretch;">
+                    <div id="filters-container" class="filters-layout-container layout-serial">
                         <!-- FILTER A column -->
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; border-right: 1px solid var(--marking); padding-right: 6px;">
+                        <div class="filter-col-a">
                             <div style="font-size: 0.65rem; font-weight: bold; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 2px;">FILTER A</div>
                             
                             <div style="display: flex; gap: 4px; justify-content: space-around; width: 100%; align-items: center; flex: 1;">
@@ -1471,7 +1528,7 @@
                         </div>
 
                         <!-- FILTER B column -->
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; padding-left: 6px;">
+                        <div class="filter-col-b">
                             <div style="font-size: 0.65rem; font-weight: bold; color: var(--primary); letter-spacing: 0.05em; margin-bottom: 2px;">FILTER B</div>
                             
                             <div style="display: flex; gap: 4px; justify-content: space-around; width: 100%; align-items: center; flex: 1;">
@@ -2567,6 +2624,19 @@
                 syncWaveSelectorUI(id, normVal);
             } else if (id === 'routing') {
                 syncRoutingSelectorUI(id, normVal);
+                
+                // Toggle between row and column layouts for Serial/Parallel filters
+                const container = document.getElementById('filters-container');
+                if (container) {
+                    const choiceIndex = Math.round(normVal * 1);
+                    if (choiceIndex === 0) {
+                        container.classList.remove('layout-parallel');
+                        container.classList.add('layout-serial');
+                    } else {
+                        container.classList.remove('layout-serial');
+                        container.classList.add('layout-parallel');
+                    }
+                }
             }
 
             // Sync trance gate pattern visual grid if applicable
