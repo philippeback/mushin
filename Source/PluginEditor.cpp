@@ -392,6 +392,13 @@ void MushinAudioProcessorEditor::syncAllParameters() {
     if (webComponent)
       webComponent->evaluateJavascript("if (window.applyThemeFromNative) window.applyThemeFromNative('" + currentTheme + "');");
   });
+
+  // Sync sample rate to UI
+  auto currentSR = audioProcessor.getSampleRate();
+  juce::MessageManager::callAsync([this, currentSR] {
+    if (webComponent)
+      webComponent->evaluateJavascript("if (window.setSampleRateFromNative) window.setSampleRateFromNative(" + juce::String(currentSR) + ");");
+  });
 }
 
 void MushinAudioProcessorEditor::paint(juce::Graphics &g) {

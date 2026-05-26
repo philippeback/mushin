@@ -86,6 +86,30 @@
             box-sizing: border-box;
         }
 
+        /* Oscilloscope control buttons */
+        .osc-ctrl-btn {
+            background: var(--display-bg);
+            color: var(--text-main);
+            border: 1px solid var(--marking);
+            font-size: 0.48rem;
+            padding: 1px 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: inherit;
+            letter-spacing: 0.04em;
+            line-height: 1.6;
+            transition: color 0.15s, border-color 0.15s, box-shadow 0.15s;
+        }
+        .osc-ctrl-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .osc-ctrl-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 4px var(--primary);
+        }
+
         .title { font-size: 1.1rem; font-weight: 100; letter-spacing: 0.5em; color: var(--text-main); }
 
         .top-section {
@@ -1862,11 +1886,22 @@
                     </div>
                 </div>
                 <!-- OSCILLOSCOPE (BOTTOM CENTER) -->
-                <div class="sub-panel" style="flex: 0 0 70px; height: 70px; min-height: 70px; padding: 4px; box-sizing: border-box; overflow: hidden; margin-top: 2px;">
-                    <div class="sub-panel-header" style="margin-bottom: 4px; padding-bottom: 1px;">
+                <div class="sub-panel" id="oscilloscope-panel" style="flex: 0 0 130px; height: 130px; min-height: 130px; padding: 4px; box-sizing: border-box; overflow: hidden; margin-top: 2px;">
+                    <div class="sub-panel-header" style="margin-bottom: 3px; padding-bottom: 2px;">
                         <div class="sub-panel-title">OSCILLOSCOPE</div>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <button id="osc-mode-btn" class="osc-ctrl-btn active" title="Switch view mode">TIME</button>
+                            <span id="osc-trig-group" style="display: flex; gap: 4px; align-items: center;">
+                                <span class="label" style="font-size: 0.48rem; opacity: 0.6;">TRIG</span>
+                                <button id="osc-trig-btn" class="osc-ctrl-btn active" title="Toggle trigger mode">AUTO</button>
+                                <span class="label" style="font-size: 0.48rem; opacity: 0.6;">ZOOM</span>
+                                <button id="osc-zoom-out" class="osc-ctrl-btn" title="Zoom out">−</button>
+                                <button id="osc-zoom-in" class="osc-ctrl-btn" title="Zoom in">+</button>
+                            </span>
+                            <span id="osc-level-readout" style="font-size: 0.48rem; color: var(--primary); font-family: monospace; min-width: 38px; text-align: right;">0.0</span>
+                        </div>
                     </div>
-                    <canvas id="waveformCanvas" width="380" height="50" style="display: block; width: 100%; height: calc(100% - 20px); background: #050505; border: 1px solid var(--marking); border-radius: 2px; box-sizing: border-box;"></canvas>
+                    <canvas id="waveformCanvas" width="512" height="90" style="display: block; width: 100%; height: calc(100% - 26px); border: 1px solid var(--marking); border-radius: 2px; box-sizing: border-box; cursor: crosshair;"></canvas>
                 </div>
             </div>
 
@@ -2365,68 +2400,471 @@
             console.log(msg);
         }
 
+        // ─────────────────────────────────────────────────────────────
+        // OSCILLOSCOPE ENGINE
+        // ─────────────────────────────────────────────────────────────
+        const OSC_RING_SIZE = 2048;
+        let oscRingBuffer  = new Float32Array(OSC_RING_SIZE);
+        let oscWritePtr    = 0;
+        let oscZoomLevel   = 1;      // TIME mode: 1=full, 2×, 4×, 8×
+        let oscTriggerEnabled = true; // AUTO zero-crossing latch
+        let oscPeakLevel   = 0.0;
+        let oscMode        = 'TIME'; // 'TIME' | 'FREQ'
+        
+        // Dynamic sample rate synced from JUCE host
+        let oscSampleRate = 44100;
+        window.setSampleRateFromNative = (sr) => {
+            if (sr && sr > 0) {
+                oscSampleRate = sr;
+                console.log("Mushin: synced sample rate to " + sr + "Hz");
+            }
+        };
+
+        // ── Persistence canvas (phosphor trail, TIME mode) ──────────────
+        const persistCanvas = document.createElement('canvas');
+        persistCanvas.width  = canvas.width;
+        persistCanvas.height = canvas.height;
+        const persistCtx = persistCanvas.getContext('2d');
+
+        // ── FFT (radix-2 Cooley-Tukey, in-place, 2048-point) ───────────────────────
+        const FFT_SIZE = 2048;
+        const fftRe = new Float32Array(FFT_SIZE);
+        const fftIm = new Float32Array(FFT_SIZE);
+        // Pre-compute Hann window
+        const hannWindow = new Float32Array(FFT_SIZE);
+        for (let i = 0; i < FFT_SIZE; i++)
+            hannWindow[i] = 0.5 * (1 - Math.cos(2 * Math.PI * i / (FFT_SIZE - 1)));
+        // Spectrum smoothing buffers (peak-hold + smooth decay)
+        const specSmooth    = new Float32Array(FFT_SIZE / 2); // smoothed magnitude dB
+        const specPeakHold  = new Float32Array(FFT_SIZE / 2); // peak-hold dB
+        const specPeakTimer = new Float32Array(FFT_SIZE / 2); // frames until peak decay
+        const PEAK_HOLD_FRAMES = 40;
+        const PEAK_DECAY_RATE  = 1.2; // dB per frame after hold (faster, more dynamic)
+
+        function fftInPlace(re, im, n) {
+            // Bit-reversal permutation
+            let j = 0;
+            for (let i = 1; i < n; i++) {
+                let bit = n >> 1;
+                for (; j & bit; bit >>= 1) j ^= bit;
+                j ^= bit;
+                if (i < j) {
+                    [re[i], re[j]] = [re[j], re[i]];
+                    [im[i], im[j]] = [im[j], im[i]];
+                }
+            }
+            // FFT butterfly passes
+            for (let len = 2; len <= n; len <<= 1) {
+                const ang = -2 * Math.PI / len;
+                const wRe = Math.cos(ang), wIm = Math.sin(ang);
+                for (let i = 0; i < n; i += len) {
+                    let curRe = 1, curIm = 0;
+                    for (let k = 0; k < len / 2; k++) {
+                        const uRe = re[i+k],         uIm = im[i+k];
+                        const vRe = re[i+k+len/2] * curRe - im[i+k+len/2] * curIm;
+                        const vIm = re[i+k+len/2] * curIm + im[i+k+len/2] * curRe;
+                        re[i+k]         = uRe + vRe; im[i+k]         = uIm + vIm;
+                        re[i+k+len/2]   = uRe - vRe; im[i+k+len/2]   = uIm - vIm;
+                        const nextRe = curRe * wRe - curIm * wIm;
+                        curIm = curRe * wIm + curIm * wRe; curRe = nextRe;
+                    }
+                }
+            }
+        }
+
+        // Compute spectrum into specSmooth (dB scale) from ring buffer
+        function computeSpectrum(isExhausted) {
+            const base = (oscWritePtr - FFT_SIZE + OSC_RING_SIZE * 4) % OSC_RING_SIZE;
+            for (let i = 0; i < FFT_SIZE; i++) {
+                const noise = isExhausted ? (Math.random() - 0.5) * 0.008 : 0;
+                fftRe[i] = (oscRingBuffer[(base + i) % OSC_RING_SIZE] + noise) * hannWindow[i];
+                fftIm[i] = 0;
+            }
+            fftInPlace(fftRe, fftIm, FFT_SIZE);
+            const numBins = FFT_SIZE / 2;
+            for (let i = 0; i < numBins; i++) {
+                const mag = Math.sqrt(fftRe[i]*fftRe[i] + fftIm[i]*fftIm[i]) / (FFT_SIZE * 0.5);
+                const db  = mag > 1e-9 ? 20 * Math.log10(mag) : -120;
+                // Asymmetrical rise/fall smoothing (fast attack, slower decay)
+                const smoothFactor = db > specSmooth[i] ? 0.55 : 0.18;
+                specSmooth[i] += (db - specSmooth[i]) * smoothFactor;
+                // Peak hold
+                if (specSmooth[i] >= specPeakHold[i]) {
+                    specPeakHold[i]  = specSmooth[i];
+                    specPeakTimer[i] = PEAK_HOLD_FRAMES;
+                } else {
+                    if (specPeakTimer[i] > 0) {
+                        specPeakTimer[i]--;
+                    } else {
+                        specPeakHold[i] -= PEAK_DECAY_RATE;
+                    }
+                }
+            }
+        }
+
+        // Fractional bin linear interpolation to avoid low-frequency clustering and DC offset
+        function getInterpolatedDb(arr, b) {
+            if (b < 1.0) {
+                // Interpolate between a quiet floor (-100 dB) at bin 0.5 and the value of bin 1 at bin 1.0
+                const val1 = arr[1];
+                if (b <= 0.5) return -100;
+                const t = (b - 0.5) / 0.5; // t goes 0 -> 1 as b goes 0.5 -> 1.0
+                return -100 * (1 - t) + val1 * t;
+            }
+            const b0 = Math.floor(b);
+            const b1 = Math.min(arr.length - 1, b0 + 1);
+            const t = b - b0;
+            return arr[b0] * (1 - t) + arr[b1] * t;
+        }
+
+        // Map a frequency (Hz) to canvas X using log scale
+        function freqToX(freq, W, fMin, fMax) {
+            return (Math.log10(freq / fMin) / Math.log10(fMax / fMin)) * W;
+        }
+        // Map bin index to frequency
+        function binToFreq(bin) { return bin * oscSampleRate / FFT_SIZE; }
+
+        // Push new samples into ring buffer
+        function oscPushSamples(samples) {
+            for (let i = 0; i < samples.length; i++) {
+                oscRingBuffer[oscWritePtr % OSC_RING_SIZE] = samples[i];
+                oscWritePtr++;
+            }
+        }
+
+        // Find zero-crossing trigger offset for stable TIME display
+        function oscFindTriggerOffset(displayLen) {
+            const searchLen = Math.min(512, OSC_RING_SIZE - displayLen);
+            const base = (oscWritePtr - displayLen - searchLen + OSC_RING_SIZE * 2) % OSC_RING_SIZE;
+            for (let i = 1; i < searchLen; i++) {
+                const prev = oscRingBuffer[(base + i - 1) % OSC_RING_SIZE];
+                const curr = oscRingBuffer[(base + i)     % OSC_RING_SIZE];
+                if (prev < 0 && curr >= 0) return searchLen - i;
+            }
+            return 0;
+        }
+
+        // ── Shared: draw background, CRT scanlines, update level readout ─
+        function oscDrawBackground(W, H, displayBg) {
+            ctx.fillStyle = displayBg;
+            ctx.fillRect(0, 0, W, H);
+            ctx.globalAlpha = 0.06;
+            ctx.fillStyle = '#000000';
+            for (let y = 0; y < H; y += 2) ctx.fillRect(0, y, W, 1);
+            ctx.globalAlpha = 1.0;
+        }
+
+        // ── TIME domain draw ─────────────────────────────────────────────
+        function drawTime(W, H, primaryColor, displayBg, markingColor, secondaryColor, isExhausted, qeActive, bits) {
+            const displayLen = Math.min(Math.floor(OSC_RING_SIZE / oscZoomLevel), Math.floor(OSC_RING_SIZE * 0.75));
+
+            // Phosphor persistence decay onto persist canvas
+            persistCtx.globalAlpha = isExhausted ? 0.55 : 0.35;
+            persistCtx.fillStyle = displayBg;
+            persistCtx.fillRect(0, 0, W, H);
+            persistCtx.globalAlpha = 1.0;
+
+            oscDrawBackground(W, H, displayBg);
+
+            // Grid
+            ctx.strokeStyle = markingColor;
+            ctx.lineWidth = 0.5;
+            for (let col = 1; col < 4; col++) {
+                const x = (W / 4) * col;
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+            }
+            for (let row = 1; row < 4; row++) {
+                const y = (H / 4) * row;
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+            }
+            // Centre axis
+            ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+            ctx.lineWidth = 0.8; ctx.setLineDash([4,6]);
+            ctx.beginPath(); ctx.moveTo(0, H/2); ctx.lineTo(W, H/2); ctx.stroke();
+            ctx.setLineDash([]);
+            // Labels
+            ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.font = '7px monospace';
+            ctx.fillText('+', 2, 8); ctx.fillText('0', 2, H/2+3); ctx.fillText('−', 2, H-2);
+
+            // Trigger + read pointer
+            const trigOffset = oscTriggerEnabled ? oscFindTriggerOffset(displayLen) : 0;
+            const readStart  = (oscWritePtr - displayLen - trigOffset + OSC_RING_SIZE * 4) % OSC_RING_SIZE;
+
+            // Peak level
+            let peakVal = 0;
+            for (let i = 0; i < displayLen; i++) {
+                const s = Math.abs(oscRingBuffer[(readStart + i) % OSC_RING_SIZE]);
+                if (s > peakVal) peakVal = s;
+            }
+            oscPeakLevel += (peakVal - oscPeakLevel) * 0.15;
+            const readoutEl = document.getElementById('osc-level-readout');
+            if (readoutEl) {
+                const db = oscPeakLevel > 0.0001 ? (20*Math.log10(oscPeakLevel)).toFixed(1) : '-∞';
+                readoutEl.textContent = db + 'dB';
+                readoutEl.style.color = oscPeakLevel > 0.9 ? '#ff3333' : oscPeakLevel > 0.6 ? secondaryColor : primaryColor;
+            }
+
+            // Persistence blit
+            ctx.globalAlpha = 0.45; ctx.drawImage(persistCanvas, 0, 0); ctx.globalAlpha = 1.0;
+
+            const sliceW = W / (displayLen - 1);
+
+            // Glow pass (Exhaustion)
+            if (isExhausted) {
+                ctx.beginPath(); ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 5; ctx.globalAlpha = 0.12;
+                for (let i = 0; i < displayLen; i++) {
+                    const noise  = (Math.random() - 0.5) * 0.025;
+                    const sample = oscRingBuffer[(readStart + i) % OSC_RING_SIZE] + noise;
+                    const y = ((-sample) * 0.42 + 0.5) * H;
+                    if (i === 0) ctx.moveTo(0, y); else ctx.lineTo(i * sliceW, y);
+                }
+                ctx.stroke(); ctx.globalAlpha = 1.0;
+            }
+
+            // Core bright pass
+            ctx.beginPath(); ctx.strokeStyle = primaryColor;
+            ctx.lineWidth = isExhausted ? 2.0 : 1.5;
+            ctx.shadowBlur = isExhausted ? 10 : 4; ctx.shadowColor = primaryColor;
+            let lastQeY = H / 2;
+            for (let i = 0; i < displayLen; i++) {
+                const noise = isExhausted ? (Math.random() - 0.5) * 0.02 : 0;
+                const raw   = oscRingBuffer[(readStart + i) % OSC_RING_SIZE] + noise;
+                const y     = ((-raw) * 0.42 + 0.5) * H;
+                if (i === 0) { ctx.moveTo(0, y); }
+                else { if (qeActive && bits < 10.0) ctx.lineTo(i * sliceW, lastQeY); ctx.lineTo(i * sliceW, y); }
+                lastQeY = y;
+            }
+            ctx.stroke(); ctx.shadowBlur = 0;
+
+            // Clip bars
+            if (oscPeakLevel > 0.95) {
+                ctx.fillStyle = 'rgba(255,30,30,0.15)';
+                ctx.fillRect(0, 0, W, 4); ctx.fillRect(0, H-4, W, 4);
+            }
+
+            // Persist capture
+            persistCtx.globalAlpha = 0.7; persistCtx.drawImage(canvas, 0, 0); persistCtx.globalAlpha = 1.0;
+        }
+
+        // ── FREQUENCY spectrum draw ──────────────────────────────────────
+        function drawSpectrum(W, H, primaryColor, displayBg, markingColor, secondaryColor, isExhausted) {
+            oscDrawBackground(W, H, displayBg);
+
+            const DB_MIN = -80;
+            const DB_MAX =   0;
+            const DB_RANGE = DB_MAX - DB_MIN;
+            const F_MIN = 20, F_MAX = 20000;
+
+            computeSpectrum(isExhausted);
+
+            // ── Column and grid geometry ─────────────────────────────────────────
+            const startX   = 24;          // left margin for dB tick labels
+            const NUM_COLS = 60;          // number of frequency columns
+            const SQ_GAP   = 1;           // gap between squares (px)
+            const COL_W    = 7;           // square width (px)
+            const SQ_H     = 3;           // square height (px)
+            const ROW_STEP = SQ_H + SQ_GAP; // vertical cell size (4px)
+            const H_SQUARES = 76;         // height occupied by the grid (leaves 14px for labels at bottom)
+            const NUM_ROWS = 19;          // 19 rows * 4px/row = 76px
+
+            const numBins = FFT_SIZE / 2;
+            const totalBlockW = NUM_COLS * COL_W + (NUM_COLS - 1) * SQ_GAP; // 479px
+
+            function getRowY(row) {
+                return H_SQUARES - (row + 1) * ROW_STEP + 1;
+            }
+
+            // ── Horizontal dashed grid lines (premium hardware look) ──────────────
+            ctx.strokeStyle = markingColor;
+            ctx.lineWidth = 0.5;
+            ctx.setLineDash([2, 4]);
+            const gridRows = [0, 5, 10, 14, 18]; // corresponding to -80, -60, -40, -20, 0 dB
+            for (const r of gridRows) {
+                const gy = getRowY(r) + 1.5;
+                ctx.beginPath();
+                ctx.moveTo(startX, gy);
+                ctx.lineTo(startX + totalBlockW, gy);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+
+            // ── Subtle background grid of unlit squares ─────────────────────────
+            ctx.fillStyle = markingColor; // match the theme's marking color beautifully
+            for (let col = 0; col < NUM_COLS; col++) {
+                const x = startX + col * (COL_W + SQ_GAP);
+                for (let row = 0; row < NUM_ROWS; row++) {
+                    const y = getRowY(row);
+                    ctx.fillRect(x, y, COL_W, SQ_H);
+                }
+            }
+
+            // Glow when exhausted
+            if (isExhausted) {
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = primaryColor;
+            }
+
+            // ── Draw lit columns & peak hold squares ─────────────────────────────
+            for (let col = 0; col < NUM_COLS; col++) {
+                // Log-spaced frequency range for this column
+                const fLow  = F_MIN * Math.pow(F_MAX / F_MIN,  col      / NUM_COLS);
+                const fHigh = F_MIN * Math.pow(F_MAX / F_MIN, (col + 1) / NUM_COLS);
+
+                // Find the exact fractional bin indices for fLow and fHigh
+                const bLow  = fLow  * FFT_SIZE / oscSampleRate;
+                const bHigh = fHigh * FFT_SIZE / oscSampleRate;
+
+                // Integer boundaries
+                const iLow  = Math.floor(bLow);
+                const iHigh = Math.ceil(bHigh);
+
+                let colDb = DB_MIN;
+                let colPeakDb = DB_MIN;
+
+                if (iHigh - iLow <= 1) {
+                    // Column range lies within or spans at most one bin boundary.
+                    // Interpolate at the geometric center of the column's frequency range.
+                    const fCenter = Math.sqrt(fLow * fHigh);
+                    const bCenter = fCenter * FFT_SIZE / oscSampleRate;
+                    
+                    colDb     = getInterpolatedDb(specSmooth, bCenter);
+                    colPeakDb = getInterpolatedDb(specPeakHold, bCenter);
+                } else {
+                    // Column spans multiple bins. Take the maximum over all bins in the range.
+                    // 1. Check the interpolated values at the fractional boundaries
+                    colDb     = Math.max(getInterpolatedDb(specSmooth, bLow),     getInterpolatedDb(specSmooth, bHigh));
+                    colPeakDb = Math.max(getInterpolatedDb(specPeakHold, bLow), getInterpolatedDb(specPeakHold, bHigh));
+                    
+                    // 2. Check all integer bins inside the range
+                    for (let b = iLow + 1; b < iHigh; b++) {
+                        if (b < numBins) {
+                            if (specSmooth[b]   > colDb)     colDb     = specSmooth[b];
+                            if (specPeakHold[b] > colPeakDb) colPeakDb = specPeakHold[b];
+                        }
+                    }
+                }
+
+                const litRows  = Math.round(Math.max(0, (colDb     - DB_MIN) / DB_RANGE) * NUM_ROWS);
+                const peakRow  = Math.round(Math.max(0, (colPeakDb - DB_MIN) / DB_RANGE) * NUM_ROWS);
+
+                const x = startX + col * (COL_W + SQ_GAP);
+
+                // ── Lit squares (primary color) ──
+                ctx.fillStyle = primaryColor;
+                for (let row = 0; row < litRows; row++) {
+                    const y = getRowY(row);
+                    ctx.fillRect(x, y, COL_W, SQ_H);
+                }
+
+                // ── Peak-hold square (white, floats above column) ──
+                if (peakRow > litRows && peakRow > 0 && peakRow <= NUM_ROWS) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+                    const py = getRowY(peakRow - 1);
+                    ctx.fillRect(x, py, COL_W, SQ_H);
+                }
+            }
+
+            ctx.shadowBlur = 0;
+
+            // ── Vertical dB scale on the left edge ─────────────────────────────
+            ctx.font = '6px monospace';
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.textAlign = 'right';
+            const dbTicks = [
+                { db: '0',   r: 18 },
+                { db: '-20', r: 14 },
+                { db: '-40', r: 10 },
+                { db: '-60', r: 5 },
+                { db: '-80', r: 0 },
+            ];
+            for (const { db, r } of dbTicks) {
+                const y = getRowY(r) + 2.5; // center text vertically relative to the square
+                ctx.fillText(db, startX - 4, y);
+            }
+
+            // ── Frequency labels at the bottom ──────────────────────────────────
+            ctx.font = '7px monospace';
+            ctx.fillStyle = 'rgba(255,255,255,0.30)';
+            ctx.textAlign = 'center';
+            const freqLabels = [
+                { f: 20,    label: '20' },
+                { f: 100,   label: '100' },
+                { f: 500,   label: '500' },
+                { f: 1000,  label: '1k' },
+                { f: 5000,  label: '5k' },
+                { f: 10000, label: '10k' },
+                { f: 20000, label: '20k' }
+            ];
+            for (const { f, label } of freqLabels) {
+                const col = Math.round(Math.log10(f / F_MIN) / Math.log10(F_MAX / F_MIN) * (NUM_COLS - 1));
+                const x   = startX + col * (COL_W + SQ_GAP) + COL_W / 2;
+                ctx.fillText(label, x, H - 2);
+            }
+            ctx.textAlign = 'left'; // restore
+
+            // ── Dominant frequency readout ─────────────────────────────────────
+            let peakBin = 1, peakDb = -120;
+            for (let i = 1; i < numBins; i++) {
+                if (specSmooth[i] > peakDb) { peakDb = specSmooth[i]; peakBin = i; }
+            }
+            const readoutEl = document.getElementById('osc-level-readout');
+            if (readoutEl) {
+                const pf = binToFreq(peakBin);
+                const label = pf >= 1000 ? (pf / 1000).toFixed(1) + 'k' : Math.round(pf) + '';
+                readoutEl.textContent = label + 'Hz';
+                readoutEl.style.color = peakDb > -12 ? '#ff3333' : peakDb > -36 ? secondaryColor : primaryColor;
+            }
+        }
+
+        // ── Main animation loop ──────────────────────────────────────────
+
         function draw() {
             requestAnimationFrame(draw);
+
             const computed = getComputedStyle(document.body);
-            const primaryColor = computed.getPropertyValue('--primary').trim() || '#00d2ff';
-            const displayBg = computed.getPropertyValue('--display-bg').trim() || '#050505';
-            const markingColor = computed.getPropertyValue('--marking').trim() || 'rgba(255,255,255,0.02)';
+            const primaryColor   = computed.getPropertyValue('--primary').trim()   || '#00d2ff';
+            const displayBg      = computed.getPropertyValue('--display-bg').trim() || '#050505';
+            const markingColor   = computed.getPropertyValue('--marking').trim()   || 'rgba(255,255,255,0.08)';
+            const secondaryColor = computed.getPropertyValue('--secondary').trim() || '#ff9f00';
 
-            ctx.fillStyle = displayBg;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw grid lines
-            ctx.strokeStyle = markingColor;
-            for(let i=0; i<canvas.width; i+=40) { 
-                ctx.beginPath(); 
-                ctx.moveTo(i,0); 
-                ctx.lineTo(i,canvas.height); 
-                ctx.stroke(); 
-            }
-            
-            ctx.beginPath();
-            ctx.strokeStyle = primaryColor;
-            
-            // Overloaded analog jitter and intense CRT glow when Exhaustion is enabled
+            const W = canvas.width, H = canvas.height;
             const isExhausted = document.getElementById('exhaustion') && document.getElementById('exhaustion').checked;
-            
-            if (isExhausted) {
-                ctx.lineWidth = 2.5;
-                ctx.shadowBlur = 12;
-                ctx.shadowColor = primaryColor;
+            const qeActive    = document.getElementById('qe_active')  && document.getElementById('qe_active').checked;
+            const qeDepthVal  = parseFloat(document.getElementById('qe_depth')?.value || '1.0');
+            const bits        = qeDepthVal * 22.0 + 2.0;
+
+            if (oscMode === 'FREQ') {
+                drawSpectrum(W, H, primaryColor, displayBg, markingColor, secondaryColor, isExhausted);
             } else {
-                ctx.lineWidth = 1.5;
-                ctx.shadowBlur = 0;
+                drawTime(W, H, primaryColor, displayBg, markingColor, secondaryColor, isExhausted, qeActive, bits);
             }
-
-            const qeActive = document.getElementById('qe_active') && document.getElementById('qe_active').checked;
-            const qeDepthVal = parseFloat(document.getElementById('qe_depth')?.value || '1.0');
-            const bits = qeDepthVal * 22.0 + 2.0;
-
-            const sliceWidth = canvas.width / (audioData.length - 1);
-            let x = 0;
-            let lastY = 0;
-            for (let i = 0; i < audioData.length; i++) {
-                // Add high frequency analog thermal noise when hardware is running hot
-                const noise = isExhausted ? (Math.random() - 0.5) * 0.03 : 0;
-                const y = ((audioData[i] + noise) * 0.4 + 0.5) * canvas.height;
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    if (qeActive && bits < 10.0) {
-                        ctx.lineTo(x, lastY);
-                    }
-                    ctx.lineTo(x, y);
-                }
-                lastY = y;
-                x += sliceWidth;
-            }
-            ctx.stroke();
-            
-            // Reset canvas shadow filter context
-            ctx.shadowBlur = 0;
         }
         draw();
+
+        // ── Oscilloscope control buttons ─────────────────────────────────
+        document.getElementById('osc-mode-btn')?.addEventListener('click', () => {
+            oscMode = oscMode === 'TIME' ? 'FREQ' : 'TIME';
+            const btn  = document.getElementById('osc-mode-btn');
+            const trig = document.getElementById('osc-trig-group');
+            btn.textContent = oscMode;
+            btn.classList.toggle('active', oscMode === 'TIME');
+            if (trig) trig.style.display = oscMode === 'TIME' ? 'flex' : 'none';
+            // Reset peak hold on mode switch
+            specPeakHold.fill(-120); specPeakTimer.fill(0);
+        });
+        document.getElementById('osc-trig-btn')?.addEventListener('click', () => {
+            oscTriggerEnabled = !oscTriggerEnabled;
+            const btn = document.getElementById('osc-trig-btn');
+            btn.textContent = oscTriggerEnabled ? 'AUTO' : 'FREE';
+            btn.classList.toggle('active', oscTriggerEnabled);
+        });
+        document.getElementById('osc-zoom-in')?.addEventListener('click', () => {
+            if (oscZoomLevel < 8) oscZoomLevel *= 2;
+        });
+        document.getElementById('osc-zoom-out')?.addEventListener('click', () => {
+            if (oscZoomLevel > 1) oscZoomLevel /= 2;
+        });
 
         let backend = null;
         let juceObj = null;
@@ -2452,7 +2890,11 @@
                         statusEl.textContent = "BRIDGE: ONLINE";
                         statusEl.style.color = "#0f0";
                         if (backend.addEventListener) {
-                            backend.addEventListener('waveform', data => audioData = new Float32Array(data));
+                            backend.addEventListener('waveform', data => {
+                                const samples = new Float32Array(data);
+                                audioData = samples; // legacy compat
+                                oscPushSamples(samples);
+                            });
                             backend.addEventListener('scMeter', level => {
                                 const width = Math.min(100, Math.abs(level) * 100);
                                 scMeterBar.style.width = width + "%";
