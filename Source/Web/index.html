@@ -86,6 +86,30 @@
             box-sizing: border-box;
         }
 
+        /* Oscilloscope control buttons */
+        .osc-ctrl-btn {
+            background: var(--display-bg);
+            color: var(--text-main);
+            border: 1px solid var(--marking);
+            font-size: 0.48rem;
+            padding: 1px 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: inherit;
+            letter-spacing: 0.04em;
+            line-height: 1.6;
+            transition: color 0.15s, border-color 0.15s, box-shadow 0.15s;
+        }
+        .osc-ctrl-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .osc-ctrl-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 4px var(--primary);
+        }
+
         .title { font-size: 1.1rem; font-weight: 100; letter-spacing: 0.5em; color: var(--text-main); }
 
         .top-section {
@@ -1862,11 +1886,19 @@
                     </div>
                 </div>
                 <!-- OSCILLOSCOPE (BOTTOM CENTER) -->
-                <div class="sub-panel" style="flex: 0 0 70px; height: 70px; min-height: 70px; padding: 4px; box-sizing: border-box; overflow: hidden; margin-top: 2px;">
-                    <div class="sub-panel-header" style="margin-bottom: 4px; padding-bottom: 1px;">
+                <div class="sub-panel" id="oscilloscope-panel" style="flex: 0 0 130px; height: 130px; min-height: 130px; padding: 4px; box-sizing: border-box; overflow: hidden; margin-top: 2px;">
+                    <div class="sub-panel-header" style="margin-bottom: 3px; padding-bottom: 2px;">
                         <div class="sub-panel-title">OSCILLOSCOPE</div>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <span class="label" style="font-size: 0.48rem; opacity: 0.6;">TRIG</span>
+                            <button id="osc-trig-btn" class="osc-ctrl-btn active" title="Toggle trigger mode">AUTO</button>
+                            <span class="label" style="font-size: 0.48rem; opacity: 0.6;">ZOOM</span>
+                            <button id="osc-zoom-out" class="osc-ctrl-btn" title="Zoom out">−</button>
+                            <button id="osc-zoom-in" class="osc-ctrl-btn" title="Zoom in">+</button>
+                            <span id="osc-level-readout" style="font-size: 0.48rem; color: var(--primary); font-family: monospace; min-width: 32px; text-align: right;">0.0</span>
+                        </div>
                     </div>
-                    <canvas id="waveformCanvas" width="380" height="50" style="display: block; width: 100%; height: calc(100% - 20px); background: #050505; border: 1px solid var(--marking); border-radius: 2px; box-sizing: border-box;"></canvas>
+                    <canvas id="waveformCanvas" width="512" height="90" style="display: block; width: 100%; height: calc(100% - 26px); border: 1px solid var(--marking); border-radius: 2px; box-sizing: border-box; cursor: crosshair;"></canvas>
                 </div>
             </div>
 
@@ -2365,68 +2397,224 @@
             console.log(msg);
         }
 
+        // ─────────────────────────────────────────────────────────────
+        // OSCILLOSCOPE ENGINE
+        // ─────────────────────────────────────────────────────────────
+        const OSC_RING_SIZE = 2048;
+        let oscRingBuffer = new Float32Array(OSC_RING_SIZE);
+        let oscWritePtr = 0;
+        let oscZoomLevel = 1;       // 1 = full width; 2 = 2× zoom; 4 = 4× zoom
+        let oscTriggerEnabled = true; // auto zero-crossing trigger
+        let oscPeakLevel = 0.0;
+
+        // Persistence off-screen canvas for phosphor trail
+        const persistCanvas = document.createElement('canvas');
+        persistCanvas.width = canvas.width;
+        persistCanvas.height = canvas.height;
+        const persistCtx = persistCanvas.getContext('2d');
+
+        // Push new samples into ring buffer
+        function oscPushSamples(samples) {
+            for (let i = 0; i < samples.length; i++) {
+                oscRingBuffer[oscWritePtr % OSC_RING_SIZE] = samples[i];
+                oscWritePtr++;
+            }
+        }
+
+        // Find zero-crossing trigger offset for stable display
+        function oscFindTriggerOffset(buf, displayLen) {
+            // Search up to 512 samples back for a rising zero crossing
+            const searchLen = Math.min(512, OSC_RING_SIZE - displayLen);
+            const base = (oscWritePtr - displayLen - searchLen + OSC_RING_SIZE * 2) % OSC_RING_SIZE;
+            for (let i = 1; i < searchLen; i++) {
+                const prev = oscRingBuffer[(base + i - 1) % OSC_RING_SIZE];
+                const curr = oscRingBuffer[(base + i) % OSC_RING_SIZE];
+                if (prev < 0 && curr >= 0) {
+                    return searchLen - i;
+                }
+            }
+            return 0; // no trigger found, use latest samples
+        }
+
         function draw() {
             requestAnimationFrame(draw);
+
             const computed = getComputedStyle(document.body);
             const primaryColor = computed.getPropertyValue('--primary').trim() || '#00d2ff';
-            const displayBg = computed.getPropertyValue('--display-bg').trim() || '#050505';
-            const markingColor = computed.getPropertyValue('--marking').trim() || 'rgba(255,255,255,0.02)';
+            const displayBg   = computed.getPropertyValue('--display-bg').trim() || '#050505';
+            const markingColor = computed.getPropertyValue('--marking').trim() || 'rgba(255,255,255,0.08)';
+            const secondaryColor = computed.getPropertyValue('--secondary').trim() || '#ff9f00';
 
-            ctx.fillStyle = displayBg;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw grid lines
-            ctx.strokeStyle = markingColor;
-            for(let i=0; i<canvas.width; i+=40) { 
-                ctx.beginPath(); 
-                ctx.moveTo(i,0); 
-                ctx.lineTo(i,canvas.height); 
-                ctx.stroke(); 
-            }
-            
-            ctx.beginPath();
-            ctx.strokeStyle = primaryColor;
-            
-            // Overloaded analog jitter and intense CRT glow when Exhaustion is enabled
+            const W = canvas.width;
+            const H = canvas.height;
+
             const isExhausted = document.getElementById('exhaustion') && document.getElementById('exhaustion').checked;
-            
-            if (isExhausted) {
-                ctx.lineWidth = 2.5;
-                ctx.shadowBlur = 12;
-                ctx.shadowColor = primaryColor;
-            } else {
-                ctx.lineWidth = 1.5;
-                ctx.shadowBlur = 0;
-            }
-
             const qeActive = document.getElementById('qe_active') && document.getElementById('qe_active').checked;
             const qeDepthVal = parseFloat(document.getElementById('qe_depth')?.value || '1.0');
             const bits = qeDepthVal * 22.0 + 2.0;
 
-            const sliceWidth = canvas.width / (audioData.length - 1);
-            let x = 0;
-            let lastY = 0;
-            for (let i = 0; i < audioData.length; i++) {
-                // Add high frequency analog thermal noise when hardware is running hot
-                const noise = isExhausted ? (Math.random() - 0.5) * 0.03 : 0;
-                const y = ((audioData[i] + noise) * 0.4 + 0.5) * canvas.height;
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    if (qeActive && bits < 10.0) {
-                        ctx.lineTo(x, lastY);
-                    }
-                    ctx.lineTo(x, y);
+            // How many samples to show based on zoom
+            const displayLen = Math.min(Math.floor(OSC_RING_SIZE / oscZoomLevel), Math.floor(OSC_RING_SIZE * 0.75));
+
+            // ── Phosphor persistence decay ──────────────────────────────
+            // Blit previous frame dimmed slightly onto persist canvas
+            persistCtx.globalAlpha = isExhausted ? 0.55 : 0.35;
+            persistCtx.globalCompositeOperation = 'source-over';
+            persistCtx.fillStyle = displayBg;
+            persistCtx.fillRect(0, 0, W, H);
+            persistCtx.globalAlpha = 1.0;
+
+            // ── Clear main canvas with bg ───────────────────────────────
+            ctx.fillStyle = displayBg;
+            ctx.fillRect(0, 0, W, H);
+
+            // ── Draw CRT scanlines overlay ──────────────────────────────
+            ctx.globalAlpha = 0.06;
+            ctx.fillStyle = '#000000';
+            for (let y = 0; y < H; y += 2) {
+                ctx.fillRect(0, y, W, 1);
+            }
+            ctx.globalAlpha = 1.0;
+
+            // ── Draw grid ──────────────────────────────────────────────
+            // Vertical grid lines (4 divisions)
+            ctx.strokeStyle = markingColor;
+            ctx.lineWidth = 0.5;
+            for (let col = 1; col < 4; col++) {
+                const x = (W / 4) * col;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, H);
+                ctx.stroke();
+            }
+            // Horizontal grid lines (4 divisions)
+            for (let row = 1; row < 4; row++) {
+                const y = (H / 4) * row;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(W, y);
+                ctx.stroke();
+            }
+            // Center horizontal axis (brighter)
+            ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+            ctx.lineWidth = 0.8;
+            ctx.setLineDash([4, 6]);
+            ctx.beginPath();
+            ctx.moveTo(0, H / 2);
+            ctx.lineTo(W, H / 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // ── Amplitude tick marks on center axis ────────────────────
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.font = '7px monospace';
+            ctx.fillText('+', 2, 8);
+            ctx.fillText('0', 2, H / 2 + 3);
+            ctx.fillText('−', 2, H - 2);
+
+            // ── Find trigger offset ────────────────────────────────────
+            const trigOffset = oscTriggerEnabled ? oscFindTriggerOffset(oscRingBuffer, displayLen) : 0;
+            const readStart = (oscWritePtr - displayLen - trigOffset + OSC_RING_SIZE * 4) % OSC_RING_SIZE;
+
+            // ── Compute peak for readout ───────────────────────────────
+            let peakVal = 0;
+            for (let i = 0; i < displayLen; i++) {
+                const s = Math.abs(oscRingBuffer[(readStart + i) % OSC_RING_SIZE]);
+                if (s > peakVal) peakVal = s;
+            }
+            oscPeakLevel += (peakVal - oscPeakLevel) * 0.15;
+
+            // Update readout
+            const readoutEl = document.getElementById('osc-level-readout');
+            if (readoutEl) {
+                const db = oscPeakLevel > 0.0001 ? (20 * Math.log10(oscPeakLevel)).toFixed(1) : '-∞';
+                readoutEl.textContent = db + 'dB';
+                readoutEl.style.color = oscPeakLevel > 0.9 ? '#ff3333' : (oscPeakLevel > 0.6 ? secondaryColor : primaryColor);
+            }
+
+            // ── Draw phosphor persistence layer ───────────────────────
+            ctx.globalAlpha = 0.45;
+            ctx.drawImage(persistCanvas, 0, 0);
+            ctx.globalAlpha = 1.0;
+
+            // ── Draw waveform ─────────────────────────────────────────
+            const sliceW = W / (displayLen - 1);
+
+            // Glow pass (wide, transparent)
+            if (isExhausted) {
+                ctx.beginPath();
+                ctx.strokeStyle = primaryColor;
+                ctx.lineWidth = 5;
+                ctx.globalAlpha = 0.12;
+                ctx.shadowBlur = 0;
+                for (let i = 0; i < displayLen; i++) {
+                    const noise = (Math.random() - 0.5) * 0.025;
+                    const sample = oscRingBuffer[(readStart + i) % OSC_RING_SIZE] + noise;
+                    const qeSample = (qeActive && bits < 10.0 && i > 0) ?
+                        oscRingBuffer[(readStart + i - 1) % OSC_RING_SIZE] : sample;
+                    const y = ((-qeSample) * 0.42 + 0.5) * H;
+                    if (i === 0) ctx.moveTo(0, y);
+                    else ctx.lineTo(i * sliceW, y);
                 }
-                lastY = y;
-                x += sliceWidth;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+            }
+
+            // Core bright pass
+            ctx.beginPath();
+            ctx.strokeStyle = primaryColor;
+            ctx.lineWidth = isExhausted ? 2.0 : 1.5;
+            ctx.shadowBlur = isExhausted ? 10 : 4;
+            ctx.shadowColor = primaryColor;
+            ctx.globalAlpha = 1.0;
+
+            let lastQeY = H / 2;
+            for (let i = 0; i < displayLen; i++) {
+                const noise = isExhausted ? (Math.random() - 0.5) * 0.02 : 0;
+                const raw = oscRingBuffer[(readStart + i) % OSC_RING_SIZE] + noise;
+                const y = ((-raw) * 0.42 + 0.5) * H;
+
+                if (i === 0) {
+                    ctx.moveTo(0, y);
+                } else {
+                    // QE step-hold mode: draw horizontal step then vertical
+                    if (qeActive && bits < 10.0) {
+                        ctx.lineTo(i * sliceW, lastQeY);
+                    }
+                    ctx.lineTo(i * sliceW, y);
+                }
+                lastQeY = y;
             }
             ctx.stroke();
-            
-            // Reset canvas shadow filter context
             ctx.shadowBlur = 0;
+
+            // ── Clipping indicator (red flash on top/bottom) ───────────
+            if (oscPeakLevel > 0.95) {
+                ctx.fillStyle = 'rgba(255, 30, 30, 0.15)';
+                ctx.fillRect(0, 0, W, 4);
+                ctx.fillRect(0, H - 4, W, 4);
+            }
+
+            // ── Capture this frame into persistence canvas ─────────────
+            persistCtx.globalAlpha = 0.7;
+            persistCtx.drawImage(canvas, 0, 0);
+            persistCtx.globalAlpha = 1.0;
         }
         draw();
+
+        // Oscilloscope control buttons
+        document.getElementById('osc-trig-btn')?.addEventListener('click', () => {
+            oscTriggerEnabled = !oscTriggerEnabled;
+            const btn = document.getElementById('osc-trig-btn');
+            btn.textContent = oscTriggerEnabled ? 'AUTO' : 'FREE';
+            btn.classList.toggle('active', oscTriggerEnabled);
+        });
+        document.getElementById('osc-zoom-in')?.addEventListener('click', () => {
+            if (oscZoomLevel < 8) oscZoomLevel *= 2;
+        });
+        document.getElementById('osc-zoom-out')?.addEventListener('click', () => {
+            if (oscZoomLevel > 1) oscZoomLevel /= 2;
+        });
 
         let backend = null;
         let juceObj = null;
@@ -2452,7 +2640,11 @@
                         statusEl.textContent = "BRIDGE: ONLINE";
                         statusEl.style.color = "#0f0";
                         if (backend.addEventListener) {
-                            backend.addEventListener('waveform', data => audioData = new Float32Array(data));
+                            backend.addEventListener('waveform', data => {
+                                const samples = new Float32Array(data);
+                                audioData = samples; // legacy compat
+                                oscPushSamples(samples);
+                            });
                             backend.addEventListener('scMeter', level => {
                                 const width = Math.min(100, Math.abs(level) * 100);
                                 scMeterBar.style.width = width + "%";
