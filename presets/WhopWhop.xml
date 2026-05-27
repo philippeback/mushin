@@ -45,6 +45,6 @@
     <PARAM id="sc_source" value="1.0"/>
     <PARAM id="sc_target" value="0.0"/>
     <PARAM id="sc_threshold" value="-34.80000305175781"/>
-    <PARAM id="threshold" value="0.5"/>
+    <PARAM id="threshold" value="-6.02"/>
   </PARAMETERS>
 </Preset>

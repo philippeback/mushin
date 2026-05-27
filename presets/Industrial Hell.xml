@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <Preset name="Industrial Hell" version="1">
   <PARAMETERS>
@@ -45,6 +45,6 @@
     <PARAM id="sc_source" value="0"/>
     <PARAM id="sc_target" value="2"/>
     <PARAM id="sc_threshold" value="-24"/>
-    <PARAM id="threshold" value="1"/>
+    <PARAM id="threshold" value="0"/>
   </PARAMETERS>
 </Preset>

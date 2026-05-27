@@ -425,6 +425,10 @@
             will-change: transform;
         }
 
+        .knob-reflection {
+            display: none;
+        }
+
         .bottom-section {
             height: 60px; position: relative;
             background: var(--display-bg); border: 1px solid var(--marking);
@@ -685,18 +689,21 @@
         }
 
         /* Sibling States when checked */
-        #exhaustion:checked ~ .switch-bezel .switch-lever {
+        #exhaustion:checked ~ .switch-bezel .switch-lever,
+        #autogain:checked ~ .switch-bezel .switch-lever {
             transform: rotateX(-20deg) translateY(-8px);
         }
 
-        #exhaustion:checked ~ .switch-bezel .lever-tip {
+        #exhaustion:checked ~ .switch-bezel .lever-tip,
+        #autogain:checked ~ .switch-bezel .lever-tip {
             background: radial-gradient(circle at 2.5px 2.5px, #ffffff 0%, var(--primary) 30%, #5d0000 80%, #3d0000 100%);
             box-shadow: 
                 0 0 6px var(--primary),
                 inset 0 1px 0 rgba(255,255,255,0.8);
         }
 
-        #exhaustion:checked ~ .switch-status-lamp {
+        #exhaustion:checked ~ .switch-status-lamp,
+        #autogain:checked ~ .switch-status-lamp {
             background: var(--primary);
             border-color: rgba(255,255,255,0.2);
             box-shadow: 
@@ -705,7 +712,8 @@
                 inset 0 1px 1px rgba(255,255,255,0.8);
         }
 
-        #exhaustion:checked ~ .switch-status-lamp .lamp-lens {
+        #exhaustion:checked ~ .switch-status-lamp .lamp-lens,
+        #autogain:checked ~ .switch-status-lamp .lamp-lens {
             background: radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.1) 60%, transparent 100%);
         }
 
@@ -1191,7 +1199,7 @@
 
                     <!-- Thresh -->
                     <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div class="label" style="font-size: 0.50rem;">Thresh</div>
+                        <div class="label" style="font-size: 0.50rem;">Clip</div>
                         <div class="mushin-knob mushin-knob-small" id="knob-threshold" data-param="threshold" data-default="1.0" tabindex="0">
                             <svg viewBox="0 0 100 100" class="knob-svg">
                                 <circle class="knob-track-bg" cx="50" cy="50" r="44" />
@@ -1206,27 +1214,34 @@
                             </svg>
                             <input type="range" id="threshold" min="0" max="1" step="0.001" style="display: none;">
                         </div>
-                        <div class="value" id="threshold-val" style="font-size: 0.50rem;">1.00</div>
+                        <div class="value" id="threshold-val" style="font-size: 0.50rem;">0.0 dB</div>
                     </div>
 
-                    <!-- Mix -->
+                    <!-- Auto Gain -->
                     <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div class="label" style="font-size: 0.50rem;">Mix</div>
-                        <div class="mushin-knob mushin-knob-small" id="knob-mix" data-param="mix" data-default="1.0" tabindex="0">
-                            <svg viewBox="0 0 100 100" class="knob-svg">
-                                <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                                <path class="knob-value-arc" d="" />
-                                <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                                <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                                <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                                <g class="knob-pointer-group">
-                                    <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                                    <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                                </g>
-                            </svg>
-                            <input type="range" id="mix" min="0" max="1" step="0.001" style="display: none;">
+                        <div class="label" style="font-size: 0.50rem;">Auto Gain</div>
+                        <div class="toggle-plate" style="transform: scale(0.8); margin: 2px 0;">
+                            <div class="plate-screw top-left"></div>
+                            <div class="plate-screw top-right"></div>
+                            <div class="plate-screw bottom-left"></div>
+                            <div class="plate-screw bottom-right"></div>
+                            
+                            <label class="mushin-lever-switch" for="autogain" id="autogain_indicator">
+                                <input type="checkbox" id="autogain" style="display: none;">
+                                <div class="switch-bezel">
+                                    <div class="switch-slot">
+                                        <div class="switch-lever">
+                                            <div class="lever-stem"></div>
+                                            <div class="lever-tip"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="switch-status-lamp">
+                                    <div class="lamp-lens"></div>
+                                </div>
+                            </label>
                         </div>
-                        <div class="value" id="mix-val" style="font-size: 0.50rem;">100%</div>
+                        <div class="value" id="autogain-val" style="font-size: 0.50rem;">OFF</div>
                     </div>
 
                     <!-- Exhaustion -->
@@ -1238,7 +1253,7 @@
                             <div class="plate-screw bottom-left"></div>
                             <div class="plate-screw bottom-right"></div>
                             
-                            <label class="mushin-lever-switch" for="exhaustion">
+                            <label class="mushin-lever-switch" for="exhaustion" id="exhaustion_indicator">
                                 <input type="checkbox" id="exhaustion" style="display: none;">
                                 <div class="switch-bezel">
                                     <div class="switch-slot">
@@ -1258,34 +1273,6 @@
                 </div>
             </div>
 
-            <!-- Gain -->
-            <div class="control-group">
-                <div class="label">Gain</div>
-                <!-- Custom Moog Knob for Gain -->
-                <div class="mushin-knob" id="knob-gain" data-param="gain" data-default="0.5" tabindex="0">
-                    <svg viewBox="0 0 100 100" class="knob-svg">
-                        <!-- Outer Dynamic Value Track -->
-                        <circle class="knob-track-bg" cx="50" cy="50" r="44" />
-                        <path class="knob-value-arc" d="" />
-
-                        <!-- Outer Bezel (Fluted Ring) -->
-                        <circle class="knob-bezel" cx="50" cy="50" r="36" />
-                        
-                        <!-- Metallic Cap Dome (reusing global defs) -->
-                        <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
-                        <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
-                        
-                        <!-- Rotating Pointer Skirt -->
-                        <g class="knob-pointer-group">
-                            <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
-                            <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
-                        </g>
-                    </svg>
-                    <!-- Hidden slider to preserve parameter bindings -->
-                    <input type="range" id="gain" min="0" max="1" step="0.001" style="display: none;">
-                </div>
-                <div class="value" id="gain-val">1.00</div>
-            </div>
 
             <!-- DELAY PANEL -->
             <div class="sub-panel" id="panel-delay" style="flex: 1.5; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
@@ -1377,6 +1364,55 @@
                         <option value="2">1/4</option>
                         <option value="3">1/2</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- GLOBAL PANEL -->
+            <div class="sub-panel" id="panel-global" style="flex: 1.0; padding: 4px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="sub-panel-header">
+                    <div class="sub-panel-title">GLOBAL</div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; text-align: center; align-items: center; flex: 1;">
+                    <!-- Mix -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="label" style="font-size: 0.50rem;">Mix</div>
+                        <div class="mushin-knob mushin-knob-small" id="knob-mix" data-param="mix" data-default="1.0" tabindex="0">
+                            <svg viewBox="0 0 100 100" class="knob-svg">
+                                <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                <path class="knob-value-arc" d="" />
+                                <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                <g class="knob-pointer-group">
+                                    <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                    <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                </g>
+                            </svg>
+                            <input type="range" id="mix" min="0" max="1" step="0.001" style="display: none;">
+                        </div>
+                        <div class="value" id="mix-val" style="font-size: 0.50rem;">100%</div>
+                    </div>
+
+                    <!-- Gain -->
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="label" style="font-size: 0.50rem;">Gain</div>
+                        <div class="mushin-knob mushin-knob-small" id="knob-gain" data-param="gain" data-default="0.5" tabindex="0">
+                            <svg viewBox="0 0 100 100" class="knob-svg">
+                                <circle class="knob-track-bg" cx="50" cy="50" r="44" />
+                                <path class="knob-value-arc" d="" />
+                                <circle class="knob-bezel" cx="50" cy="50" r="36" />
+                                <circle class="knob-dome" cx="50" cy="50" r="26" fill="url(#metallic-dome)" />
+                                <circle class="knob-reflection" cx="50" cy="50" r="26" fill="url(#brushed-reflection)" pointer-events="none" />
+                                <g class="knob-pointer-group">
+                                    <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="16" />
+                                    <circle class="knob-pointer-dot" cx="50" cy="18" r="2.5" />
+                                </g>
+                            </svg>
+                            <input type="range" id="gain" min="0" max="1" step="0.001" style="display: none;">
+                        </div>
+                        <div class="value" id="gain-val" style="font-size: 0.50rem;">1.00</div>
+                    </div>
                 </div>
             </div>
 
@@ -1553,30 +1589,34 @@
                                 <!-- Cutoff -->
                                 <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
                                     <div class="label" style="font-size: 0.50rem; margin-bottom: 1px;">Cutoff</div>
-                                    <div class="mushin-knob mushin-knob-small" id="knob-filter_a_cutoff" data-param="filter_a_cutoff" data-default="1.0" tabindex="0">
+                                    <div class="mushin-knob mushin-knob-big" id="knob-filter_a_cutoff" data-param="filter_a_cutoff" data-default="1.0" tabindex="0">
                                         <svg viewBox="0 0 100 100" class="knob-svg">
                                             <!-- Outer Dynamic Value Track -->
                                             <circle class="knob-track-bg" cx="50" cy="50" r="45" />
                                             <path class="knob-value-arc" d="" />
-                                            <!-- Fluted Bezel -->
-                                            <g class="knob-bezel-lobed">
-                                                <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
-                                            </g>
-                                            <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
-                                            <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
+                                            
+                                            <!-- Rotating Knob Assembly Group -->
                                             <g class="knob-pointer-group">
+                                                <!-- Fluted Bezel -->
+                                                <g class="knob-bezel-lobed">
+                                                    <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
+                                                </g>
+                                                <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
                                                 <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="14" />
                                                 <circle class="knob-pointer-dot" cx="50" cy="16" r="2.5" />
                                             </g>
+                                            
+                                            <!-- Stationary Reflection overlaying the rotating dome -->
+                                            <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
                                         </svg>
                                         <input type="range" id="filter_a_cutoff" min="0" max="1" step="0.001" style="display: none;">
                                     </div>
@@ -1633,28 +1673,33 @@
                                 <!-- Cutoff -->
                                 <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
                                     <div class="label" style="font-size: 0.50rem; margin-bottom: 1px;">Cutoff</div>
-                                    <div class="mushin-knob mushin-knob-small" id="knob-filter_b_cutoff" data-param="filter_b_cutoff" data-default="1.0" tabindex="0">
+                                    <div class="mushin-knob mushin-knob-big" id="knob-filter_b_cutoff" data-param="filter_b_cutoff" data-default="1.0" tabindex="0">
                                         <svg viewBox="0 0 100 100" class="knob-svg">
                                             <circle class="knob-track-bg" cx="50" cy="50" r="45" />
                                             <path class="knob-value-arc" d="" />
-                                            <g class="knob-bezel-lobed">
-                                                <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
-                                            </g>
-                                            <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
-                                            <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
+                                            
+                                            <!-- Rotating Knob Assembly Group -->
                                             <g class="knob-pointer-group">
+                                                <!-- Fluted Bezel -->
+                                                <g class="knob-bezel-lobed">
+                                                    <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
+                                                </g>
+                                                <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
                                                 <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="14" />
                                                 <circle class="knob-pointer-dot" cx="50" cy="16" r="2.5" />
                                             </g>
+                                            
+                                            <!-- Stationary Reflection overlaying the rotating dome -->
+                                            <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
                                         </svg>
                                         <input type="range" id="filter_b_cutoff" min="0" max="1" step="0.001" style="display: none;">
                                     </div>
@@ -3008,8 +3053,9 @@
             limiter_mix: { min: 0, max: 100, display: v => Math.round(v) + "%" },
             gain: { min: 0, max: 2, display: v => v.toFixed(2) },
             drive: { min: 1, max: 20, display: v => v.toFixed(1) },
-            threshold: { min: 0, max: 1, display: v => v.toFixed(2) },
+            threshold: { min: -24, max: 0, skew: 2.0, display: v => v.toFixed(1) + " dB" },
             exhaustion: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
+            autogain: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
             mix: { min: 0, max: 100, display: v => Math.round(v) + "%" },
             routing: { type: 'choice', display: v => v == 0 ? 'Serial' : 'Parallel' },
             filter_a_cutoff: { min: 20, max: 20000, skew: 0.3, display: v => Math.round(v) + "Hz" },
@@ -3036,7 +3082,7 @@
             noise_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
             noise_type: { type: 'choice', display: v => ["White Noise", "Pink Noise", "Sine Tone", "Triangle", "Sawtooth", "Square"][v] },
             noise_freq: { min: 20, max: 20000, skew: 0.3, display: v => Math.round(v) + "Hz" },
-            noise_level: { min: 0, max: 100, display: v => Math.round(v) + "%" },
+            noise_level: { min: -60, max: 0, display: v => v.toFixed(1) + " dB" },
             noise_routing: { type: 'choice', display: v => ["Pre-Dist", "Pre-Filter", "Post-Filter"][v] },
             noise_fm_mod: { min: 0, max: 100, display: v => Math.round(v) + "%" },
             tg_active: { type: 'bool', display: v => v > 0.5 ? 'ON' : 'OFF' },
@@ -3717,6 +3763,36 @@
                     cb.dispatchEvent(new Event('change'));
                 }
                 e.preventDefault();
+            });
+        }
+
+        // Ensure exhaustion mushin-lever-switch reliably toggles the hidden checkbox in WebView2
+        const exhaustionIndicator = document.getElementById('exhaustion_indicator');
+        if (exhaustionIndicator) {
+            exhaustionIndicator.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'INPUT') {
+                    const cb = document.getElementById('exhaustion');
+                    if (cb) {
+                        cb.checked = !cb.checked;
+                        cb.dispatchEvent(new Event('change'));
+                    }
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // Ensure autogain mushin-lever-switch reliably toggles the hidden checkbox in WebView2
+        const autogainIndicator = document.getElementById('autogain_indicator');
+        if (autogainIndicator) {
+            autogainIndicator.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'INPUT') {
+                    const cb = document.getElementById('autogain');
+                    if (cb) {
+                        cb.checked = !cb.checked;
+                        cb.dispatchEvent(new Event('change'));
+                    }
+                    e.preventDefault();
+                }
             });
         }
 

@@ -5,7 +5,7 @@
     <PARAM id="gain" value="1.370000004768372"/>
     <PARAM id="drive" value="12.81999969482422"/>
     <PARAM id="exhaustion"/>
-    <PARAM id="threshold" value="0.5399999618530273"/>
+    <PARAM id="threshold" value="-5.35"/>
     <PARAM id="filter_a_cutoff" value="3196.9013671875"/>
     <PARAM id="filter_a_drive"/>
     <PARAM id="filter_a_grit"/>

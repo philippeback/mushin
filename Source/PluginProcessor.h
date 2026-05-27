@@ -79,6 +79,7 @@ private:
   std::atomic<float>* driveParam = nullptr;
   std::atomic<float>* exhaustionParam = nullptr;
   std::atomic<float>* thresholdParam = nullptr;
+  std::atomic<float>* autogainParam = nullptr;
   std::atomic<float>* mixParam = nullptr;
 
   // New params for Dual Filter
