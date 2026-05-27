@@ -425,6 +425,10 @@
             will-change: transform;
         }
 
+        .knob-reflection {
+            display: none;
+        }
+
         .bottom-section {
             height: 60px; position: relative;
             background: var(--display-bg); border: 1px solid var(--marking);
@@ -1195,7 +1199,7 @@
 
                     <!-- Thresh -->
                     <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div class="label" style="font-size: 0.50rem;">Thresh</div>
+                        <div class="label" style="font-size: 0.50rem;">Clip</div>
                         <div class="mushin-knob mushin-knob-small" id="knob-threshold" data-param="threshold" data-default="1.0" tabindex="0">
                             <svg viewBox="0 0 100 100" class="knob-svg">
                                 <circle class="knob-track-bg" cx="50" cy="50" r="44" />
@@ -1590,25 +1594,29 @@
                                             <!-- Outer Dynamic Value Track -->
                                             <circle class="knob-track-bg" cx="50" cy="50" r="45" />
                                             <path class="knob-value-arc" d="" />
-                                            <!-- Fluted Bezel -->
-                                            <g class="knob-bezel-lobed">
-                                                <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
-                                            </g>
-                                            <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
-                                            <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
+                                            
+                                            <!-- Rotating Knob Assembly Group -->
                                             <g class="knob-pointer-group">
+                                                <!-- Fluted Bezel -->
+                                                <g class="knob-bezel-lobed">
+                                                    <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
+                                                </g>
+                                                <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
                                                 <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="14" />
                                                 <circle class="knob-pointer-dot" cx="50" cy="16" r="2.5" />
                                             </g>
+                                            
+                                            <!-- Stationary Reflection overlaying the rotating dome -->
+                                            <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
                                         </svg>
                                         <input type="range" id="filter_a_cutoff" min="0" max="1" step="0.001" style="display: none;">
                                     </div>
@@ -1669,24 +1677,29 @@
                                         <svg viewBox="0 0 100 100" class="knob-svg">
                                             <circle class="knob-track-bg" cx="50" cy="50" r="45" />
                                             <path class="knob-value-arc" d="" />
-                                            <g class="knob-bezel-lobed">
-                                                <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
-                                                <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
-                                            </g>
-                                            <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
-                                            <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
+                                            
+                                            <!-- Rotating Knob Assembly Group -->
                                             <g class="knob-pointer-group">
+                                                <!-- Fluted Bezel -->
+                                                <g class="knob-bezel-lobed">
+                                                    <circle cx="50" cy="50" r="30" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="22" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="78" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="22" cy="50" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="78" cy="50" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="69.8" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="30.2" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="30.2" cy="30.2" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="69.8" cy="69.8" r="5.5" class="bezel-lobe-part" />
+                                                    <circle cx="50" cy="50" r="28" fill="#141414" stroke="none" />
+                                                </g>
+                                                <circle class="knob-dome" cx="50" cy="50" r="23" fill="url(#metallic-dome)" />
                                                 <line class="knob-pointer-line" x1="50" y1="50" x2="50" y2="14" />
                                                 <circle class="knob-pointer-dot" cx="50" cy="16" r="2.5" />
                                             </g>
+                                            
+                                            <!-- Stationary Reflection overlaying the rotating dome -->
+                                            <circle class="knob-reflection" cx="50" cy="50" r="23" fill="url(#brushed-reflection)" pointer-events="none" />
                                         </svg>
                                         <input type="range" id="filter_b_cutoff" min="0" max="1" step="0.001" style="display: none;">
                                     </div>
