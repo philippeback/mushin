@@ -17,11 +17,16 @@ public:
     sampleRate = spec.sampleRate;
     drive.reset(sampleRate, 0.05); // 50ms ramp
     threshold.reset(sampleRate, 0.05);
+
+    // 100ms decay time constant
+    decay = static_cast<float>(std::exp(-1.0 / (sampleRate * 0.1)));
+    inputPeak = 0.0f;
   }
 
   void reset() {
     drive.reset(sampleRate, 0.05);
     threshold.reset(sampleRate, 0.05);
+    inputPeak = 0.0f;
   }
 
   void setDrive(float newDrive) { drive.setTargetValue(newDrive); }
@@ -29,6 +34,7 @@ public:
   void setThreshold(float newThreshold) {
     threshold.setTargetValue(std::abs(newThreshold));
   }
+  void setAutoGain(bool enabled) { autogain = enabled; }
 
   float processSample(int channel, float sample) noexcept {
     juce::ignoreUnused(channel);
@@ -36,11 +42,20 @@ public:
     auto currentThreshold = threshold.getNextValue();
 
     float x = sample * currentDrive;
+    float y = 0.0f;
     if (exhausted) {
-      return std::clamp(x, -currentThreshold, currentThreshold);
+      y = std::clamp(x, -currentThreshold, currentThreshold);
     } else {
-      return std::tanh(x / (currentThreshold + 1e-3f)) * (currentThreshold + 1e-3f);
+      y = std::tanh(x / (currentThreshold + 1e-3f)) * (currentThreshold + 1e-3f);
     }
+
+    if (autogain) {
+      inputPeak = std::max(std::abs(sample), inputPeak * decay);
+      float A = std::clamp(inputPeak, 0.01f, 1.0f);
+      float gainComp = A + (1.0f - A) / currentDrive;
+      y *= gainComp;
+    }
+    return y;
   }
 
   // Keep block process for efficiency if needed elsewhere
@@ -62,16 +77,21 @@ public:
         auto *inputSamples = inputBlock.getChannelPointer(channel);
         auto *outputSamples = outputBlock.getChannelPointer(channel);
 
+        float x = inputSamples[sample] * currentDrive;
+        float y = 0.0f;
         if (exhausted) {
-          outputSamples[sample] =
-              std::clamp(inputSamples[sample] * currentDrive, -currentThreshold,
-                         currentThreshold);
+          y = std::clamp(x, -currentThreshold, currentThreshold);
         } else {
-          outputSamples[sample] =
-              std::tanh((inputSamples[sample] * currentDrive) /
-                        (currentThreshold + 1e-3f)) *
-              (currentThreshold + 1e-3f);
+          y = std::tanh(x / (currentThreshold + 1e-3f)) * (currentThreshold + 1e-3f);
         }
+
+        if (autogain) {
+          inputPeak = std::max(std::abs(inputSamples[sample]), inputPeak * decay);
+          float A = std::clamp(inputPeak, 0.01f, 1.0f);
+          float gainComp = A + (1.0f - A) / currentDrive;
+          y *= gainComp;
+        }
+        outputSamples[sample] = y;
       }
     }
   }
@@ -81,6 +101,10 @@ private:
   juce::LinearSmoothedValue<float> drive{1.0f};
   juce::LinearSmoothedValue<float> threshold{1.0f};
   bool exhausted = false;
+  bool autogain = false;
+
+  float inputPeak = 0.0f;
+  float decay = 0.9997f; // Default for 44.1kHz / 100ms
 };
 
 } // namespace mushin
