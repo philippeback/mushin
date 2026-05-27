@@ -10,7 +10,7 @@
 #define AppExeName "Mushin.exe"
 
 ; Relative paths from the scripts/packaging/ directory to the build outputs
-#define BuildDir "..\..\build2\Mushin_artefacts\Debug"
+#define BuildDir "..\..\build2\Mushin_artefacts\Release"
 ; (Change "Debug" to "Release" when building production installers)
 
 [Setup]
