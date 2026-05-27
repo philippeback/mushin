@@ -23,6 +23,7 @@ MushinAudioProcessor::MushinAudioProcessor()
     driveParam      = treeState.getRawParameterValue ("drive");
     exhaustionParam = treeState.getRawParameterValue ("exhaustion");
     thresholdParam  = treeState.getRawParameterValue ("threshold");
+    autogainParam   = treeState.getRawParameterValue ("autogain");
     mixParam        = treeState.getRawParameterValue ("mix");
 
     filterACutoffParam    = treeState.getRawParameterValue ("filter_a_cutoff");
@@ -209,7 +210,8 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     // 1. Update Parameters (Atomic to Local)
     waveshaper.setDrive (driveParam->load());
     waveshaper.setExhaustion (exhaustionParam->load() > 0.5f);
-    waveshaper.setThreshold (thresholdParam->load());
+    waveshaper.setThreshold (juce::Decibels::decibelsToGain (thresholdParam->load()));
+    waveshaper.setAutoGain (autogainParam->load() > 0.5f);
     
     dualFilterSystem.baseParams.filterACutoff = filterACutoffParam->load();
     dualFilterSystem.baseParams.filterAResonance = filterAResonanceParam->load();
@@ -387,7 +389,7 @@ void MushinAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         if (noiseActive || testSignalForSidechain) {
             noiseOscillator.setType((int)noiseTypeParam->load());
             noiseOscillator.setFrequency(noiseFreqParam->load());
-            genSample = noiseOscillator.nextSample() * noiseLevelParam->load();
+            genSample = noiseOscillator.nextSample() * juce::Decibels::decibelsToGain(noiseLevelParam->load());
         }
 
         float fmAmount = (noiseFmModParam != nullptr) ? noiseFmModParam->load() : 0.0f;
@@ -608,7 +610,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
         juce::ParameterID { "exhaustion", 1 }, "Exhaustion", false));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "threshold", 1 }, "Threshold", 0.0f, 1.0f, 1.0f));
+        juce::ParameterID { "threshold", 1 }, "Threshold", 
+        juce::NormalisableRange<float>(-24.0f, 0.0f, 0.1f, 2.0f), 0.0f));
+
+    params.push_back (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { "autogain", 1 }, "Auto Gain", false));
         
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "mix", 1 }, "Dry/Wet Mix", 0.0f, 1.0f, 1.0f));
@@ -702,7 +708,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MushinAudioProcessor::create
         juce::ParameterID { "noise_freq", 1 }, "Noise Freq", 
         juce::NormalisableRange<float>(20.0f, 20000.0f, 0.0f, 0.3f), 440.0f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "noise_level", 1 }, "Noise Level", 0.0f, 1.0f, 0.1f));
+        juce::ParameterID { "noise_level", 1 }, "Noise Level", -60.0f, 0.0f, -20.0f));
     params.push_back (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { "noise_routing", 1 }, "Noise Routing", 
         juce::StringArray {"Pre-Dist", "Pre-Filter", "Post-Filter"}, 0));
