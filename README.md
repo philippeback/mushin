@@ -168,7 +168,7 @@ Add subtle texture or rhythmic noise. The FM modulation knob lets you modulate t
 
 ## License
 
-Mushin is released under the **MIT License**.  
+Mushin is released under the **Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International(CC BY-NC-ND 4.0)**.  
 See `LICENSE` for details.
 
 --- 
