@@ -4,7 +4,9 @@
 ; =====================================================================
 
 #define AppName "Mushin"
-#define AppVersion "1.0.0"
+#ifndef AppVersion
+  #define AppVersion "1.0.0"
+#endif
 #define AppPublisher "Mushin Audio"
 #define AppURL "https://mushin-audio.web.app"
 #define AppExeName "Mushin.exe"
@@ -56,6 +58,7 @@ Source: "{#BuildDir}\Standalone\WebView2Loader.dll"; DestDir: "{app}"; Component
 Source: "{#BuildDir}\VST3\Mushin.vst3\*"; DestDir: "{commoncf}\VST3\Mushin.vst3"; Components: vst3; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Ensure the WebView2Loader.dll is placed in the VST3 x86_64-win binary directory
 Source: "{#BuildDir}\Standalone\WebView2Loader.dll"; DestDir: "{commoncf}\VST3\Mushin.vst3\Contents\x86_64-win"; Components: vst3; Flags: ignoreversion
+
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Components: standalone

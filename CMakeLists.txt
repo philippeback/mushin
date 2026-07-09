@@ -31,6 +31,18 @@ juce_add_binary_data(MushinWebData
         Source/Web/index.html
 )
 
+file(GLOB PRESET_FILES 
+    "presets/*.xml"
+    "presets_bank_trading/*.xml"
+)
+
+juce_add_binary_data(MushinPresets
+    HEADER_NAME "MushinPresets.h"
+    NAMESPACE MushinPresetsData
+    SOURCES
+        ${PRESET_FILES}
+)
+
 juce_generate_juce_header(Mushin)
 
 target_sources(Mushin
@@ -56,6 +68,7 @@ target_compile_definitions(Mushin
 target_link_libraries(Mushin
     PRIVATE
         MushinWebData
+        MushinPresets
         juce::juce_audio_utils
         juce::juce_dsp
         juce::juce_gui_extra

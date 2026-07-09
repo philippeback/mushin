@@ -5,10 +5,25 @@
 $ErrorActionPreference = "Stop"
 
 # --- Define Paths ---
+# Parse version from CMakeLists.txt
+$cmakeFile = "CMakeLists.txt"
+if (-not (Test-Path $cmakeFile)) {
+    Write-Error "CMakeLists.txt not found at repository root!"
+    exit 1
+}
+$cmakeContent = Get-Content $cmakeFile -Raw
+if ($cmakeContent -match 'project\(Mushin\s+VERSION\s+([0-9\.]+)\)') {
+    $version = $Matches[1]
+    Write-Host "Parsed project version from CMakeLists.txt: $version" -ForegroundColor Green
+} else {
+    Write-Warning "Could not parse version from CMakeLists.txt. Defaulting to 1.0.0"
+    $version = "1.0.0"
+}
+
 $issScript = "scripts\packaging\mushin_installer.iss"
-$compiledInstaller = "build2\installer\Mushin_Windows_Installer_v1.0.0.exe"
+$compiledInstaller = "build2\installer\Mushin_Windows_Installer_v$version.exe"
 $siteDownloadsDir = "site\downloads"
-$siteInstallerDest = Join-Path $siteDownloadsDir "Mushin_Windows_Installer_v1.0.0.exe"
+$siteInstallerDest = Join-Path $siteDownloadsDir "Mushin_Windows_Installer_v$version.exe"
 
 Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host "             MUSHIN INSTALLER COMPILATION & SITE STAGING" -ForegroundColor Cyan
@@ -30,9 +45,9 @@ if (-not (Get-Command "ISCC.exe" -ErrorAction SilentlyContinue)) {
 }
 
 # 2. Compile Inno Setup Script
-Write-Host "`n1/3 Compiling Inno Setup script: $issScript..." -ForegroundColor Blue
+Write-Host "`n1/3 Compiling Inno Setup script: $issScript with version $version..." -ForegroundColor Blue
 try {
-    & $isccPath $issScript
+    & $isccPath "/DAppVersion=$version" $issScript
 }
 catch {
     Write-Error "Failed to compile the Inno Setup installer. Error: $($_.Exception.Message)"
@@ -57,9 +72,30 @@ if (-not (Test-Path $siteDownloadsDir)) {
 try {
     Copy-Item -Path $compiledInstaller -Destination $siteInstallerDest -Force
     Write-Host "Copied to: $siteInstallerDest" -ForegroundColor Green
+
+    # Create ZIP archive of the installer
+    $zipDest = $siteInstallerDest -replace '\.exe$', '.zip'
+    Write-Host "Creating ZIP archive at $zipDest..." -ForegroundColor Blue
+    if (Test-Path $zipDest) {
+        Remove-Item -Path $zipDest -Force
+    }
+    Compress-Archive -Path $siteInstallerDest -DestinationPath $zipDest -Force
+    Write-Host "Created ZIP archive successfully." -ForegroundColor Green
+
+    # Update site/index.html version references
+    $indexHtmlFile = Join-Path $PSScriptRoot "site\index.html"
+    if (Test-Path $indexHtmlFile) {
+        Write-Host "Updating version references in $indexHtmlFile to v$version..." -ForegroundColor Blue
+        $utf8NoBOM = New-Object System.Text.UTF8Encoding($false)
+        $htmlContent = [System.IO.File]::ReadAllText($indexHtmlFile, $utf8NoBOM)
+        $htmlContent = $htmlContent -replace 'Standalone v[0-9\.]+', "Standalone v$version"
+        $htmlContent = $htmlContent -replace 'Mushin_Windows_Installer_v[0-9\.]+\.zip', "Mushin_Windows_Installer_v$version.zip"
+        [System.IO.File]::WriteAllText($indexHtmlFile, $htmlContent, $utf8NoBOM)
+        Write-Host "Updated index.html successfully!" -ForegroundColor Green
+    }
 }
 catch {
-    Write-Error "Failed to copy installer to website downloads. Error: $($_.Exception.Message)"
+    Write-Error "Failed to copy or package installer. Error: $($_.Exception.Message)"
     exit 1
 }
 

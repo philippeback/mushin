@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Preset name="Init" version="1">
+  <PARAMETERS>
+    <PARAM id="gain" value="0.1899999976158142"/>
+    <PARAM id="drive" value="1.0"/>
+    <PARAM id="exhaustion" value="0.0"/>
+    <PARAM id="threshold" value="1.0"/>
+    <PARAM id="filter_a_cutoff" value="20000.0"/>
+    <PARAM id="filter_a_drive"/>
+    <PARAM id="filter_a_grit"/>
+    <PARAM id="filter_a_mode" value="0.0"/>
+    <PARAM id="filter_a_resonance" value="0.0"/>
+    <PARAM id="filter_a_type"/>
+    <PARAM id="filter_b_cutoff" value="20000.0"/>
+    <PARAM id="filter_b_drive"/>
+    <PARAM id="filter_b_grit"/>
+    <PARAM id="filter_b_mode" value="0.0"/>
+    <PARAM id="filter_b_resonance" value="0.09999999403953552"/>
+    <PARAM id="filter_b_type"/>
+    <PARAM id="lfo1_freq" value="0.9270713925361633"/>
+    <PARAM id="lfo1_wave" value="0.0"/>
+    <PARAM id="lfo2_freq" value="0.9999999403953552"/>
+    <PARAM id="lfo2_wave" value="0.0"/>
+    <PARAM id="mix" value="1.0"/>
+    <PARAM id="mod_lfo1_target1" value="-0.05000001192092896"/>
+    <PARAM id="mod_lfo1_target2"/>
+    <PARAM id="mod_lfo1_target3"/>
+    <PARAM id="mod_lfo1_target4" value="-0.02000004053115845"/>
+    <PARAM id="mod_lfo1_target5" value="0.1000000238418579"/>
+    <PARAM id="mod_lfo1_target6"/>
+    <PARAM id="mod_lfo2_target1" value="0.809999942779541"/>
+    <PARAM id="mod_lfo2_target2" value="-0.01000005006790161"/>
+    <PARAM id="mod_lfo2_target3" value="0.0"/>
+    <PARAM id="mod_lfo2_target4" value="0.009999990463256836"/>
+    <PARAM id="mod_lfo2_target5" value="0.0"/>
+    <PARAM id="mod_lfo2_target6"/>
+    <PARAM id="routing" value="1.0"/>
+    <PARAM id="noise_active" value="0.0"/>
+    <PARAM id="noise_fm_mod" value="0.0"/>
+    <PARAM id="noise_freq" value="440.0000610351562"/>
+    <PARAM id="noise_level" value="0.09999999403953552"/>
+    <PARAM id="noise_routing" value="0.0"/>
+    <PARAM id="noise_type" value="4.0"/>
+    <PARAM id="qe_active" value="0.0"/>
+    <PARAM id="qe_depth" value="16.0"/>
+    <PARAM id="qe_downsample" value="1.0"/>
+    <PARAM id="qe_link" value="0.0"/>
+    <PARAM id="qe_mix"/>
+    <PARAM id="sc_active" value="0.0"/>
+    <PARAM id="sc_amount" value="0.0"/>
+    <PARAM id="sc_attack"/>
+    <PARAM id="sc_hp_freq"/>
+    <PARAM id="sc_lp_freq"/>
+    <PARAM id="sc_mode"/>
+    <PARAM id="sc_release" value="100.0"/>
+    <PARAM id="sc_source" value="0.0"/>
+    <PARAM id="sc_target"/>
+    <PARAM id="sc_threshold" value="-24.0"/>
+    <PARAM id="tg_active" value="0.0"/>
+    <PARAM id="tg_depth" value="100.0"/>
+    <PARAM id="tg_end" value="10.0"/>
+    <PARAM id="tg_hold"/>
+    <PARAM id="tg_mix" value="1.0"/>
+    <PARAM id="tg_pattern" value="0.0"/>
+    <PARAM id="tg_rate"/>
+    <PARAM id="tg_start" value="5.0"/>
+    <PARAM id="autogain"/>
+    <PARAM id="delay_active" value="0.0"/>
+    <PARAM id="delay_feedback" value="0.2999999821186066"/>
+    <PARAM id="delay_mix" value="0.2999999821186066"/>
+    <PARAM id="delay_pingpong"/>
+    <PARAM id="delay_sync" value="0.0"/>
+    <PARAM id="delay_tempo"/>
+    <PARAM id="delay_time" value="299.9999389648438"/>
+    <PARAM id="limiter_active" value="0.0"/>
+    <PARAM id="limiter_ceiling" value="-0.1000003814697266"/>
+    <PARAM id="limiter_drive" value="0.0"/>
+    <PARAM id="limiter_mix"/>
+    <PARAM id="limiter_mode"/>
+    <PARAM id="limiter_release"/>
+  </PARAMETERS>
+</Preset>

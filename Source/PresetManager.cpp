@@ -1,5 +1,6 @@
 // Source/PresetManager.cpp
 #include "PresetManager.h"
+#include "MushinPresets.h"
 #include <memory>
 
 PresetManager::PresetManager(juce::AudioProcessorValueTreeState& state)
@@ -11,6 +12,8 @@ PresetManager::PresetManager(juce::AudioProcessorValueTreeState& state)
 {
     if (!userPresetDir.exists())
         userPresetDir.createDirectory();
+    
+    unpackFactoryPresets();
     
     juce::Logger::writeToLog("PresetManager: initialized at " + userPresetDir.getFullPathName());
 }
@@ -132,4 +135,38 @@ juce::Array<juce::String> PresetManager::getPresetList() const
 juce::File PresetManager::getPresetFile(const juce::String& name) const
 {
     return userPresetDir.getChildFile(name + ".xml");
+}
+
+void PresetManager::unpackFactoryPresets()
+{
+    juce::Logger::writeToLog ("PresetManager: Unpacking factory presets...");
+    for (int i = 0; i < MushinPresetsData::namedResourceListSize; ++i)
+    {
+        const char* mangledName = MushinPresetsData::namedResourceList[i];
+        const char* originalPath = MushinPresetsData::originalFilenames[i];
+        
+        juce::File originalFile (originalPath);
+        juce::String filename = originalFile.getFileName();
+        
+        juce::File destFile = userPresetDir.getChildFile (filename);
+        
+        if (!destFile.existsAsFile())
+        {
+            int dataSize = 0;
+            const char* data = MushinPresetsData::getNamedResource (mangledName, dataSize);
+            
+            if (data != nullptr && dataSize > 0)
+            {
+                if (destFile.create())
+                {
+                    destFile.replaceWithData (data, dataSize);
+                    juce::Logger::writeToLog ("PresetManager: Unpacked factory preset '" + filename + "' to " + destFile.getFullPathName());
+                }
+                else
+                {
+                    juce::Logger::writeToLog ("PresetManager: ERROR - Failed to create file " + destFile.getFullPathName());
+                }
+            }
+        }
+    }
 }
