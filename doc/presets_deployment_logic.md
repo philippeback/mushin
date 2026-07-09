@@ -11,7 +11,7 @@ This document explains the presets deployment system for Mushin, analyzes the ch
 When installing Mushin using the generated Inno Setup installer (`Mushin_Windows_Installer_v1.0.0.exe`), the plugin loaded successfully, but the preset dropdown was empty or missing the 23 factory presets and 14 trading presets.
 
 ### Root Cause 1: Lack of Preset Copying in Inno Setup
-In the initial Inno Setup packaging script [mushin_installer.iss](file:///C:/Dev/github/philippeback/mushin/scripts/packaging/mushin_installer.iss), the installer defined the directory creation for presets under `[Dirs]` but did **not** include any file copying rules in the `[Files]` section to copy the XML preset files.
+In the initial Inno Setup packaging script [mushin_installer.iss](../scripts/packaging/mushin_installer.iss), the installer defined the directory creation for presets under `[Dirs]` but did **not** include any file copying rules in the `[Files]` section to copy the XML preset files.
 
 ### Root Cause 2: Profile Mismatch due to Admin Elevation (UAC)
 The Inno Setup script requires:
@@ -30,8 +30,8 @@ When an installer runs with elevated privileges on Windows:
 
 To ensure presets are always reliably deployed to the correct user profile regardless of UAC elevation, we compile the factory presets directly into the plugin binary and unpack them at runtime.
 
-### 1. CMake Compilation ([CMakeLists.txt](file:///C:/Dev/github/philippeback/mushin/CMakeLists.txt))
-We define a CMake target `MushinPresets` using JUCE's `juce_add_binary_data` utility. It gathers all preset XML files from the [presets/](file:///C:/Dev/github/philippeback/mushin/presets) and [presets_bank_trading/](file:///C:/Dev/github/philippeback/mushin/presets_bank_trading) directories:
+### 1. CMake Compilation ([CMakeLists.txt](../CMakeLists.txt))
+We define a CMake target `MushinPresets` using JUCE's `juce_add_binary_data` utility. It gathers all preset XML files from the [presets/](../presets) and [presets_bank_trading/](../presets_bank_trading) directories:
 
 ```cmake
 file(GLOB PRESET_FILES 
@@ -51,8 +51,8 @@ This target is linked to the main target:
 target_link_libraries(Mushin PRIVATE MushinWebData MushinPresets ...)
 ```
 
-### 2. Runtime Unpacking ([PresetManager.cpp](file:///C:/Dev/github/philippeback/mushin/Source/PresetManager.cpp))
-On initialization, the [PresetManager](file:///C:/Dev/github/philippeback/mushin/Source/PresetManager.h#L6) constructor calls the private helper `unpackFactoryPresets()`:
+### 2. Runtime Unpacking ([PresetManager.cpp](../Source/PresetManager.cpp))
+On initialization, the [PresetManager](../Source/PresetManager.h) constructor calls the private helper `unpackFactoryPresets()`:
 
 ```cpp
 PresetManager::PresetManager(juce::AudioProcessorValueTreeState& state)
