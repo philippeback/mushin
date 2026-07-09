@@ -22,64 +22,81 @@ void MushinAudioProcessorEditor::MushinWebComponent::handleCustomUrl(
     processor.lastUiValue.store(value);
     if (auto *param = processor.treeState.getParameter(paramID))
       param->setValueNotifyingHost(value);
-  } else if (cmd.startsWith("savePreset?")) {
-    auto name = juce::URL::removeEscapeChars(
-        cmd.fromFirstOccurrenceOf("name=", false, false));
-    juce::Logger::writeToLog("Bridge: savePreset '" + name + "'");
-    juce::Result r = juce::Result::ok();
-    if (editor.presetMgr && editor.presetMgr->savePreset(name, r))
-      juce::MessageManager::callAsync(
-          [this] { evaluateJavascript("onPresetSaved();"); });
-    else
-      juce::MessageManager::callAsync([this, r] {
-        evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');");
-      });
-  } else if (cmd.startsWith("loadPreset?")) {
-    auto name = juce::URL::removeEscapeChars(
-        cmd.fromFirstOccurrenceOf("name=", false, false));
-    juce::Logger::writeToLog("Bridge: loadPreset '" + name + "'");
-    juce::Result r = juce::Result::ok();
-    if (editor.presetMgr && editor.presetMgr->loadPreset(name, r))
-      juce::MessageManager::callAsync(
-          [this] { evaluateJavascript("onPresetLoaded();"); });
-    else
-      juce::MessageManager::callAsync([this, r] {
-        evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');");
-      });
-  } else if (cmd.startsWith("deletePreset?")) {
-    auto name = juce::URL::removeEscapeChars(
-        cmd.fromFirstOccurrenceOf("name=", false, false));
-    juce::Logger::writeToLog("Bridge: deletePreset '" + name + "'");
-    juce::Result r = juce::Result::ok();
-    if (editor.presetMgr && editor.presetMgr->deletePreset(name, r))
-      juce::MessageManager::callAsync(
-          [this] { evaluateJavascript("onPresetDeleted();"); });
-    else
-      juce::MessageManager::callAsync([this, r] {
-        evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');");
-      });
-  } else if (cmd == "requestPresetList") {
-    juce::Logger::writeToLog("Bridge: requestPresetList");
-    if (editor.presetMgr) {
-      auto list = editor.presetMgr->getPresetList();
-      juce::Array<juce::var> jsArray;
-      for (auto &n : list)
-        jsArray.add(n);
-      juce::String json = juce::JSON::toString(jsArray);
-      juce::MessageManager::callAsync([this, json] {
-        evaluateJavascript("onPresetListReceived(" + json + ");");
+  } else {
+    juce::Component::SafePointer<MushinWebComponent> safeThis(this);
+    if (cmd.startsWith("savePreset?")) {
+      auto name = juce::URL::removeEscapeChars(
+          cmd.fromFirstOccurrenceOf("name=", false, false));
+      juce::Logger::writeToLog("Bridge: savePreset '" + name + "'");
+      juce::Result r = juce::Result::ok();
+      if (editor.presetMgr && editor.presetMgr->savePreset(name, r))
+        juce::MessageManager::callAsync(
+            [safeThis] {
+              if (safeThis != nullptr)
+                safeThis->evaluateJavascript("onPresetSaved();");
+            });
+      else
+        juce::MessageManager::callAsync([safeThis, r] {
+          if (safeThis != nullptr)
+            safeThis->evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');");
+        });
+    } else if (cmd.startsWith("loadPreset?")) {
+      auto name = juce::URL::removeEscapeChars(
+          cmd.fromFirstOccurrenceOf("name=", false, false));
+      juce::Logger::writeToLog("Bridge: loadPreset '" + name + "'");
+      juce::Result r = juce::Result::ok();
+      if (editor.presetMgr && editor.presetMgr->loadPreset(name, r))
+        juce::MessageManager::callAsync(
+            [safeThis] {
+              if (safeThis != nullptr)
+                safeThis->evaluateJavascript("onPresetLoaded();");
+            });
+      else
+        juce::MessageManager::callAsync([safeThis, r] {
+          if (safeThis != nullptr)
+            safeThis->evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');");
+        });
+    } else if (cmd.startsWith("deletePreset?")) {
+      auto name = juce::URL::removeEscapeChars(
+          cmd.fromFirstOccurrenceOf("name=", false, false));
+      juce::Logger::writeToLog("Bridge: deletePreset '" + name + "'");
+      juce::Result r = juce::Result::ok();
+      if (editor.presetMgr && editor.presetMgr->deletePreset(name, r))
+        juce::MessageManager::callAsync(
+            [safeThis] {
+              if (safeThis != nullptr)
+                safeThis->evaluateJavascript("onPresetDeleted();");
+            });
+      else
+        juce::MessageManager::callAsync([safeThis, r] {
+          if (safeThis != nullptr)
+            safeThis->evaluateJavascript("onPresetError('" + r.getErrorMessage() + "');");
+        });
+    } else if (cmd == "requestPresetList") {
+      juce::Logger::writeToLog("Bridge: requestPresetList");
+      if (editor.presetMgr) {
+        auto list = editor.presetMgr->getPresetList();
+        juce::Array<juce::var> jsArray;
+        for (auto &n : list)
+          jsArray.add(n);
+        juce::String json = juce::JSON::toString(jsArray);
+        juce::MessageManager::callAsync([safeThis, json] {
+          if (safeThis != nullptr)
+            safeThis->evaluateJavascript("onPresetListReceived(" + json + ");");
+        });
+      }
+    } else if (cmd.startsWith("setTheme?")) {
+      auto name = juce::URL::removeEscapeChars(
+          cmd.fromFirstOccurrenceOf("name=", false, false));
+      juce::Logger::writeToLog("Bridge: setTheme '" + name + "'");
+      editor.currentTheme = name;
+      mushin::SkinStorage::setSavedSkinName(name); // Persist selection globally
+      juce::MessageManager::callAsync([safeThis] {
+        if (safeThis != nullptr)
+          safeThis->evaluateJavascript("document.querySelector('link[href^=\"skin.css\"]')."
+                             "href = 'skin.css?t=' + new Date().getTime();");
       });
     }
-  } else if (cmd.startsWith("setTheme?")) {
-    auto name = juce::URL::removeEscapeChars(
-        cmd.fromFirstOccurrenceOf("name=", false, false));
-    juce::Logger::writeToLog("Bridge: setTheme '" + name + "'");
-    editor.currentTheme = name;
-    mushin::SkinStorage::setSavedSkinName(name); // Persist selection globally
-    juce::MessageManager::callAsync([this] {
-      evaluateJavascript("document.querySelector('link[href^=\"skin.css\"]')."
-                         "href = 'skin.css?t=' + new Date().getTime();");
-    });
   }
 }
 
@@ -88,7 +105,11 @@ void MushinAudioProcessorEditor::MushinWebComponent::pageFinishedLoading(
   juce::Logger::writeToLog("Web Page Finished Loading: " + url);
   editor.syncAllParameters();
   // Second sync after a small delay to ensure JS is ready
-  juce::Timer::callAfterDelay(500, [this] { editor.syncAllParameters(); });
+  juce::Component::SafePointer<MushinAudioProcessorEditor> safeEditor(&editor);
+  juce::Timer::callAfterDelay(500, [safeEditor] {
+    if (safeEditor != nullptr)
+      safeEditor->syncAllParameters();
+  });
 }
 
 MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
@@ -104,16 +125,22 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
   // Instantiate preset manager
   presetMgr = std::make_unique<PresetManager>(audioProcessor.treeState);
 
-  // DEFERRED INITIALIZATION:
-  // Some hosts (like Studio One 8) might not have the native window fully ready
-  // during the constructor, causing WebView2 to hang.
-  juce::Timer::callAfterDelay(250, [this, &p] {
+  juce::Component::SafePointer<MushinAudioProcessorEditor> safeEditor(this);
+  juce::Timer::callAfterDelay(250, [safeEditor, &p] {
+    if (safeEditor == nullptr) {
+      juce::Logger::writeToLog("Deferred Init: Editor destroyed before timer fired.");
+      return;
+    }
+
     juce::Logger::writeToLog(
-        "Deferred Init: Configuring WebBrowserComponent...");
+        "Deferred Init: Configuring WebBrowserComponent for editor: " + juce::String::toHexString((juce::uint64)safeEditor.getComponent()));
 
     auto dllFile =
         juce::File::getSpecialLocation(juce::File::currentExecutableFile)
             .getSiblingFile("WebView2Loader.dll");
+
+    juce::Logger::writeToLog(
+        "Deferred Init: Resolved dllFile path is: " + dllFile.getFullPathName());
 
     auto cacheDir =
         juce::File::getSpecialLocation(juce::File::windowsLocalAppData)
@@ -135,26 +162,29 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
             .withNativeIntegrationEnabled(true)
             .withNativeFunction(
                 "juce_invoke",
-                [this](const juce::Array<juce::var> &args,
+                [safeEditor](const juce::Array<juce::var> &args,
                        juce::WebBrowserComponent::NativeFunctionCompletion
                            completion) {
                   juce::Logger::writeToLog("Native: juce_invoke called");
-                  if (webComponent != nullptr && args.size() >= 1) {
+                  if (safeEditor != nullptr && safeEditor->webComponent != nullptr && args.size() >= 1) {
                     auto name = args[0].toString();
                     juce::Logger::writeToLog("Native: dispatching callback: " +
                                              name);
                     juce::var callbackArgs =
                         (args.size() > 1) ? args[1] : juce::var();
-                    webComponent->dispatchCallback(name, callbackArgs);
+                    safeEditor->webComponent->dispatchCallback(name, callbackArgs);
                   } else {
                     juce::Logger::writeToLog(
-                        "Native: ERROR - webComponent is null or args empty");
+                        "Native: ERROR - safeEditor/webComponent is null or args empty");
                   }
                   completion({});
                 })
-            .withResourceProvider([this](const juce::String &url)
-                                      -> std::optional<
-                                          juce::WebBrowserComponent::Resource> {
+            .withResourceProvider([safeEditor](const juce::String &url)
+                                       -> std::optional<
+                                           juce::WebBrowserComponent::Resource> {
+              if (safeEditor == nullptr)
+                return std::nullopt;
+
               auto path = url;
               if (path.contains("?"))
                 path = path.upToFirstOccurrenceOf("?", false, false);
@@ -164,42 +194,42 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
               // Handle dynamic skinning
               if (path == "skin.css") {
                 juce::String css = ":root {\n";
-                if (currentTheme == "Synthwave") {
+                if (safeEditor->currentTheme == "Synthwave") {
                   css +=
                       "--primary: #ff00aa;\n--secondary: "
                       "#00ffff;\n--bg-hardware: #14091a;\n--text-main: "
                       "#ebd6f5;\n--panel-border: #461c5c;\n--marking: "
                       "rgba(255, 0, 255, 0.15);\n--display-bg: "
                       "#200f29;\n--sc-yellow: #ffff00;\n--sc-input: #00ffcc;\n";
-                } else if (currentTheme == "Acid") {
+                } else if (safeEditor->currentTheme == "Acid") {
                   css +=
                       "--primary: #bfff00;\n--secondary: "
                       "#39ff14;\n--bg-hardware: #091209;\n--text-main: "
                       "#e2ebd2;\n--panel-border: #284d28;\n--marking: "
                       "rgba(191, 255, 0, 0.15);\n--display-bg: "
                       "#122412;\n--sc-yellow: #dfff4f;\n--sc-input: #00ff3c;\n";
-                } else if (currentTheme == "Firepits") {
+                } else if (safeEditor->currentTheme == "Firepits") {
                   css +=
                       "--primary: #ff3c00;\n--secondary: "
                       "#ff6600;\n--bg-hardware: #120906;\n--text-main: "
                       "#f5e6de;\n--panel-border: #4d2010;\n--marking: "
                       "rgba(255, 69, 0, 0.15);\n--display-bg: "
                       "#22120b;\n--sc-yellow: #ffcc00;\n--sc-input: #ff3333;\n";
-                } else if (currentTheme == "Ocean Deep") {
+                } else if (safeEditor->currentTheme == "Ocean Deep") {
                   css +=
                       "--primary: #00f3ff;\n--secondary: "
                       "#00bfff;\n--bg-hardware: #060b1a;\n--text-main: "
                       "#e3f0f5;\n--panel-border: #1d305c;\n--marking: "
                       "rgba(0, 243, 255, 0.15);\n--display-bg: "
                       "#0f1830;\n--sc-yellow: #ccff33;\n--sc-input: #008080;\n";
-                } else if (currentTheme == "Ice World") {
+                } else if (safeEditor->currentTheme == "Ice World") {
                   css +=
                       "--primary: #66e0ff;\n--secondary: "
                       "#a5c1eb;\n--bg-hardware: #0f151c;\n--text-main: "
                       "#ffffff;\n--panel-border: #384c61;\n--marking: "
                       "rgba(102, 224, 255, 0.15);\n--display-bg: "
                       "#1a2430;\n--sc-yellow: #ffff66;\n--sc-input: #e0ffff;\n";
-                } else if (currentTheme == "Dark Hellish") {
+                } else if (safeEditor->currentTheme == "Dark Hellish") {
                   css +=
                       "--primary: #ff2200;\n--secondary: "
                       "#ff4d4d;\n--bg-hardware: #0e0606;\n--text-main: "
@@ -246,103 +276,103 @@ MushinAudioProcessorEditor::MushinAudioProcessorEditor(MushinAudioProcessor &p)
 
     juce::Logger::writeToLog(
         "Deferred Init: Instantiating MushinWebComponent...");
-    webComponent.reset(new MushinWebComponent(options, p, *this));
+    safeEditor->webComponent.reset(new MushinWebComponent(options, p, *safeEditor));
 
-    if (webComponent) {
+    if (safeEditor->webComponent) {
       juce::Logger::writeToLog(
           "Deferred Init: MushinWebComponent created. Adding to editor.");
-      addAndMakeVisible(*webComponent);
-      webComponent->setBounds(getLocalBounds());
+      safeEditor->addAndMakeVisible(*safeEditor->webComponent);
+      safeEditor->webComponent->setBounds(safeEditor->getLocalBounds());
 
       // Register preset callbacks
-      webComponent->registerCallback(
-          "savePreset", [this](const juce::var &args) {
-            if (!presetMgr || !webComponent)
+      safeEditor->webComponent->registerCallback(
+          "savePreset", [safeEditor](const juce::var &args) {
+            if (safeEditor == nullptr || !safeEditor->presetMgr || !safeEditor->webComponent)
               return;
             auto name = args[0].toString();
             juce::Result r = juce::Result::ok();
-            if (presetMgr->savePreset(name, r))
-              juce::MessageManager::callAsync([this] {
-                if (webComponent)
-                  webComponent->evaluateJavascript("onPresetSaved();");
+            if (safeEditor->presetMgr->savePreset(name, r))
+              juce::MessageManager::callAsync([safeEditor] {
+                if (safeEditor != nullptr && safeEditor->webComponent)
+                  safeEditor->webComponent->evaluateJavascript("onPresetSaved();");
               });
             else
-              juce::MessageManager::callAsync([this, r] {
-                if (webComponent)
-                  webComponent->evaluateJavascript("onPresetError('" +
+              juce::MessageManager::callAsync([safeEditor, r] {
+                if (safeEditor != nullptr && safeEditor->webComponent)
+                  safeEditor->webComponent->evaluateJavascript("onPresetError('" +
                                                    r.getErrorMessage() + "');");
               });
           });
 
-      webComponent->registerCallback(
-          "loadPreset", [this](const juce::var &args) {
-            if (!presetMgr || !webComponent)
+      safeEditor->webComponent->registerCallback(
+          "loadPreset", [safeEditor](const juce::var &args) {
+            if (safeEditor == nullptr || !safeEditor->presetMgr || !safeEditor->webComponent)
               return;
             auto name = args[0].toString();
             juce::Result r = juce::Result::ok();
-            if (presetMgr->loadPreset(name, r))
-              juce::MessageManager::callAsync([this] {
-                if (webComponent)
-                  webComponent->evaluateJavascript("onPresetLoaded();");
+            if (safeEditor->presetMgr->loadPreset(name, r))
+              juce::MessageManager::callAsync([safeEditor] {
+                if (safeEditor != nullptr && safeEditor->webComponent)
+                  safeEditor->webComponent->evaluateJavascript("onPresetLoaded();");
               });
             else
-              juce::MessageManager::callAsync([this, r] {
-                if (webComponent)
-                  webComponent->evaluateJavascript("onPresetError('" +
+              juce::MessageManager::callAsync([safeEditor, r] {
+                if (safeEditor != nullptr && safeEditor->webComponent)
+                  safeEditor->webComponent->evaluateJavascript("onPresetError('" +
                                                    r.getErrorMessage() + "');");
               });
           });
 
-      webComponent->registerCallback(
-          "deletePreset", [this](const juce::var &args) {
-            if (!presetMgr || !webComponent)
+      safeEditor->webComponent->registerCallback(
+          "deletePreset", [safeEditor](const juce::var &args) {
+            if (safeEditor == nullptr || !safeEditor->presetMgr || !safeEditor->webComponent)
               return;
             auto name = args[0].toString();
             juce::Result r = juce::Result::ok();
-            if (presetMgr->deletePreset(name, r))
-              juce::MessageManager::callAsync([this] {
-                if (webComponent)
-                  webComponent->evaluateJavascript("onPresetDeleted();");
+            if (safeEditor->presetMgr->deletePreset(name, r))
+              juce::MessageManager::callAsync([safeEditor] {
+                if (safeEditor != nullptr && safeEditor->webComponent)
+                  safeEditor->webComponent->evaluateJavascript("onPresetDeleted();");
               });
             else
-              juce::MessageManager::callAsync([this, r] {
-                if (webComponent)
-                  webComponent->evaluateJavascript("onPresetError('" +
+              juce::MessageManager::callAsync([safeEditor, r] {
+                if (safeEditor != nullptr && safeEditor->webComponent)
+                  safeEditor->webComponent->evaluateJavascript("onPresetError('" +
                                                    r.getErrorMessage() + "');");
               });
           });
 
-      webComponent->registerCallback(
-          "requestPresetList", [this](const juce::var &) {
-            if (!presetMgr || !webComponent)
+      safeEditor->webComponent->registerCallback(
+          "requestPresetList", [safeEditor](const juce::var &) {
+            if (safeEditor == nullptr || !safeEditor->presetMgr || !safeEditor->webComponent)
               return;
-            auto list = presetMgr->getPresetList();
+            auto list = safeEditor->presetMgr->getPresetList();
             juce::Array<juce::var> jsArray;
             for (auto &n : list)
               jsArray.add(n);
             juce::String json = juce::JSON::toString(jsArray);
-            juce::MessageManager::callAsync([this, json] {
-              if (webComponent)
-                webComponent->evaluateJavascript("onPresetListReceived(" +
+            juce::MessageManager::callAsync([safeEditor, json] {
+              if (safeEditor != nullptr && safeEditor->webComponent)
+                safeEditor->webComponent->evaluateJavascript("onPresetListReceived(" +
                                                  json + ");");
             });
           });
 
-      webComponent->registerCallback("setTheme", [this](const juce::var &args) {
-        if (!webComponent)
+      safeEditor->webComponent->registerCallback("setTheme", [safeEditor](const juce::var &args) {
+        if (safeEditor == nullptr || !safeEditor->webComponent)
           return;
         auto name = args[0].toString();
         juce::Logger::writeToLog("Native: setTheme '" + name + "'");
-        currentTheme = name;
-        juce::MessageManager::callAsync([this] {
-          if (webComponent)
-            webComponent->evaluateJavascript(
+        safeEditor->currentTheme = name;
+        juce::MessageManager::callAsync([safeEditor] {
+          if (safeEditor != nullptr && safeEditor->webComponent)
+            safeEditor->webComponent->evaluateJavascript(
                 "document.querySelector('link[href^=\"skin.css\"]').href = "
                 "'skin.css?t=' + new Date().getTime();");
         });
       });
 
-      webComponent->goToURL(
+      safeEditor->webComponent->goToURL(
           juce::WebBrowserComponent::getResourceProviderRoot());
     } else {
       juce::Logger::writeToLog(
@@ -387,17 +417,18 @@ void MushinAudioProcessorEditor::syncAllParameters() {
     }
   }
 
+  juce::Component::SafePointer<MushinAudioProcessorEditor> safeEditor(this);
   // Sync theme to UI
-  juce::MessageManager::callAsync([this] {
-    if (webComponent)
-      webComponent->evaluateJavascript("if (window.applyThemeFromNative) window.applyThemeFromNative('" + currentTheme + "');");
+  juce::MessageManager::callAsync([safeEditor] {
+    if (safeEditor != nullptr && safeEditor->webComponent)
+      safeEditor->webComponent->evaluateJavascript("if (window.applyThemeFromNative) window.applyThemeFromNative('" + safeEditor->currentTheme + "');");
   });
 
   // Sync sample rate to UI
   auto currentSR = audioProcessor.getSampleRate();
-  juce::MessageManager::callAsync([this, currentSR] {
-    if (webComponent)
-      webComponent->evaluateJavascript("if (window.setSampleRateFromNative) window.setSampleRateFromNative(" + juce::String(currentSR) + ");");
+  juce::MessageManager::callAsync([safeEditor, currentSR] {
+    if (safeEditor != nullptr && safeEditor->webComponent)
+      safeEditor->webComponent->evaluateJavascript("if (window.setSampleRateFromNative) window.setSampleRateFromNative(" + juce::String(currentSR) + ");");
   });
 }
 
@@ -417,9 +448,10 @@ void MushinAudioProcessorEditor::parameterChanged(
   auto normalizedValue = param->convertTo0to1(newValue);
   juce::String js = "if (window.setParameterValue) window.setParameterValue('" +
                     parameterID + "', " + juce::String(normalizedValue) + ");";
-  juce::MessageManager::callAsync([this, js] {
-    if (webComponent)
-      webComponent->evaluateJavascript(js);
+  juce::Component::SafePointer<MushinAudioProcessorEditor> safeEditor(this);
+  juce::MessageManager::callAsync([safeEditor, js] {
+    if (safeEditor != nullptr && safeEditor->webComponent)
+      safeEditor->webComponent->evaluateJavascript(js);
   });
 }
 
