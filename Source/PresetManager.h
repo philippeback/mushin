@@ -19,4 +19,6 @@ public:
 private:
     juce::AudioProcessorValueTreeState& apvts;
     juce::File userPresetDir;
+
+    void unpackFactoryPresets();
 };
