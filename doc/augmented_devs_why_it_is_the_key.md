@@ -60,7 +60,7 @@ When we engage, we bring our background in:
 
 ## 4. Case Study: Deconstructing the Mushin UI Speedup
 
-The **Mushin UI Speedup Strategy** ([feature_ui_speedup.md](file:///c:/Dev/github/philippeback/mushin/doc/features_implementation/feature_ui_speedup.md)) perfectly illustrates why the background is the key. Only a developer "with a clue" could conceptualize, direct, and implement this multi-tiered pipeline:
+The **Mushin UI Speedup Strategy** ([feature_ui_speedup.md](doc/features_implementation/feature_ui_speedup.md)) perfectly illustrates why the background is the key. Only a developer "with a clue" could conceptualize, direct, and implement this multi-tiered pipeline:
 
 ### Step A: Push-on-VSync Handshake (Not Fixed Timers)
 Instead of hammering the native-to-web bridge with arbitrary C++ timer intervals, we flip the control loop. JavaScript signals C++ via `requestAnimationFrame` when the browser is ready to paint, establishing a clean handshake. 
