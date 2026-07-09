@@ -16,7 +16,8 @@ MushinAudioProcessor::MushinAudioProcessor()
     if (!logFile.getParentDirectory().exists())
         logFile.getParentDirectory().createDirectory();
 
-    juce::Logger::setCurrentLogger (new juce::FileLogger (logFile, "Mushin Log Started", 0));
+    fileLogger = std::make_unique<juce::FileLogger> (logFile, "Mushin Log Started", 0);
+    juce::Logger::setCurrentLogger (fileLogger.get());
     juce::Logger::writeToLog("--- Mushin Processor Initialized ---");
 
     gainParam       = treeState.getRawParameterValue ("gain");
@@ -96,7 +97,11 @@ MushinAudioProcessor::MushinAudioProcessor()
     limiterMixParam     = treeState.getRawParameterValue ("limiter_mix");
 }
 
-MushinAudioProcessor::~MushinAudioProcessor() {}
+MushinAudioProcessor::~MushinAudioProcessor()
+{
+    if (juce::Logger::getCurrentLogger() == fileLogger.get())
+        juce::Logger::setCurrentLogger (nullptr);
+}
 
 const juce::String MushinAudioProcessor::getName() const { return "Mushin"; }
 bool MushinAudioProcessor::acceptsMidi() const { return false; }

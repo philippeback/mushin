@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Mushin VERSION 1.0.0)
+project(Mushin VERSION 1.0.1)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
